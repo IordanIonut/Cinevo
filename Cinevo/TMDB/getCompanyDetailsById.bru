@@ -1,0 +1,19 @@
+meta {
+  name: getCompanyDetailsById
+  type: http
+  seq: 6
+}
+
+get {
+  url: http://localhost:8080/api/TMDB/get/company/details/by?id=19551
+  body: none
+  auth: inherit
+}
+
+params:query {
+  id: 19551
+}
+
+settings {
+  encodeUrl: true
+}

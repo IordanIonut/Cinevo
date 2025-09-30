@@ -1,0 +1,19 @@
+meta {
+  name: getGenreByType
+  type: http
+  seq: 1
+}
+
+get {
+  url: http://localhost:8080/api/TMDB/get/genre/by?type=MOVIE
+  body: none
+  auth: inherit
+}
+
+params:query {
+  type: MOVIE
+}
+
+settings {
+  encodeUrl: true
+}

@@ -1,0 +1,35 @@
+package com.cinovo.backend.DB.Util;
+
+import jakarta.persistence.*;
+import lombok.AllArgsConstructor;
+import lombok.Data;
+import lombok.NoArgsConstructor;
+import org.hibernate.annotations.GenericGenerator;
+
+import java.io.Serializable;
+import java.time.LocalDate;
+
+@MappedSuperclass
+@Data
+@NoArgsConstructor
+@AllArgsConstructor
+public abstract class BaseEntity implements Serializable {
+    @Id
+    @GeneratedValue(generator = "uuid2")
+    @GenericGenerator(name = "uuid2", strategy = "uuid2")
+    @Column(name = "cinevo_id", updatable = false, nullable = false)
+    private String cinevoId;
+
+    @Column(name = "last_update", nullable = false)
+    private LocalDate lastUpdate;
+
+    @PrePersist
+    public void createTs() {
+        this.lastUpdate = LocalDate.now();
+    }
+
+    @PreUpdate
+    public void updateTs() {
+        this.lastUpdate = LocalDate.now();
+    }
+}

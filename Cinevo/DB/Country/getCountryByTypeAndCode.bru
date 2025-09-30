@@ -1,0 +1,15 @@
+meta {
+  name: getCountryByTypeAndCode
+  type: http
+  seq: 2
+}
+
+get {
+  url: http://localhost:8080/api/country/get/by/type-code/MOVIE/SG
+  body: none
+  auth: inherit
+}
+
+settings {
+  encodeUrl: true
+}
