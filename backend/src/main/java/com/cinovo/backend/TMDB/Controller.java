@@ -11,6 +11,9 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Component;
 import org.springframework.web.bind.annotation.*;
 
+import java.util.HashMap;
+import java.util.Map;
+
 @CrossOrigin
 @RestController
 @RequestMapping("/api/TMDB")
@@ -86,34 +89,67 @@ public class Controller {
     }
 
     @GetMapping("/get/configuration/timezones")
-    public ResponseEntity<TimezonesResponse[]> getTimezones() {
+    public ResponseEntity<ConfigurationTimezonesResponse[]> getConfigurationTimezones() {
         try {
-            log.info("getTimezones() - Successful.....");
-            return ResponseEntity.ok(this.service.getTimezones());
+            log.info("getConfigurationTimezones() - Successful.....");
+            return ResponseEntity.ok(this.service.getConfigurationTimezones());
         } catch (Exception e) {
-            log.error("Error in getTimezones: {}", e.getMessage(), e);
+            log.error("Error in getConfigurationTimezones: {}", e.getMessage(), e);
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).build();
         }
     }
 
     @GetMapping("/get/configuration/primary_translations")
-    public ResponseEntity<String[]> getPrimaryTranslations() {
+    public ResponseEntity<String[]> getConfigurationPrimaryTranslations() {
         try {
-            log.info("getPrimaryTranslations() - Successful.....");
-            return ResponseEntity.ok(this.service.getPrimaryTranslations());
+            log.info("getConfigurationPrimaryTranslations() - Successful.....");
+            return ResponseEntity.ok(this.service.getConfigurationPrimaryTranslations());
         } catch (Exception e) {
-            log.error("Error in getPrimaryTranslations: {}", e.getMessage(), e);
+            log.error("Error in getConfigurationPrimaryTranslations: {}", e.getMessage(), e);
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).build();
         }
     }
 
     @GetMapping("/get/configuration/languages")
-    public ResponseEntity<LanguageResponse[]> getLanguages() {
+    public ResponseEntity<ConfigurationLanguageResponse[]> getConfigurationLanguages() {
         try {
-            log.info("getLanguages() - Successful.....");
-            return ResponseEntity.ok(this.service.getLanguages());
+            log.info("getConfigurationLanguages() - Successful.....");
+            return ResponseEntity.ok(this.service.getConfigurationLanguages());
         } catch (Exception e) {
-            log.error("Error in getLanguages: {}", e.getMessage(), e);
+            log.error("Error in getConfigurationLanguages: {}", e.getMessage(), e);
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).build();
+        }
+    }
+
+    @GetMapping("/get/configuration/countries")
+    public ResponseEntity<ConfigurationCountryResponse[]> getConfigurationCountries(@RequestParam(value = "language", defaultValue = "en-US") final String language) {
+        try {
+            log.info("getConfigurationCountries() - Successful.....");
+            return ResponseEntity.ok(this.service.getConfigurationCountries(language));
+        } catch (Exception e) {
+            log.error("Error in getConfigurationCountries: {}", e.getMessage(), e);
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).build();
+        }
+    }
+
+    @GetMapping("/get/configuration/jobs")
+    public ResponseEntity<ConfigurationJobsResponse[]> getConfigurationJobs() {
+        try {
+            log.info("getConfigurationJobs() - Successful.....");
+            return ResponseEntity.ok(this.service.getConfigurationJobs());
+        } catch (Exception e) {
+            log.error("Error in getConfigurationJobs: {}", e.getMessage(), e);
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).build();
+        }
+    }
+
+    @GetMapping("/get/configuration")
+    public ResponseEntity<ConfigurationDetailsResponse> getConfigurationDetails() {
+        try {
+            log.info("getConfigurationDetails() - Successful.....");
+            return ResponseEntity.ok(this.service.getConfigurationDetails());
+        } catch (Exception e) {
+            log.error("Error in getConfigurationDetails: {}", e.getMessage(), e);
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).build();
         }
     }

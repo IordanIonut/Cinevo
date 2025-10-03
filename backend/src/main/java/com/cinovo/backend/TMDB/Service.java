@@ -5,6 +5,10 @@ import com.cinovo.backend.Enum.Type;
 import com.cinovo.backend.TMDB.DTO.*;
 import org.springframework.stereotype.Component;
 
+import java.lang.module.Configuration;
+import java.util.HashMap;
+import java.util.Map;
+
 @Component
 @org.springframework.stereotype.Service
 public class Service {
@@ -38,15 +42,29 @@ public class Service {
         return this.client.getCompanyDetail(id);
     }
 
-    public TimezonesResponse[] getTimezones() throws Exception {
-        return this.client.getTimezones();
+    public ConfigurationTimezonesResponse[] getConfigurationTimezones() throws Exception {
+        return this.client.getConfigurationTimezones();
     }
 
-    public String[] getPrimaryTranslations() throws Exception{
-        return this.client.getPrimaryTranslations();
+    public String[] getConfigurationPrimaryTranslations() throws Exception {
+        return this.client.getConfigurationPrimaryTranslations();
     }
 
-    public LanguageResponse[] getLanguages() throws Exception{
-        return this.client.getLanguages();
+    public ConfigurationLanguageResponse[] getConfigurationLanguages() throws Exception {
+        return this.client.getConfigurationLanguages();
+    }
+
+    public ConfigurationCountryResponse[] getConfigurationCountries(final String language) throws Exception {
+        Map<String, String> map = new HashMap<>();
+        map.put("language", language);
+        return this.client.getConfigurationCountries(map);
+    }
+
+    public ConfigurationJobsResponse[] getConfigurationJobs() throws Exception {
+        return this.client.getConfigurationJobs();
+    }
+
+    public ConfigurationDetailsResponse getConfigurationDetails() throws Exception {
+        return this.client.getConfigurationDetails();
     }
 }

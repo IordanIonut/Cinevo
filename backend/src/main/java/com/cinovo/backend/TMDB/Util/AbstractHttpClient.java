@@ -35,8 +35,8 @@ public abstract class AbstractHttpClient {
     }
 
     protected HttpResponse<String> sendGet(String baseUrl, Map<String, String> queryParams) throws Exception {
-        System.out.println("Sending GET request to: " + apiProperties.getUrl() + baseUrl);
         String fullUrl = buildUrlWithParams(apiProperties.getUrl() + baseUrl, queryParams);
+        System.out.println("Sending GET request to: " + fullUrl);
         HttpRequest request = HttpRequest.newBuilder()
                 .uri(URI.create(fullUrl))
                 .header("Accept", "application/json")

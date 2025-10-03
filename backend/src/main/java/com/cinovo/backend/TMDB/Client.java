@@ -9,6 +9,7 @@ import lombok.extern.jbosslog.JBossLog;
 import org.springframework.stereotype.Component;
 
 import java.util.List;
+import java.util.Map;
 
 @Component
 @JBossLog
@@ -56,21 +57,39 @@ public class Client extends AbstractHttpClient {
         return mapper.readValue(json, CompanyDetailsResponse.class);
     }
 
-    protected TimezonesResponse[] getTimezones() throws Exception {
+    protected ConfigurationTimezonesResponse[] getConfigurationTimezones() throws Exception {
         String json = sendGet(CONFIGURATION + "/timezones", null).body();
         ObjectMapper mapper = new ObjectMapper();
-        return mapper.readValue(json, TimezonesResponse[].class);
+        return mapper.readValue(json, ConfigurationTimezonesResponse[].class);
     }
 
-    protected String[] getPrimaryTranslations() throws Exception{
+    protected String[] getConfigurationPrimaryTranslations() throws Exception {
         String json = sendGet(CONFIGURATION + "/primary_translations", null).body();
         ObjectMapper mapper = new ObjectMapper();
         return mapper.readValue(json, String[].class);
     }
 
-    protected LanguageResponse[] getLanguages() throws Exception {
+    protected ConfigurationLanguageResponse[] getConfigurationLanguages() throws Exception {
         String json = sendGet(CONFIGURATION + "/languages", null).body();
         ObjectMapper mapper = new ObjectMapper();
-        return mapper.readValue(json, LanguageResponse[].class);
+        return mapper.readValue(json, ConfigurationLanguageResponse[].class);
+    }
+
+    protected ConfigurationCountryResponse[] getConfigurationCountries(Map<String, String> map) throws Exception {
+        String json = sendGet(CONFIGURATION + "/countries", map).body();
+        ObjectMapper mapper = new ObjectMapper();
+        return mapper.readValue(json, ConfigurationCountryResponse[].class);
+    }
+
+    protected ConfigurationJobsResponse[] getConfigurationJobs() throws Exception {
+        String json = sendGet(CONFIGURATION + "/jobs", null).body();
+        ObjectMapper mapper = new ObjectMapper();
+        return mapper.readValue(json, ConfigurationJobsResponse[].class);
+    }
+
+    protected ConfigurationDetailsResponse getConfigurationDetails() throws Exception {
+        String json = sendGet(CONFIGURATION , null).body();
+        ObjectMapper mapper = new ObjectMapper();
+        return mapper.readValue(json, ConfigurationDetailsResponse.class);
     }
 }
