@@ -1,4 +1,4 @@
-package com.cinovo.backend.TMDB.DTO;
+package com.cinovo.backend.TMDB.Response.Common;
 
 import lombok.Getter;
 import lombok.Setter;

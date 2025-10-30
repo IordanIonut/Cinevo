@@ -3,7 +3,7 @@ package com.cinovo.backend.DB.Service;
 import com.cinovo.backend.DB.Model.CompanyDetail;
 import com.cinovo.backend.DB.Repository.CompanyDetailRepository;
 import com.cinovo.backend.DB.Util.TMDBLogically;
-import com.cinovo.backend.TMDB.DTO.CompanyDetailsResponse;
+import com.cinovo.backend.TMDB.Response.CompanyDetailsResponse;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 

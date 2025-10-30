@@ -1,12 +1,10 @@
 package com.cinovo.backend.DB.Service;
 
 import com.cinovo.backend.DB.Model.CollectionDetail;
-import com.cinovo.backend.DB.Model.Genre;
 import com.cinovo.backend.DB.Repository.CollectionDetailRepository;
-import com.cinovo.backend.DB.Repository.GenreRepository;
 import com.cinovo.backend.DB.Util.TMDBLogically;
 import com.cinovo.backend.Enum.Type;
-import com.cinovo.backend.TMDB.DTO.CollectionDetailsResponse;
+import com.cinovo.backend.TMDB.Response.CollectionDetailsResponse;
 import lombok.extern.jbosslog.JBossLog;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -22,7 +20,7 @@ public class CollectionDetailService implements TMDBLogically<Integer, Collectio
     @Autowired
     private CollectionDetailRepository detailRepository;
     @Autowired
-    private GenreRepository genreRepository;
+    private GenreService genreService;
     @Autowired
     private com.cinovo.backend.TMDB.Service service;
 
@@ -61,11 +59,7 @@ public class CollectionDetailService implements TMDBLogically<Integer, Collectio
             detailPart.setVote_average(part.getVote_average());
             detailPart.setVote_count(part.getVote_count());
             detailPart.setDetail(detail);
-            List<Genre> genres = new ArrayList<>();
-            for (Integer genre : part.getGenre_ids()) {
-                genres.add(this.genreRepository.findGenresByIdAndType(genre, detailPart.getType().name()));
-            }
-            detailPart.setGenres(genres);
+            detailPart.setGenres(this.genreService.parsLongToObjects(part.getGenre_ids(), detailPart.getType()));
 
             parts.add(detailPart);
         }

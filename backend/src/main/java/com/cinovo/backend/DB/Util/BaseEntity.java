@@ -17,10 +17,10 @@ public abstract class BaseEntity implements Serializable {
     @Id
     @GeneratedValue(generator = "uuid2")
     @GenericGenerator(name = "uuid2", strategy = "uuid2")
-    @Column(name = "cinevo_id", updatable = false, nullable = false)
+    @Column(name = "CINEVO_ID", updatable = false, nullable = false)
     private String cinevoId;
 
-    @Column(name = "last_update", nullable = false)
+    @Column(name = "LAST_UPDATE", nullable = false)
     private LocalDate lastUpdate;
 
     @PrePersist

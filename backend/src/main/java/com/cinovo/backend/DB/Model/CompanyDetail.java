@@ -1,6 +1,7 @@
 package com.cinovo.backend.DB.Model;
 
 import com.cinovo.backend.DB.Util.BaseEntity;
+import com.fasterxml.jackson.annotation.JsonProperty;
 import jakarta.persistence.*;
 import lombok.*;
 
@@ -39,4 +40,9 @@ public class CompanyDetail extends BaseEntity {
     public final static String TABLE_AS = "company";
     public final static String TABLE_NAME = "COMPANY_DETAIL ";
     public final static String ID = TABLE_AS + ".ID";
+
+    @JsonProperty("logo_path")
+    public String getLogo_path() {
+        return logo_path; ///to add master data provider with configuration data
+    }
 }

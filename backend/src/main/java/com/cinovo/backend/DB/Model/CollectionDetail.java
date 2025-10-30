@@ -4,6 +4,7 @@ import com.cinovo.backend.DB.Util.BaseEntity;
 import com.cinovo.backend.Enum.Type;
 import com.fasterxml.jackson.annotation.JsonBackReference;
 import com.fasterxml.jackson.annotation.JsonManagedReference;
+import com.fasterxml.jackson.annotation.JsonProperty;
 import jakarta.persistence.*;
 import lombok.*;
 
@@ -33,13 +34,23 @@ public class CollectionDetail extends BaseEntity {
     @Column(name = "BACKDROP_PATH")
     private String backdrop_path;
 
-    @OneToMany(mappedBy = "detail", cascade = CascadeType.ALL)
+    @OneToMany(mappedBy = "detail", cascade = CascadeType.ALL, fetch = FetchType.LAZY)
     @JsonManagedReference
     private List<Part> parts;
 
     public final static String TABLE_AS = "collection";
     public final static String TABLE_NAME = "COLLECTION_DETAIL ";
     public final static String ID = TABLE_AS + ".ID";
+
+    @JsonProperty("poster_path")
+    public String getPoster_path() {
+        return poster_path;
+    }
+
+    @JsonProperty("backdrop_path")
+    public String getBackdrop_path() {
+        return backdrop_path;
+    }
 
     @Data
     @Entity
@@ -104,5 +115,15 @@ public class CollectionDetail extends BaseEntity {
         @JoinColumn(name = "DETAIL_CINEVO_ID", referencedColumnName = "CINEVO_ID")
         @JsonBackReference
         private CollectionDetail detail;
+
+        @JsonProperty("poster_path")
+        public String getPoster_path() {
+            return poster_path;
+        }
+
+        @JsonProperty("backdrop_path")
+        public String getBackdrop_path() {
+            return backdrop_path;
+        }
     }
 }

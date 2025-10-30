@@ -4,7 +4,7 @@ import com.cinovo.backend.DB.Model.Country;
 import com.cinovo.backend.DB.Repository.CountryRepository;
 import com.cinovo.backend.DB.Util.TMDBLogically;
 import com.cinovo.backend.Enum.Type;
-import com.cinovo.backend.TMDB.DTO.CertificationResponse;
+import com.cinovo.backend.TMDB.Response.CertificationResponse;
 import lombok.extern.jbosslog.JBossLog;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;

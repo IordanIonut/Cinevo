@@ -1,15 +1,11 @@
 package com.cinovo.backend.DB.Service;
 
 import com.cinovo.backend.DB.Model.Translate;
-import com.cinovo.backend.DB.Repository.CountryRepository;
 import com.cinovo.backend.DB.Repository.TranslateRepository;
 import com.cinovo.backend.DB.Util.TMDBLogically;
-import com.cinovo.backend.TMDB.DTO.TranslationResponse;
-import jakarta.persistence.Id;
-import org.springframework.beans.factory.ObjectProvider;
+import com.cinovo.backend.TMDB.Response.TranslationResponse;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
-import org.springframework.web.servlet.tags.TransformTag;
 
 import java.util.ArrayList;
 import java.util.List;

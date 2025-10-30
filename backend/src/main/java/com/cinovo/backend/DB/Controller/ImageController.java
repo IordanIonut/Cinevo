@@ -22,10 +22,10 @@ public class ImageController {
     private ImageService imageService;
 
     @GetMapping("/get/by")
-    public ResponseEntity<Image> getImageById(@RequestParam("id") final Integer id) {
+    public ResponseEntity<List<Image>> getImageById(@RequestParam("id") final Integer id, @RequestParam("type")  final Type type) {
         try {
             log.info("getImageById() - Successful.....");
-            return ResponseEntity.ok(this.imageService.findImageById(id));
+            return ResponseEntity.ok(this.imageService.findImageById(id, type));
         } catch (Exception e) {
             log.error("Error in getImageById: {}", e.getMessage(), e);
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).build();
