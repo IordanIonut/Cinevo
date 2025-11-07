@@ -1,10 +1,8 @@
 package com.cinovo.backend.DB.Controller;
 
-import com.cinovo.backend.DB.Model.Genre;
 import com.cinovo.backend.DB.Model.Image;
-import com.cinovo.backend.DB.Service.GenreService;
 import com.cinovo.backend.DB.Service.ImageService;
-import com.cinovo.backend.Enum.Type;
+import com.cinovo.backend.Enum.MediaType;
 import lombok.extern.jbosslog.JBossLog;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
@@ -22,7 +20,7 @@ public class ImageController {
     private ImageService imageService;
 
     @GetMapping("/get/by")
-    public ResponseEntity<List<Image>> getImageById(@RequestParam("id") final Integer id, @RequestParam("type")  final Type type) {
+    public ResponseEntity<List<Image>> getImageById(@RequestParam("id") final Integer id, @RequestParam("type")  final MediaType type) {
         try {
             log.info("getImageById() - Successful.....");
             return ResponseEntity.ok(this.imageService.findImageById(id, type));

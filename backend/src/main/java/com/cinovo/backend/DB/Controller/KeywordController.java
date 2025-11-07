@@ -1,7 +1,6 @@
 package com.cinovo.backend.DB.Controller;
 
 import com.cinovo.backend.DB.Model.Keyword;
-import com.cinovo.backend.DB.Model.Movie;
 import com.cinovo.backend.DB.Service.KeywordService;
 import lombok.extern.jbosslog.JBossLog;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -15,17 +14,38 @@ import java.util.List;
 @RestController
 @RequestMapping("/api/keyword")
 @JBossLog
-public class KeywordController {
+public class KeywordController
+{
     @Autowired
     private KeywordService keywordService;
 
     @GetMapping("/get/{id}")
-    public ResponseEntity<Keyword> findKeywordById(@PathVariable final Integer id) {
-        try {
+    public ResponseEntity<Keyword> findKeywordById(@PathVariable final Integer id)
+    {
+        try
+        {
             log.info("findKeywordById() - Successful.....");
             return ResponseEntity.ok(this.keywordService.findKeywordById(id));
-        } catch (Exception e) {
+        }
+        catch(Exception e)
+        {
             log.error("Error in findKeywordById: {}", e.getMessage(), e);
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).build();
+        }
+    }
+
+    @GetMapping("/get/search/by")
+    public ResponseEntity<List<Keyword>> getKeywordUsingSearch(@RequestParam("query") final String query,
+            @RequestParam(value = "page", defaultValue = "1") final Integer page)
+    {
+        try
+        {
+            log.info("getKeywordUsingSearch() - Successful.....");
+            return ResponseEntity.ok(this.keywordService.getKeywordUsingSearch(query, page));
+        }
+        catch(Exception e)
+        {
+            log.error("Error in getKeywordUsingSearch: {}", e.getMessage(), e);
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).build();
         }
     }

@@ -7,12 +7,12 @@ import lombok.*;
 
 @Data
 @Entity
-@Table(name = "COMPANY_DETAIL")
+@Table(name = "COMPANY")
 @AllArgsConstructor
 @NoArgsConstructor
 @Getter
 @Setter
-public class CompanyDetail extends BaseEntity {
+public class Company extends BaseEntity {
     @Column(name = "ID")
     private Integer id;
 
@@ -35,10 +35,10 @@ public class CompanyDetail extends BaseEntity {
     private String origin_country;
 
     @OneToOne
-    private CompanyDetail parent_company;
+    private Company parent_company;
 
     public final static String TABLE_AS = "company";
-    public final static String TABLE_NAME = "COMPANY_DETAIL ";
+    public final static String TABLE_NAME = "COMPANY ";
     public final static String ID = TABLE_AS + ".ID";
 
     @JsonProperty("logo_path")

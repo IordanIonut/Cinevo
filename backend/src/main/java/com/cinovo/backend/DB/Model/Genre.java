@@ -1,15 +1,9 @@
 package com.cinovo.backend.DB.Model;
 
 import com.cinovo.backend.DB.Util.BaseEntity;
-import com.cinovo.backend.Enum.Type;
+import com.cinovo.backend.Enum.MediaType;
 import jakarta.persistence.*;
 import lombok.*;
-import org.hibernate.annotations.GenericGenerator;
-
-import java.time.LocalDate;
-import java.time.LocalDateTime;
-import java.util.ArrayList;
-import java.util.List;
 
 @Entity
 @Data
@@ -25,9 +19,9 @@ public class Genre extends BaseEntity {
     @Column(name = "NAME")
     private String name;
 
-    @Column(name = "Type")
+    @Column(name = "TYPE")
     @Enumerated(EnumType.STRING)
-    private Type type;
+    private MediaType type;
 
     public final static String TABLE_AS = "gen";
     public final static String TABLE_NAME = "GENRE ";

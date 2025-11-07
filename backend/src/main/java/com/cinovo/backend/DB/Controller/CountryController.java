@@ -1,9 +1,8 @@
 package com.cinovo.backend.DB.Controller;
 
 import com.cinovo.backend.DB.Model.Country;
-import com.cinovo.backend.DB.Model.Genre;
 import com.cinovo.backend.DB.Service.CountryService;
-import com.cinovo.backend.Enum.Type;
+import com.cinovo.backend.Enum.MediaType;
 import lombok.extern.jbosslog.JBossLog;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
@@ -21,7 +20,7 @@ public class CountryController {
     private CountryService countryService;
 
     @GetMapping("/get/by/type/{type}")
-    public ResponseEntity<List<Country>> getCountryByType(@PathVariable("type") final Type type) {
+    public ResponseEntity<List<Country>> getCountryByType(@PathVariable("type") final MediaType type) {
         try {
             log.info("findCountryByType() - Successful.....");
             return ResponseEntity.ok(this.countryService.findCountryByType(type));
@@ -32,7 +31,7 @@ public class CountryController {
     }
 
     @GetMapping("/get/by/type-code/{type}/{code}")
-    public ResponseEntity<Country> getCountryByTypeAndCode(@PathVariable("type") final Type type, @PathVariable("code") final String code) {
+    public ResponseEntity<Country> getCountryByTypeAndCode(@PathVariable("type") final MediaType type, @PathVariable("code") final String code) {
         try {
             log.info("getCountryByTypeAndCode() - Successful.....");
             return ResponseEntity.ok(this.countryService.findCountryByTypeAndCode(type, code));

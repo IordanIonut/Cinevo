@@ -6,6 +6,9 @@ import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import jakarta.persistence.*;
 import lombok.*;
 
+import java.time.LocalDate;
+import java.util.List;
+
 @Data
 @Entity
 @Table(name = "CREDIT")
@@ -31,25 +34,36 @@ public class Credit extends BaseEntity
     @Column(name = "`ORDER`")
     private Integer order;
 
+    @Column(name = "EPISODE_COUNT")
+    private Integer episode_count;
+
+    @Column(name = "FIRST_CREDIT_AIR_DATE")
+    private LocalDate first_credit_air_date;
+
+    @ElementCollection
+    @CollectionTable(name = "CREDIT_DEPARTMENT", joinColumns = @JoinColumn(name = "CINEVO_ID"))
     @Column(name = "DEPARTMENT")
-    private String department;
+    private List<String> department;
 
+    @ElementCollection
+    @CollectionTable(name = "CREDIT_JOB", joinColumns = @JoinColumn(name = "CINEVO_ID"))
     @Column(name = "JOB")
-    private String job;
+    private List<String> job;
 
-    @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "MOVIE_ID")
+    @ManyToOne(fetch = FetchType.LAZY, cascade = CascadeType.ALL)
+    @JoinColumn(name = "Media_ID", referencedColumnName = "CINEVO_ID")
     @JsonIgnoreProperties("hibernateLazyInitializer")
-    private Movie movie;
+    private Media media;
 
-    @OneToOne(fetch = FetchType.LAZY, cascade = CascadeType.ALL)
+    @ManyToOne(fetch = FetchType.LAZY, cascade = CascadeType.ALL)
     @JoinColumn(name = "PERSON_ID", referencedColumnName = "CINEVO_ID")
     @JsonIgnoreProperties("hibernateLazyInitializer")
     private Person person;
 
     public final static String TABLE_AS = "credit";
     public final static String TABLE_NAME = "CREDIT ";
-    public final static String MOVIE_ID = TABLE_AS + ".MOVIE_ID";
+    public final static String MEDIA_ID = TABLE_AS + ".MEDIA_ID";
+    public final static String PERSON_ID = TABLE_AS + ".PERSON_ID";
     public final static String CREDIT_ID =  TABLE_AS + ".CREDIT_ID";
-    public final static String JOIN_MOVIE = MOVIE_ID + " = " + Movie.CINEVO_ID;
+    public final static String JOIN_MEDIA = MEDIA_ID + " = " + Media.CINEVO_ID;
 }

@@ -1,17 +1,13 @@
 package com.cinovo.backend.DB.Controller;
 
 
-import com.cinovo.backend.DB.Model.Country;
 import com.cinovo.backend.DB.Model.CreditDetails;
 import com.cinovo.backend.DB.Service.CreditDetailsService;
-import com.cinovo.backend.Enum.Type;
 import lombok.extern.jbosslog.JBossLog;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
-
-import java.util.List;
 
 @CrossOrigin
 @RestController

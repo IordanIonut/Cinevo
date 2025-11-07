@@ -1,35 +1,76 @@
 package com.cinovo.backend.DB.Service;
 
+import aj.org.objectweb.asm.TypeReference;
 import com.cinovo.backend.DB.Model.Keyword;
 import com.cinovo.backend.DB.Repository.KeywordRepository;
 import com.cinovo.backend.DB.Util.TMDBLogically;
-import com.cinovo.backend.TMDB.Response.KeywordsDetailResponse;
-import org.springframework.beans.factory.annotation.Autowired;
+import com.cinovo.backend.TMDB.Response.Common.KeywordsResponse;
+import com.cinovo.backend.TMDB.Response.SearchResponse;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import org.springframework.stereotype.Service;
 
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Optional;
 
 @Service
-public class KeywordService implements TMDBLogically<Integer, Keyword> {
-    @Autowired
-    private KeywordRepository keywordRepository;
-    @Autowired
-    private com.cinovo.backend.TMDB.Service service;
+public class KeywordService implements TMDBLogically<Object, Object>
+{
+    private final KeywordRepository keywordRepository;
+    private final com.cinovo.backend.TMDB.Service service;
 
-    public Keyword findKeywordById(final Integer id) throws Exception {
+    public KeywordService(KeywordRepository keywordRepository, com.cinovo.backend.TMDB.Service service)
+    {
+        this.keywordRepository = keywordRepository;
+        this.service = service;
+    }
+
+    public Keyword findKeywordById(final Integer id) throws Exception
+    {
         Optional<Keyword> keyword = this.keywordRepository.findKeywordById(id);
-        if (keyword.isEmpty()) {
-            return this.onConvertTMDB(id);
+        if(keyword.isEmpty())
+        {
+            return (Keyword) this.onConvertTMDB(id);
         }
         return keyword.get();
     }
 
+    public List<Keyword> getKeywordUsingSearch(final String query, final Integer page) throws Exception
+    {
+        //TODO: Add query to my database to find by query
+        return (List<Keyword>) this.onConvertTMDB(this.service.getSearchKeywordsResponse(query, page));
+    }
+
     @Override
-    public Keyword onConvertTMDB(Integer id) throws Exception {
-        KeywordsDetailResponse keywordsDetailResponse = this.service.getKeywordDetails(id);
-        Keyword keyword = new Keyword();
-        keyword.setId(keywordsDetailResponse.getId());
-        keyword.setName(keywordsDetailResponse.getName());
+    public Object onConvertTMDB(Object input) throws Exception
+    {
+        if(input instanceof SearchResponse<?>)
+        {
+            SearchResponse<?> rawResponse = (SearchResponse<?>) input;
+            ObjectMapper mapper = new ObjectMapper();
+
+            List<Keyword> keywords = new ArrayList<>();
+            for(Object obj : rawResponse.getResults())
+            {
+                KeywordsResponse keywordsResponse = mapper.convertValue(obj, KeywordsResponse.class);
+                Keyword keyword = this.genereateKeyword(keywordsResponse);
+                keywords.add(keyword);
+            }
+            return keywords;
+        }
+        else if(input instanceof Integer)
+        {
+            KeywordsResponse response = this.service.getKeywordDetails((Integer) input);
+            return this.genereateKeyword(response);
+        }
+        throw new IllegalArgumentException("Input of type object not find: " + input);
+    }
+
+    private Keyword genereateKeyword(KeywordsResponse response)
+    {
+        Keyword keyword = this.keywordRepository.findKeywordById(response.getId()).orElse(new Keyword());
+        keyword.setId(response.getId());
+        keyword.setName(response.getName());
 
         keywordRepository.save(keyword);
         return keyword;

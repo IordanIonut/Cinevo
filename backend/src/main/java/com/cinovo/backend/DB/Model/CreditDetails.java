@@ -1,9 +1,7 @@
 package com.cinovo.backend.DB.Model;
 
 import com.cinovo.backend.DB.Util.BaseEntity;
-import com.cinovo.backend.Enum.Gender;
 import com.cinovo.backend.Enum.MediaType;
-import com.cinovo.backend.Enum.Type;
 import com.fasterxml.jackson.annotation.JsonBackReference;
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.fasterxml.jackson.annotation.JsonManagedReference;
@@ -35,7 +33,7 @@ public class CreditDetails extends BaseEntity {
 
     @Column(name = "TYPE")
     @Enumerated(EnumType.STRING)
-    private Type type;
+    private MediaType type;
 
     @OneToOne(cascade = CascadeType.ALL, fetch = FetchType.LAZY, orphanRemoval = true)
     @JoinColumn(name = "PERSON_ID")
@@ -80,7 +78,7 @@ public class CreditDetails extends BaseEntity {
 
         @Column(name = "TYPE")
         @Enumerated(EnumType.STRING)
-        private Type type;
+        private MediaType type;
 
         @Column(name = "ORIGINAL_LANGUAGE")
         private String original_language;

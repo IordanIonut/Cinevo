@@ -1,15 +1,16 @@
 package com.cinovo.backend.DB.Service;
 
 import com.cinovo.backend.DB.Model.Image;
-import com.cinovo.backend.DB.Model.Movie;
+import com.cinovo.backend.DB.Model.Media;
 import com.cinovo.backend.DB.Repository.ImageRepository;
 import com.cinovo.backend.DB.Util.TMDBLogically;
 import com.cinovo.backend.Enum.ImageType;
-import com.cinovo.backend.Enum.Type;
+import com.cinovo.backend.Enum.MediaType;
 import com.cinovo.backend.TMDB.Response.CollectionImageResponse;
 import com.cinovo.backend.TMDB.Response.Common.ImageResponse;
 import com.cinovo.backend.TMDB.Response.MovieImagesResponse;
-import org.springframework.beans.factory.annotation.Autowired;
+import com.cinovo.backend.TMDB.Response.PeopleImagesResponse;
+import org.springframework.context.annotation.Lazy;
 import org.springframework.stereotype.Service;
 
 import java.util.ArrayList;
@@ -19,14 +20,18 @@ import java.util.Optional;
 @Service
 public class ImageService implements TMDBLogically<Object, Object>
 {
-    @Autowired
-    private ImageRepository imageRepository;
-    @Autowired
-    private MovieService movieService;
-    @Autowired
-    private com.cinovo.backend.TMDB.Service service;
+    private final ImageRepository imageRepository;
+    private final MediaService movieService;
+    private final com.cinovo.backend.TMDB.Service service;
 
-    public List<Image> findImageById(final Integer id, final Type type) throws Exception
+    public ImageService(ImageRepository imageRepository, @Lazy MediaService movieService, com.cinovo.backend.TMDB.Service service)
+    {
+        this.imageRepository = imageRepository;
+        this.movieService = movieService;
+        this.service = service;
+    }
+
+    public List<Image> findImageById(final Integer id, final MediaType type) throws Exception
     {
         Optional<List<Image>> image = this.imageRepository.findImageByIdAndType(id, type.name());
         if(image.isEmpty() || image.get().isEmpty())
@@ -43,24 +48,30 @@ public class ImageService implements TMDBLogically<Object, Object>
         String numbers = inputStr.replaceAll("[^0-9]", "");
         String letters = inputStr.replaceAll("[^A-Za-z]", "");
 
-        return onConvertTMDB(Integer.parseInt(numbers), Type.valueOf(letters));
+        return onConvertTMDB(Integer.parseInt(numbers), MediaType.valueOf(letters));
     }
 
-    private List<Image> onConvertTMDB(Integer id, Type type) throws Exception
+    private List<Image> onConvertTMDB(Integer id, MediaType type) throws Exception
     {
         List<Image> images = switch(type)
         {
-            case Type.MOVIE ->
+            case MediaType.MOVIE ->
             {
                 MovieImagesResponse response = service.getMovieImages(id);
-                Movie movie = movieService.getMovieById(response.getId());
-                yield convertImageResponseToImages(response.getBackdrops(), response.getPosters(), response.getLogos(), movie, null);
+                Media media = movieService.getMediaByIdAndType(response.getId(), MediaType.MOVIE);
+                yield convertImageResponseToImages(response.getBackdrops(), response.getPosters(), response.getLogos(), null, media, null,
+                        MediaType.MOVIE);
             }
-            case Type.COLLECTION ->
+            case MediaType.PERSON ->
+            {
+                PeopleImagesResponse response = service.getPeopleImages(id);
+                yield convertImageResponseToImages(null, null, null, response.getProfiles(), null, null, MediaType.PERSON);
+            }
+            case MediaType.COLLECTION ->
             {
                 CollectionImageResponse response = service.getImageCollection(id);
                 Integer collection = null; // TODO: implement collection lookup
-                yield convertImageResponseToImages(response.getBackdrops(), response.getPosters(), null, null, collection);
+                yield convertImageResponseToImages(response.getBackdrops(), response.getPosters(), null, null, null, collection, MediaType.COLLECTION);
             }
             default ->
             {
@@ -74,7 +85,7 @@ public class ImageService implements TMDBLogically<Object, Object>
     }
 
     private List<Image> convertImageResponseToImages(List<ImageResponse> backdrops, List<ImageResponse> posters, List<ImageResponse> logos,
-            Movie movie, Integer collectionId)
+            List<ImageResponse> profiles, Media media, Integer collectionId, MediaType type)
     {
         List<Image> images = new ArrayList<>();
 
@@ -82,7 +93,7 @@ public class ImageService implements TMDBLogically<Object, Object>
         {
             for(ImageResponse backdrop : backdrops)
             {
-                images.add(createImageObject(backdrop, movie, collectionId, ImageType.BACKDROP));
+                images.add(createImageObject(backdrop, media, collectionId, ImageType.BACKDROP, type));
             }
         }
 
@@ -90,7 +101,7 @@ public class ImageService implements TMDBLogically<Object, Object>
         {
             for(ImageResponse poster : posters)
             {
-                images.add(createImageObject(poster, movie, collectionId, ImageType.POSTER));
+                images.add(createImageObject(poster, media, collectionId, ImageType.POSTER, type));
             }
         }
 
@@ -98,14 +109,23 @@ public class ImageService implements TMDBLogically<Object, Object>
         {
             for(ImageResponse logo : logos)
             {
-                images.add(createImageObject(logo, movie, collectionId, ImageType.LOGO));
+                images.add(createImageObject(logo, media, collectionId, ImageType.LOGO, type));
+            }
+        }
+
+        if(profiles != null)
+        {
+            for(ImageResponse profile : profiles)
+            {
+                images.add(createImageObject(profile, media, collectionId, ImageType.PROFILE, type));
             }
         }
 
         return images;
     }
 
-    private Image createImageObject(ImageResponse image, Movie movie, Integer collection, ImageType type)
+    private Image createImageObject(final ImageResponse image, final Media media, final Integer collection, final ImageType imageType,
+            final MediaType type)
     {
         Image img = new Image();
         img.setAspect_ratio(image.getAspect_ratio());
@@ -116,10 +136,10 @@ public class ImageService implements TMDBLogically<Object, Object>
         img.setIso_639_1(image.getIso_639_1());
         img.setVote_average(image.getVote_average());
         img.setVote_count(image.getVote_count());
-        img.setMovie(movie);
+        img.setMedia(media);
         img.setCollection_id(collection);
-        img.setImage_type(type);
-
+        img.setImage_type(imageType);
+        img.setType(type);
         return img;
     }
 }

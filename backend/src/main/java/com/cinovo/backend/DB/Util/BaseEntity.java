@@ -3,6 +3,7 @@ package com.cinovo.backend.DB.Util;
 import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
 import lombok.Data;
+import lombok.EqualsAndHashCode;
 import lombok.NoArgsConstructor;
 import org.hibernate.annotations.GenericGenerator;
 
@@ -18,7 +19,7 @@ public abstract class BaseEntity implements Serializable {
     @GeneratedValue(generator = "uuid2")
     @GenericGenerator(name = "uuid2", strategy = "uuid2")
     @Column(name = "CINEVO_ID", updatable = false, nullable = false)
-    private String cinevoId;
+    private String cinevo_id;
 
     @Column(name = "LAST_UPDATE", nullable = false)
     private LocalDate lastUpdate;

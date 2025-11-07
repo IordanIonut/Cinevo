@@ -6,7 +6,6 @@ import com.cinovo.backend.DB.Repository.CreditDetailsRepository;
 import com.cinovo.backend.DB.Util.TMDBLogically;
 import com.cinovo.backend.Enum.Gender;
 import com.cinovo.backend.Enum.MediaType;
-import com.cinovo.backend.Enum.Type;
 import com.cinovo.backend.TMDB.Response.DetailsResponse;
 import lombok.extern.jbosslog.JBossLog;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -19,7 +18,8 @@ import java.util.Optional;
 
 @JBossLog
 @Service
-public class CreditDetailsService implements TMDBLogically<String, CreditDetails> {
+public class CreditDetailsService implements TMDBLogically<String, CreditDetails>
+{
     @Autowired
     private CreditDetailsRepository creditDetailsRepository;
     @Autowired
@@ -27,22 +27,25 @@ public class CreditDetailsService implements TMDBLogically<String, CreditDetails
     @Autowired
     private com.cinovo.backend.TMDB.Service service;
 
-    public CreditDetails findCreditDetailsById(final String id) throws Exception {
+    public CreditDetails findCreditDetailsById(final String id) throws Exception
+    {
         Optional<CreditDetails> creditDetails = this.creditDetailsRepository.findCreditDetailsById(id);
-        if (creditDetails.isEmpty()) {
+        if(creditDetails.isEmpty())
+        {
             return this.onConvertTMDB(id);
         }
         return creditDetails.get();
     }
 
     @Override
-    public CreditDetails onConvertTMDB(String id) throws Exception {
+    public CreditDetails onConvertTMDB(String id) throws Exception
+    {
         DetailsResponse detailsResponse = this.service.getCreditsDetails(id);
         CreditDetails creditDetails = new CreditDetails();
         creditDetails.setCredit_type(detailsResponse.getCredit_type());
         creditDetails.setDepartment(detailsResponse.getDepartment());
         creditDetails.setJob(detailsResponse.getJob());
-        creditDetails.setType(Type.valueOf(detailsResponse.getMedia_type().toUpperCase()));
+        creditDetails.setType(MediaType.valueOf(detailsResponse.getMedia_type().toUpperCase()));
         creditDetails.setId(detailsResponse.getId());
         this.creditDetailsRepository.save(creditDetails);
 
@@ -56,8 +59,8 @@ public class CreditDetailsService implements TMDBLogically<String, CreditDetails
         per.setAdult(detailsResponse.getPerson().getAdult());
         per.setName(detailsResponse.getPerson().getName());
         per.setOriginal_name(detailsResponse.getPerson().getOriginal_name());
-        per.setGender(detailsResponse.getPerson().getGender() == 0 ? Gender.F : Gender.M);
-        per.setKnow_for_department(detailsResponse.getPerson().getKnown_for_department());
+        per.setGender(Gender.fromCode(detailsResponse.getPerson().getGender()));
+        per.setKnown_for_department(detailsResponse.getPerson().getKnown_for_department());
         per.setProfile_file(detailsResponse.getPerson().getProfile_path());
         person.setPerson(per);
 
@@ -70,7 +73,7 @@ public class CreditDetailsService implements TMDBLogically<String, CreditDetails
         media.setOriginal_name(detailsResponse.getMedia().getOriginal_name());
         media.setBackdrop_path(detailsResponse.getMedia().getBackdrop_path());
         media.setPoster_path(detailsResponse.getMedia().getPoster_path());
-        media.setType(Type.valueOf(detailsResponse.getMedia().getMedia_type().toUpperCase()));
+        media.setType(MediaType.valueOf(detailsResponse.getMedia().getMedia_type().toUpperCase()));
         media.setOriginal_language(detailsResponse.getMedia().getOriginal_name());
         media.setGenres(this.genreService.parsLongToObjects(detailsResponse.getMedia().getGenre_ids(), media.getType()));
         media.setPopularity(detailsResponse.getMedia().getPopularity());
@@ -82,7 +85,8 @@ public class CreditDetailsService implements TMDBLogically<String, CreditDetails
         media.setCredit_details(creditDetails);
 
         List<CreditDetails.Media.Episode> episodes = new ArrayList<>();
-        for (DetailsResponse.Media.Episodes episode : detailsResponse.getMedia().getEpisodes()) {
+        for(DetailsResponse.Media.Episodes episode : detailsResponse.getMedia().getEpisodes())
+        {
             CreditDetails.Media.Episode ep = new CreditDetails.Media.Episode();
             ep.setId(episode.getId());
             ep.setName(episode.getName());
@@ -90,7 +94,7 @@ public class CreditDetailsService implements TMDBLogically<String, CreditDetails
             ep.setMedia_type(MediaType.valueOf(episode.getMedia_type().toUpperCase()));
             ep.setVote_average(episode.getVote_average());
             ep.setVote_count(episode.getVote_count());
-            ep.setAir_date(LocalDate.parse(episode.getAir_date()));
+            ep.setAir_date(episode.getAir_date() != null && !episode.getAir_date().isEmpty() ? LocalDate.parse(episode.getAir_date()) : null);
             ep.setEpisode_number(episode.getEpisode_number());
             ep.setEpisode_type(episode.getEpisode_type());
             ep.setProduction_code(episode.getProduction_code());
@@ -103,7 +107,8 @@ public class CreditDetailsService implements TMDBLogically<String, CreditDetails
         }
 
         List<CreditDetails.Media.Season> seasons = new ArrayList<>();
-        for (DetailsResponse.Media.Seasons season : detailsResponse.getMedia().getSeasons()) {
+        for(DetailsResponse.Media.Seasons season : detailsResponse.getMedia().getSeasons())
+        {
             CreditDetails.Media.Season se = new CreditDetails.Media.Season();
             se.setId(season.getId());
             se.setName(season.getName());
@@ -111,7 +116,7 @@ public class CreditDetailsService implements TMDBLogically<String, CreditDetails
             se.setPoster_path(season.getPoster_path());
             se.setMedia_type(MediaType.valueOf(season.getMedia_type().toUpperCase()));
             se.setVote_average(season.getVote_average());
-            se.setAir_date(LocalDate.parse(season.getAir_date()));
+            se.setAir_date(season.getAir_date() != null && !season.getAir_date().isEmpty() ? LocalDate.parse(season.getAir_date()) : null);
             se.setSeason_number(season.getSeason_number());
             se.setShow_id(season.getShow_id());
             se.setEpisode_count(season.getEpisode_count());

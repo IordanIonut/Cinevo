@@ -1,14 +1,12 @@
 package com.cinovo.backend.DB.Model;
 
 import com.cinovo.backend.DB.Util.BaseEntity;
-import com.cinovo.backend.Enum.Type;
+import com.cinovo.backend.Enum.MediaType;
 import com.fasterxml.jackson.annotation.JsonBackReference;
 import com.fasterxml.jackson.annotation.JsonManagedReference;
 import jakarta.persistence.*;
 import lombok.*;
-import org.hibernate.annotations.GenericGenerator;
 
-import java.time.LocalDate;
 import java.util.List;
 
 @Entity
@@ -24,7 +22,7 @@ public class Country extends BaseEntity {
 
     @Column(name = "Type")
     @Enumerated(EnumType.STRING)
-    private Type type;
+    private MediaType type;
 
     @OneToMany(mappedBy = "country", cascade = CascadeType.ALL)
     @JsonManagedReference

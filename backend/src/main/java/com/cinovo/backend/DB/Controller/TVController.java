@@ -1,9 +1,8 @@
 package com.cinovo.backend.DB.Controller;
 
 
-import com.cinovo.backend.DB.Model.Movie;
+import com.cinovo.backend.DB.Model.Media;
 import com.cinovo.backend.DB.Model.TV;
-import com.cinovo.backend.DB.Service.MovieService;
 import com.cinovo.backend.DB.Service.TVService;
 import lombok.extern.jbosslog.JBossLog;
 import org.springframework.beans.factory.annotation.Autowired;

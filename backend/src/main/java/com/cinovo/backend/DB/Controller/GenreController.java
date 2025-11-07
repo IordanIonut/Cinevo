@@ -1,9 +1,8 @@
 package com.cinovo.backend.DB.Controller;
 
 import com.cinovo.backend.DB.Model.Genre;
-import com.cinovo.backend.DB.Repository.GenreRepository;
 import com.cinovo.backend.DB.Service.GenreService;
-import com.cinovo.backend.Enum.Type;
+import com.cinovo.backend.Enum.MediaType;
 import lombok.extern.jbosslog.JBossLog;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
@@ -21,7 +20,7 @@ public class GenreController {
     private GenreService genreService;
 
     @GetMapping("/get/by")
-    public ResponseEntity<List<Genre>> getGenreByType(@RequestParam("type") final Type type) {
+    public ResponseEntity<List<Genre>> getGenreByType(@RequestParam("type") final MediaType type) {
         try {
             log.info("getGenreByType() - Successful.....");
             return ResponseEntity.ok(this.genreService.findGenresByType(type));

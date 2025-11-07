@@ -1,4 +1,4 @@
-package com.cinovo.backend.TMDB.Response;
+package com.cinovo.backend.TMDB.Response.Common;
 
 import lombok.Data;
 import lombok.Getter;
@@ -7,7 +7,7 @@ import lombok.Setter;
 @Data
 @Getter
 @Setter
-public class CompanyDetailsResponse {
+public class CompanyResponse {
     private  String description;
     private String headquarters;
     private String homepage;
@@ -15,5 +15,5 @@ public class CompanyDetailsResponse {
     private String logo_path;
     private String name;
     private String origin_country;
-    private CompanyDetailsResponse parent_company;
+    private CompanyResponse parent_company;
 }

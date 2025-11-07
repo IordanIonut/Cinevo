@@ -88,7 +88,7 @@ public class DetailsResponse {
         private String original_name;
         private String media_type;
         private Double popularity;
-        private Long gender;
+        private Integer gender;
         private String known_for_department;
         private String profile_path;
     }

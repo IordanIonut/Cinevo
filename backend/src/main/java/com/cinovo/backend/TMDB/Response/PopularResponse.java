@@ -1,6 +1,6 @@
 package com.cinovo.backend.TMDB.Response;
 
-import com.cinovo.backend.TMDB.Response.Common.MovieResponse;
+import com.cinovo.backend.TMDB.Response.Common.MediaResponse;
 import lombok.Data;
 import lombok.Getter;
 import lombok.Setter;
@@ -12,7 +12,7 @@ import java.util.List;
 @Setter
 public class PopularResponse {
     private Integer page;
-    private List<MovieResponse> results;
+    private List<MediaResponse> results;
     private Integer total_pages;
     private Integer total_results;
 }

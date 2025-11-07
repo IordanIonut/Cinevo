@@ -33,4 +33,19 @@ public class CreditController
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).build();
         }
     }
+
+    @GetMapping("/get/by/person_id/{person_id}")
+    public ResponseEntity<List<Credit>> findCreditByPersonId(@PathVariable("person_id") final Integer person_id)
+    {
+        try
+        {
+            log.info("findCreditByPersonId() - Successful.....");
+            return ResponseEntity.ok(this.creditService.findCreditByPersonId(person_id));
+        }
+        catch(Exception e)
+        {
+            log.error("Error in findCreditByPersonId: {}", e.getMessage(), e);
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).build();
+        }
+    }
 }

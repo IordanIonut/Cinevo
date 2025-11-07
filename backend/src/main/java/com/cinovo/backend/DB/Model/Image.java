@@ -2,12 +2,10 @@ package com.cinovo.backend.DB.Model;
 
 import com.cinovo.backend.DB.Util.BaseEntity;
 import com.cinovo.backend.Enum.ImageType;
+import com.cinovo.backend.Enum.MediaType;
 import com.fasterxml.jackson.annotation.*;
 import jakarta.persistence.*;
 import lombok.*;
-import org.hibernate.annotations.GenericGenerator;
-
-import java.util.List;
 
 @Data
 @Entity
@@ -18,6 +16,10 @@ import java.util.List;
 @Setter
 public class Image extends BaseEntity
 {
+    @Column(name = "TYPE")
+    @Enumerated(EnumType.STRING)
+    private MediaType type;
+
     @Column(name = "ASPECT_RADIO")
     private Double aspect_ratio;
 
@@ -51,14 +53,20 @@ public class Image extends BaseEntity
     private Integer collection_id;
 
     @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "MOVIE_ID")
+    @JoinColumn(name = "MEDIA_ID")
     @JsonIgnoreProperties("hibernateLazyInitializer")
     @JsonBackReference
-    private Movie movie;
+    private Media media;
+
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "PERSON_ID")
+    @JsonIgnoreProperties("hibernateLazyInitializer")
+    @JsonBackReference
+    private Person person;
 
     public final static String TABLE_AS = "image";
     public final static String TABLE_NAME = "IMAGE ";
     public final static String ID = TABLE_AS + ".ID";
     public final static String IMAGE_TYPE = TABLE_AS + ".IMAGE_TYPE";
-    public final static String JOIN_MOVIE =  TABLE_AS + ".MOVIE_ID";
+    public final static String JOIN_MEDIA = TABLE_AS + ".MEDIA_ID";
 }
