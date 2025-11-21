@@ -9,8 +9,8 @@ import java.util.Optional;
 
 public interface CollectionRepository extends JpaRepository<Collection, String>
 {
-    @Query(value = "SELECT " + Collection.TABLE_AS + ".* FROM " + Collection.TABLE_NAME + Collection.TABLE_AS + " WHERE " + Collection.ID + " = :id",
-            nativeQuery = true)
+    @Query(nativeQuery = true,
+            value = "SELECT " + Collection.TABLE_AS + ".* FROM " + Collection.TABLE_NAME + Collection.TABLE_AS + " WHERE " + Collection.ID + " = :id")
     Optional<Collection> findCollectionById(@Param("id") Integer id);
 
 }

@@ -42,7 +42,7 @@ public class Collection extends BaseEntity
     @Column(name = "ADULT")
     private Boolean adult;
 
-    @OneToMany(mappedBy = "detail", cascade = CascadeType.ALL, fetch = FetchType.LAZY)
+    @OneToMany(mappedBy = "detail")
     @JsonManagedReference
     private List<Media> medias;
 

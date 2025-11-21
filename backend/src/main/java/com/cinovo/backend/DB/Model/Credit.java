@@ -2,6 +2,7 @@ package com.cinovo.backend.DB.Model;
 
 import com.cinovo.backend.DB.Util.BaseEntity;
 import com.cinovo.backend.Enum.CreditType;
+import com.fasterxml.jackson.annotation.JsonBackReference;
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import jakarta.persistence.*;
 import lombok.*;
@@ -28,7 +29,7 @@ public class Credit extends BaseEntity
     @Column(name = "`CHARACTER`")
     private String character;
 
-    @Column(name = "CREDIT_ID")
+    @Column(name = "`CREDIT_ID`")
     private String credit_id;
 
     @Column(name = "`ORDER`")
@@ -46,24 +47,82 @@ public class Credit extends BaseEntity
     private List<String> department;
 
     @ElementCollection
-    @CollectionTable(name = "CREDIT_JOB", joinColumns = @JoinColumn(name = "CINEVO_ID"))
+    @CollectionTable(name = "CREDIT_JOB_LIST", joinColumns = @JoinColumn(name = "CINEVO_ID"))
     @Column(name = "JOB")
     private List<String> job;
 
-    @ManyToOne(fetch = FetchType.LAZY, cascade = CascadeType.ALL)
-    @JoinColumn(name = "Media_ID", referencedColumnName = "CINEVO_ID")
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "MEDIA_ID", referencedColumnName = "CINEVO_ID")
     @JsonIgnoreProperties("hibernateLazyInitializer")
+    @JsonBackReference
     private Media media;
 
-    @ManyToOne(fetch = FetchType.LAZY, cascade = CascadeType.ALL)
+    @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "PERSON_ID", referencedColumnName = "CINEVO_ID")
     @JsonIgnoreProperties("hibernateLazyInitializer")
     private Person person;
+
+    @ManyToMany(fetch = FetchType.LAZY, cascade = CascadeType.ALL)
+    @JoinTable(name = "CREDIT_ROLE", joinColumns = @JoinColumn(name = "CREDIT_ID", referencedColumnName = "CINEVO_ID"),
+            inverseJoinColumns = @JoinColumn(name = "ROLE_ID", referencedColumnName = "CINEVO_ID"))
+    private List<Role> roles;
+
+    @ManyToMany(fetch = FetchType.LAZY, cascade = CascadeType.ALL)
+    @JoinTable(name = "CREDIT_JOB", joinColumns = @JoinColumn(name = "CREDIT_ID", referencedColumnName = "CINEVO_ID"),
+            inverseJoinColumns = @JoinColumn(name = "JOB_ID", referencedColumnName = "CINEVO_ID"))
+    private List<Job> jobs;
 
     public final static String TABLE_AS = "credit";
     public final static String TABLE_NAME = "CREDIT ";
     public final static String MEDIA_ID = TABLE_AS + ".MEDIA_ID";
     public final static String PERSON_ID = TABLE_AS + ".PERSON_ID";
-    public final static String CREDIT_ID =  TABLE_AS + ".CREDIT_ID";
+    public final static String CREDIT_ID = TABLE_AS + ".CREDIT_ID";
     public final static String JOIN_MEDIA = MEDIA_ID + " = " + Media.CINEVO_ID;
+
+    @Data
+    @Entity
+    @Table(name = "ROLE")
+    @AllArgsConstructor
+    @NoArgsConstructor
+    @Getter
+    @Setter
+    public static class Role extends BaseEntity
+    {
+        @Column(name = "`CREDIT_ID`")
+        private String credit_id;
+
+        @Column(name = "`CHARACTER`")
+        private String character;
+
+        @Column(name = "EPISODE_COUNT")
+        private Integer episode_count;
+
+        public final static String TABLE_AS = "role";
+        public final static String TABLE_NAME = "ROLE ";
+        public final static String CREDIT_ID = TABLE_AS + ".CREDIT_ID";
+
+    }
+
+    @Data
+    @Entity
+    @Table(name = "JOB")
+    @AllArgsConstructor
+    @NoArgsConstructor
+    @Getter
+    @Setter
+    public static class Job extends BaseEntity
+    {
+        @Column(name = "`CREDIT_ID`")
+        private String credit_id;
+
+        @Column(name = "JOB")
+        private String job;
+
+        @Column(name = "EPISODE_COUNT")
+        private Integer episode_count;
+
+        public final static String TABLE_AS = "job";
+        public final static String TABLE_NAME = "JOB ";
+        public final static String CREDIT_ID = TABLE_AS + ".CREDIT_ID";
+    }
 }

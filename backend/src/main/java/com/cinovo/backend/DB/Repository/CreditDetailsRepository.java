@@ -9,7 +9,10 @@ import org.springframework.stereotype.Repository;
 import java.util.Optional;
 
 @Repository
-public interface CreditDetailsRepository extends JpaRepository<CreditDetails, String> {
-    @Query(value = "SELECT " + CreditDetails.TABLE_AS + ".* FROM " + CreditDetails.TABLE_NAME + CreditDetails.TABLE_AS + " WHERE " + CreditDetails.ID + " = :id", nativeQuery = true)
+public interface CreditDetailsRepository extends JpaRepository<CreditDetails, String>
+{
+    @Query(nativeQuery = true,
+            value = "SELECT " + CreditDetails.TABLE_AS + ".* FROM " + CreditDetails.TABLE_NAME + CreditDetails.TABLE_AS + " WHERE " + CreditDetails.ID
+                    + " = :id")
     Optional<CreditDetails> findCreditDetailsById(@Param("id") final String id);
 }

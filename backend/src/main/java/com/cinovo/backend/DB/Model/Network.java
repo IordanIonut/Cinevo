@@ -37,11 +37,11 @@ public class Network extends BaseEntity
     @Column(name = "ORIGIN_COUNTRY")
     private String origin_country;
 
-    @OneToMany(mappedBy = "network", fetch = FetchType.LAZY, cascade = CascadeType.ALL)
+    @OneToMany(mappedBy = "network", fetch = FetchType.LAZY)
     @JsonManagedReference
     private List<NetworkAlternativeName> alternative_names;
 
-    @OneToMany(mappedBy = "network", fetch = FetchType.LAZY, cascade = CascadeType.ALL)
+    @OneToMany(mappedBy = "network", fetch = FetchType.LAZY)
     @JsonManagedReference
     private List<NetworkImage> images;
 

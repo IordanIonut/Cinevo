@@ -59,6 +59,18 @@ public class Image extends BaseEntity
     private Media media;
 
     @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "SEASON_ID")
+    @JsonIgnoreProperties("hibernateLazyInitializer")
+    @JsonBackReference
+    private Media.Season season;
+
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "EPISODE_ID")
+    @JsonIgnoreProperties("hibernateLazyInitializer")
+    @JsonBackReference
+    private Media.Season.Episode episode;
+
+    @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "PERSON_ID")
     @JsonIgnoreProperties("hibernateLazyInitializer")
     @JsonBackReference
@@ -68,5 +80,10 @@ public class Image extends BaseEntity
     public final static String TABLE_NAME = "IMAGE ";
     public final static String ID = TABLE_AS + ".ID";
     public final static String IMAGE_TYPE = TABLE_AS + ".IMAGE_TYPE";
-    public final static String JOIN_MEDIA = TABLE_AS + ".MEDIA_ID";
+    public final static String MEDIA_ID = TABLE_AS + ".MEDIA_ID";
+    public final static String SEASON_ID = TABLE_AS + ".SEASON_ID";
+    public final static String EPISODE_ID = TABLE_AS + ".EPISODE_ID";
+    public final static String COLLECTION_ID = TABLE_AS + ".COLLECTION_ID";
+    public final static String TYPE = TABLE_AS + ".TYPE";
+    public final static String PERSON_ID = TABLE_AS + ".PERSON_ID";
 }

@@ -47,7 +47,7 @@ public class GenreService implements TMDBLogically<MediaType, List<Genre>>
         List<Genre> genres = new ArrayList<>();
         for(Integer genre : genre_ids)
         {
-            genres.add(this.genreRepository.findGenresByIdAndType(genre, type.name()));
+            genres.add(this.genreRepository.findGenresByIdAndType(genre, type.name()).get());
         }
         return genres;
     }
@@ -57,7 +57,7 @@ public class GenreService implements TMDBLogically<MediaType, List<Genre>>
         List<Genre> list = new ArrayList<>();
         for(GenresResponse.Genre genre : genres)
         {
-            list.add(this.genreRepository.findGenresByIdAndType(genre.getId(), type.name()));
+            list.add(this.genreRepository.findGenresByIdAndType(genre.getId(), type.name()).get());
         }
         return list;
     }
@@ -68,7 +68,7 @@ public class GenreService implements TMDBLogically<MediaType, List<Genre>>
         List<Genre> convertedGenres = new ArrayList<>();
         for(GenresResponse.Genre g : this.service.getGenres(type).getGenres())
         {
-            Genre genre = new Genre();
+            Genre genre = this.genreRepository.findGenresByIdAndType(g.getId(), type.name()).orElse(new Genre());
             genre.setType(type);
             genre.setId(g.getId());
             genre.setName(g.getName());

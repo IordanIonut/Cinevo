@@ -1,10 +1,12 @@
 package com.cinovo.backend.TMDB;
 
+import com.cinovo.backend.DB.Model.Media;
 import com.cinovo.backend.Enum.MediaType;
 import com.cinovo.backend.TMDB.Response.*;
 import com.cinovo.backend.TMDB.Response.Common.*;
 import org.springframework.stereotype.Component;
 
+import java.util.Date;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -86,7 +88,7 @@ public class Service
         return this.client.getCreditsDetails(id);
     }
 
-    public RecommendationMovieResponse getDiscoverMovie() throws Exception
+    public SearchResponse getDiscoverMovie() throws Exception
     {
         return this.client.getDiscoverMovie();
     }
@@ -163,27 +165,28 @@ public class Service
         return this.client.getMovieDetails(id, map);
     }
 
-    public MovieExternalIdsResponse getMovieExternalIds(final Integer id) throws Exception
+    public MediaExternalIdResponse getMovieExternalIds(final Integer id) throws Exception
     {
         return this.client.getMovieExternalIds(id);
     }
 
-    public MovieImagesResponse getMovieImages(final Integer id) throws Exception
+    public MediaImagesResponse getMovieImages(final Integer id) throws Exception
     {
         return this.client.getMovieImages(id);
     }
 
-    public MovieKeywordResponse getKeywordMovie(final Integer id) throws Exception
+    public MediaKeywordResponse getKeywordMovie(final Integer id) throws Exception
     {
         return this.client.getKeywordMovie(id);
     }
 
-    public RecommendationMovieResponse getMovieRecommendation(final Integer id, final String language, final Integer page) throws Exception
+    public SearchResponse<MediaResponse> getMediaRecommendation(final Integer id, final MediaType type, final String language, final Integer page)
+            throws Exception
     {
         HashMap<String, String> map = new HashMap<>();
         map.put("language", language);
         map.put("page", page + "");
-        return this.client.getMovieRecommendation(id, map);
+        return this.client.getMediaRecommendation(id, type, map);
     }
 
     public MovieReleaseDateResponse getMovieReleaseDate(final Integer id) throws Exception
@@ -191,24 +194,28 @@ public class Service
         return this.client.getMovieReleaseDate(id);
     }
 
-    public RecommendationMovieResponse getMovieSimilar(final Integer id, final String language, final Integer page) throws Exception
+    public SearchResponse<MediaResponse> getMediaSimilar(final Integer id, final MediaType type, final String language, final Integer page)
+            throws Exception
     {
         HashMap<String, String> map = new HashMap<>();
         map.put("language", language);
         map.put("page", page + "");
-        return this.client.getMovieSimilar(id, map);
+        return this.client.getMediaSimilar(id, type, map);
     }
 
-    public MovieVideoResponse getMovieVideo(final Integer id, final String language) throws Exception
+    public MediaVideoResponse getMediaVideo(final Integer id, final MediaType type, final String include_video_language, final String language)
+            throws Exception
     {
         HashMap<String, String> map = new HashMap<>();
         map.put("language", language);
-        return this.client.getMovieVideo(id, map);
+        map.put("include_video_language", include_video_language);
+
+        return this.client.getMediaVideo(id, type, map);
     }
 
-    public MovieWatchProvidersResponse getMovieWatchProvider(final Integer id) throws Exception
+    public MediaWatchProvidersResponse getMediaWatchProvider(final Integer id, final MediaType type) throws Exception
     {
-        return this.client.getMovieWatchProvider(id);
+        return this.client.getMediaWatchProvider(id, type);
     }
 
     public NetworkDetailResponse getNetworkDetail(final Integer id) throws Exception
@@ -330,7 +337,8 @@ public class Service
         return this.client.getSearchPeopleResponse(map);
     }
 
-    public SearchResponse<MediaResponse> getTrendingMediaResponse(final MediaType type, final String time_window, final String language) throws Exception
+    public SearchResponse<MediaResponse> getTrendingMediaResponse(final MediaType type, final String time_window, final String language)
+            throws Exception
     {
         HashMap<String, String> map = new HashMap<>();
         map.put("language", language);
@@ -353,5 +361,120 @@ public class Service
         map.put("language", language);
 
         return this.client.getTvDetails(id, map);
+    }
+
+    public CreditResponse getTvAggregateCredits(final Integer id, final String language) throws Exception
+    {
+        HashMap<String, String> map = new HashMap<>();
+        map.put("language", language);
+
+        return this.client.getTvAggregateCredits(id, map);
+    }
+
+    public MediaExternalIdResponse getTvExternalIds(final Integer id) throws Exception
+    {
+        return this.client.getTvExternalIds(id);
+    }
+
+    public MediaImagesResponse getTvImages(final Integer id, final String include_image_language, final String language) throws Exception
+    {
+        HashMap<String, String> map = new HashMap<>();
+        map.put("include_image_language", include_image_language);
+        map.put("language", language);
+
+        return this.client.getTvImages(id, map);
+    }
+
+    public MediaKeywordResponse getTvKeyword(final Integer id) throws Exception
+    {
+        return this.client.getTvKeyword(id);
+    }
+
+    public TvSeasonDetailsResponse getTvSeasonDetails(final Integer series_id, final Integer series_number, final String append_to_response,
+            final String language) throws Exception
+    {
+        HashMap<String, String> map = new HashMap<>();
+        map.put("append_to_response", append_to_response);
+        map.put("language", language);
+
+        return this.client.getTvSeasonDetails(series_id, series_number, map);
+    }
+
+    public CreditResponse getTvSeasonCredit(final Integer series_id, final Integer series_number, final String language) throws Exception
+    {
+        HashMap<String, String> map = new HashMap<>();
+        map.put("language", language);
+
+        return this.client.getTvSeasonCredit(series_id, series_number, map);
+    }
+
+    public MediaExternalIdResponse getTvSeasonExternalId(final Integer series_id, final Integer series_number) throws Exception
+    {
+        return this.client.getTvSeasonExternalId(series_id, series_number);
+    }
+
+    public MediaWatchProvidersResponse getTvSeasonMediaWatchProvider(final Integer series_id, final Integer series_number, final String language)
+            throws Exception
+    {
+        HashMap<String, String> map = new HashMap<>();
+        map.put("language", language);
+
+        return this.client.getTvSeasonMediaWatchProvider(series_id, series_number, map);
+    }
+
+    public MediaVideoResponse getTvSeasonMediaVideo(final Integer series_id, final Integer series_number, final String include_video_language,
+            final String language) throws Exception
+    {
+        HashMap<String, String> map = new HashMap<>();
+        map.put("include_video_language", include_video_language);
+        map.put("language", language);
+
+        return this.client.getTvSeasonMediaVideo(series_id, series_number, map);
+    }
+
+    public MediaImagesResponse getTvSeasonMediaImage(final Integer series_id, final Integer series_number, final String include_video_language,
+            final String language) throws Exception
+    {
+        HashMap<String, String> map = new HashMap<>();
+        map.put("include_video_language", include_video_language);
+        map.put("language", language);
+
+        return this.client.getTvSeasonMediaImage(series_id, series_number, map);
+    }
+
+    public MediaExternalIdResponse getTvSeasonEpisodeExternal(final Integer series_id, final Integer season_number, final Integer episode_number)
+            throws Exception
+    {
+        return this.client.getTvSeasonEpisodeExternal(series_id, season_number, episode_number);
+    }
+
+    public MediaImagesResponse getTvSeasonEpisodeImage(final Integer series_id, final Integer season_number, final Integer episode_number,
+            final String include_image_language, final String language) throws Exception
+    {
+        HashMap<String, String> map = new HashMap<>();
+        map.put("include_image_language", include_image_language);
+        map.put("language", language);
+
+        return this.client.getTvSeasonEpisodeImage(series_id, season_number, episode_number, map);
+    }
+
+    public MediaVideoResponse getTvSeasonEpisodeVideo(final Integer series_id, final Integer season_number, final Integer episode_number,
+            final String include_image_language, final String language) throws Exception
+    {
+        HashMap<String, String> map = new HashMap<>();
+        map.put("include_image_language", include_image_language);
+        map.put("language", language);
+
+        return this.client.getTvSeasonEpisodeVideo(series_id, season_number, episode_number, map);
+    }
+
+    public ChangesResponse getChangeResponse(final MediaType type, final Date end_date, final Integer page, final Date start_date) throws Exception
+    {
+        HashMap<String, String> map = new HashMap<>();
+        map.put("end_date", end_date == null ? null : end_date.toString());
+        map.put("page", page+"");
+        map.put("start_date", start_date == null ? null : start_date.toString());
+
+        return this.client.getChangeResponse(type, map);
     }
 }

@@ -1,5 +1,6 @@
 package com.cinovo.backend.DB.Repository;
 
+import com.cinovo.backend.DB.Model.Media;
 import com.cinovo.backend.DB.Model.Person;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;

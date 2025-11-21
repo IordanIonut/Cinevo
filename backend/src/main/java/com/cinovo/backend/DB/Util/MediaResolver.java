@@ -1,0 +1,109 @@
+package com.cinovo.backend.DB.Util;
+
+import com.cinovo.backend.DB.Model.Media;
+import com.cinovo.backend.DB.Service.*;
+import com.cinovo.backend.Enum.MediaType;
+import lombok.extern.jbosslog.JBossLog;
+import org.springframework.context.annotation.Lazy;
+import org.springframework.scheduling.annotation.Async;
+import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Isolation;
+import org.springframework.transaction.annotation.Transactional;
+
+import java.util.ArrayList;
+import java.util.List;
+
+@JBossLog
+@Service
+public class MediaResolver
+{
+    private final MediaService mediaService;
+    private final CreditService creditService;
+    private final VideoService videoService;
+    private final WatchProviderService watchProviderService;
+    private final ImageService imageService;
+
+    public MediaResolver(@Lazy MediaService mediaService, CreditService creditService, VideoService videoService,
+            WatchProviderService watchProviderService, ImageService imageService)
+    {
+        this.mediaService = mediaService;
+        this.creditService = creditService;
+        this.videoService = videoService;
+        this.imageService = imageService;
+        this.watchProviderService = watchProviderService;
+    }
+
+    public static Media resolveMedia(final MediaService mediaService, final String[] parts) throws Exception
+    {
+        MediaType type = MediaType.valueOf(parts[0]);
+        if(type == MediaType.TV_SEASON || type == MediaType.TV_EPISODE)
+        {
+            return null;
+        }
+        return mediaService.getMediaByIdAndType(Shared.onStringParseToInteger(parts[1]), type);
+    }
+
+    public static Media.Season resolveSeason(final MediaService mediaService, final String[] parts) throws Exception
+    {
+        if(MediaType.valueOf(parts[0]) != MediaType.TV_SEASON)
+        {
+            return null;
+        }
+        return mediaService.getSeasonByMediaIdAndSeasonNumber(Shared.onStringParseToInteger(parts[1]), Shared.onStringParseToInteger(parts[2]));
+    }
+
+    public static Media.Season.Episode resolveEpisode(final MediaService mediaService, final String[] parts) throws Exception
+    {
+        if(MediaType.valueOf(parts[0]) != MediaType.TV_EPISODE)
+        {
+            return null;
+        }
+        return mediaService.getEpisodeByMediaIdAndSeasonNumberAndEpisode(Shared.onStringParseToInteger(parts[1]),
+                Shared.onStringParseToInteger(parts[2]), Shared.onStringParseToInteger(parts[3]));
+    }
+
+    @Async
+    @Transactional(isolation = Isolation.READ_COMMITTED)
+    public void generateDateAsync(final Integer media_id, final MediaType type) throws Exception
+    {
+        Media media = mediaService.getMediaByIdAndType(media_id, type);
+        media.setImages(imageService.findImageByMediaIdAndMediaType(media_id, media.getType()));
+        media.setVideos(videoService.findVideosByMovieIdAndMediaType(media_id, media.getType()));
+        media.setWatch_providers(watchProviderService.findWatchProviderByMediaIdAndType(media_id, media.getType()));
+        mediaService.saveAndUpdate(media);
+
+        if(media.getSeasons() != null)
+        {
+            List<Media.Season> seasons = new ArrayList<>();
+            for(Media.Season season : media.getSeasons())
+            {
+                Media.Season ses = mediaService.getSeasonById(season.getId());
+                ses.setWatch_providers(
+                        watchProviderService.findWatchProviderBySeasonIdAndType(media.getId(), season.getSeason_number(), MediaType.TV_SEASON));
+                ses.setVideos(videoService.findVideosBySeriesIdAndMediaType(media.getId(), season.getSeason_number(), MediaType.TV_SEASON));
+                ses.setImages(imageService.findImageBySeasonIdAndSeasonNumber(media.getId(), season.getSeason_number(), MediaType.TV_SEASON));
+
+                List<Media.Season.Episode> episodes = new ArrayList<>();
+                for(Media.Season.Episode episode : ses.getEpisodes())
+                {
+                    Media.Season.Episode epi = mediaService.findEpisodeById(episode.getId());
+                    epi.setVideos(videoService.findVideoBySeriesIdAndSeasonNumberAndEpisodeAndMediaType(media.getId(), ses.getSeason_number(),
+                            episode.getEpisode_number(), MediaType.TV_EPISODE));
+                    epi.setImages(imageService.findImageBySeasonIdAndSeasonNumberAndEpisodeAndMediaType(media.getId(), ses.getSeason_number(),
+                            episode.getEpisode_number(), MediaType.TV_EPISODE));
+
+                    episodes.add(epi);
+                }
+
+                ses.setEpisodes(episodes);
+                seasons.add(ses);
+            }
+            media.setSeasons(seasons);
+        }
+
+        mediaService.saveAndUpdate(media);
+        media.setCredits(creditService.findCreditByMediaIdAndType(media_id, type));
+
+        mediaService.saveAndUpdate(media);
+    }
+}

@@ -18,7 +18,8 @@ import java.util.List;
 @AllArgsConstructor
 @Getter
 @Setter
-public class CreditDetails extends BaseEntity {
+public class CreditDetails extends BaseEntity
+{
     @Column(name = "ID", length = 64, nullable = true)
     private String id;
 
@@ -35,13 +36,13 @@ public class CreditDetails extends BaseEntity {
     @Enumerated(EnumType.STRING)
     private MediaType type;
 
-    @OneToOne(cascade = CascadeType.ALL, fetch = FetchType.LAZY, orphanRemoval = true)
+    @OneToOne(fetch = FetchType.LAZY, orphanRemoval = true)
     @JoinColumn(name = "PERSON_ID")
     @JsonManagedReference
     @JsonIgnoreProperties("hibernateLazyInitializer")
     private Person person;
 
-    @OneToOne(cascade = CascadeType.ALL, fetch = FetchType.LAZY, orphanRemoval = true)
+    @OneToOne(fetch = FetchType.LAZY, orphanRemoval = true)
     @JoinColumn(name = "MEDIA_ID")
     @JsonManagedReference
     @JsonIgnoreProperties("hibernateLazyInitializer")
@@ -54,7 +55,8 @@ public class CreditDetails extends BaseEntity {
     @AllArgsConstructor
     @Getter
     @Setter
-    public static class Media extends BaseEntity {
+    public static class Media extends BaseEntity
+    {
         @Column(name = "ADULT")
         private Boolean adult;
 
@@ -67,7 +69,7 @@ public class CreditDetails extends BaseEntity {
         @Column(name = "ORIGINAL_NAME")
         private String original_name;
 
-        @Column(name = "OVERVIEW", columnDefinition="TEXT")
+        @Column(name = "OVERVIEW", columnDefinition = "TEXT")
         private String overview;
 
         @Column(name = "BACKDROP_PATH")
@@ -84,11 +86,8 @@ public class CreditDetails extends BaseEntity {
         private String original_language;
 
         @ManyToMany
-        @JoinTable(
-                name = "DETAIL_GENRE",
-                joinColumns = @JoinColumn(name = "DETAIL_ID"),
-                inverseJoinColumns = @JoinColumn(name = "GENRE_ID")
-        )
+        @JoinTable(name = "DETAIL_GENRE", joinColumns = @JoinColumn(name = "DETAIL_ID", referencedColumnName = "CINEVO_ID"),
+                inverseJoinColumns = @JoinColumn(name = "GENRE_ID", referencedColumnName = "CINEVO_ID"))
         private List<Genre> genres;
 
         @Column(name = "POPULARITY")
@@ -113,14 +112,13 @@ public class CreditDetails extends BaseEntity {
         @JsonBackReference
         private CreditDetails credit_details;
 
-        @OneToMany(mappedBy = "media", cascade = CascadeType.ALL, fetch = FetchType.LAZY)
+        @OneToMany(mappedBy = "media", fetch = FetchType.LAZY)
         @JsonManagedReference
         private List<CreditDetails.Media.Episode> episodes;
 
-        @OneToMany(mappedBy = "media", cascade = CascadeType.ALL, fetch = FetchType.LAZY)
+        @OneToMany(mappedBy = "media", fetch = FetchType.LAZY)
         @JsonManagedReference
         private List<CreditDetails.Media.Season> seasons;
-
 
         @Data
         @Entity
@@ -129,7 +127,8 @@ public class CreditDetails extends BaseEntity {
         @AllArgsConstructor
         @Getter
         @Setter
-        public static class Episode extends BaseEntity {
+        public static class Episode extends BaseEntity
+        {
             @Column(name = "ID")
             private Integer id;
 
@@ -186,7 +185,8 @@ public class CreditDetails extends BaseEntity {
         @AllArgsConstructor
         @Getter
         @Setter
-        public static class Season extends BaseEntity {
+        public static class Season extends BaseEntity
+        {
             @Column(name = "ID")
             private Integer id;
 
@@ -232,7 +232,8 @@ public class CreditDetails extends BaseEntity {
     @AllArgsConstructor
     @Getter
     @Setter
-    public static class Person extends BaseEntity {
+    public static class Person extends BaseEntity
+    {
         @Column(name = "TYPE")
         @Enumerated(EnumType.STRING)
         private MediaType media_type;
@@ -242,7 +243,7 @@ public class CreditDetails extends BaseEntity {
         private CreditDetails credit_details;
 
         @OneToOne(fetch = FetchType.LAZY)
-        @JoinColumn(name = "PERSON_ID",referencedColumnName = "CINEVO_ID")
+        @JoinColumn(name = "PERSON_ID", referencedColumnName = "CINEVO_ID")
         private com.cinovo.backend.DB.Model.Person person;
     }
 

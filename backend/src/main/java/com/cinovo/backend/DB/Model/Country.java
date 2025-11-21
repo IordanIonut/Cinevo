@@ -16,7 +16,8 @@ import java.util.List;
 @NoArgsConstructor
 @Getter
 @Setter
-public class Country extends BaseEntity {
+public class Country extends BaseEntity
+{
     @Column(name = "CODE")
     private String code;
 
@@ -24,7 +25,7 @@ public class Country extends BaseEntity {
     @Enumerated(EnumType.STRING)
     private MediaType type;
 
-    @OneToMany(mappedBy = "country", cascade = CascadeType.ALL)
+    @OneToMany(mappedBy = "country")
     @JsonManagedReference
     private List<Certification> certifications;
 
@@ -40,7 +41,8 @@ public class Country extends BaseEntity {
     @NoArgsConstructor
     @Getter
     @Setter
-    public static class Certification extends BaseEntity {
+    public static class Certification extends BaseEntity
+    {
         @Column(name = "CERTIFICATION")
         private String certification;
 
@@ -54,6 +56,10 @@ public class Country extends BaseEntity {
         @JoinColumn(name = "COUNTRY_CINEVO_ID", referencedColumnName = "CINEVO_ID")
         @JsonBackReference
         private Country country;
+
+        public final static String TABLE_AS = "certification";
+        public final static String TABLE_NAME = "CERTIFICATION ";
+        public final static String COUNTRY_CINEVO_ID = TABLE_AS + ".COUNTRY_CINEVO_ID";
     }
 
 }

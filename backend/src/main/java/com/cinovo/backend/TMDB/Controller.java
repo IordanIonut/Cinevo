@@ -1,13 +1,18 @@
 package com.cinovo.backend.TMDB;
 
+import com.cinovo.backend.DB.Model.CreditDetails;
+import com.cinovo.backend.DB.Service.MediaService;
 import com.cinovo.backend.Enum.MediaType;
 import com.cinovo.backend.TMDB.Response.*;
 import com.cinovo.backend.TMDB.Response.Common.*;
+import lombok.Getter;
 import lombok.extern.jbosslog.JBossLog;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
+
+import java.util.Date;
 
 @CrossOrigin
 @RestController
@@ -15,8 +20,14 @@ import org.springframework.web.bind.annotation.*;
 @JBossLog
 public class Controller
 {
-    @Autowired
-    private Service service;
+    private final Service service;
+    private final MediaService mediaService;
+
+    public Controller(Service service, MediaService mediaService)
+    {
+        this.service = service;
+        this.mediaService = mediaService;
+    }
 
     @GetMapping("/get/genre/by")
     public ResponseEntity<GenresResponse> getGenreByType(@RequestParam("type") final MediaType type)
@@ -215,7 +226,7 @@ public class Controller
     }
 
     @GetMapping("/get/discover/movie")
-    public ResponseEntity<RecommendationMovieResponse> getDiscoverMovie()
+    public ResponseEntity<SearchResponse<MediaResponse>> getDiscoverMovie()
     {
         try
         {
@@ -377,7 +388,7 @@ public class Controller
     }
 
     @GetMapping("/get/movie/external_ids/{id}")
-    public ResponseEntity<MovieExternalIdsResponse> getMovieExternalIds(@PathVariable final Integer id)
+    public ResponseEntity<MediaExternalIdResponse> getMovieExternalIds(@PathVariable final Integer id)
     {
         try
         {
@@ -392,7 +403,7 @@ public class Controller
     }
 
     @GetMapping("/get/movie/images/{id}")
-    public ResponseEntity<MovieImagesResponse> getMovieImages(@PathVariable final Integer id)
+    public ResponseEntity<MediaImagesResponse> getMovieImages(@PathVariable final Integer id)
     {
         try
         {
@@ -407,7 +418,7 @@ public class Controller
     }
 
     @GetMapping("/get/movie/keywords/{id}")
-    public ResponseEntity<MovieKeywordResponse> getKeywordMovie(@PathVariable final Integer id)
+    public ResponseEntity<MediaKeywordResponse> getKeywordMovie(@PathVariable final Integer id)
     {
         try
         {
@@ -422,18 +433,19 @@ public class Controller
     }
 
     @GetMapping("get/movie/recommendation/{id}")
-    public ResponseEntity<RecommendationMovieResponse> getMovieRecommendation(@PathVariable final Integer id,
+    public ResponseEntity<SearchResponse<MediaResponse>> getMediaRecommendation(@PathVariable final Integer id,
+            @RequestParam(value = "type", required = true) final MediaType type,
             @RequestParam(value = "language", defaultValue = "en-US") final String language,
             @RequestParam(value = "page", defaultValue = "1") final Integer page)
     {
         try
         {
-            log.info("getMovieRecommendation() - Successful.....");
-            return ResponseEntity.ok(this.service.getMovieRecommendation(id, language, page));
+            log.info("getMediaRecommendation() - Successful.....");
+            return ResponseEntity.ok(this.service.getMediaRecommendation(id, type, language, page));
         }
         catch(Exception e)
         {
-            log.error("Error in getMovieRecommendation: {}", e.getMessage(), e);
+            log.error("Error in getMediaRecommendation: {}", e.getMessage(), e);
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).build();
         }
     }
@@ -454,30 +466,33 @@ public class Controller
     }
 
     @GetMapping("get/movie/similar/{id}")
-    public ResponseEntity<RecommendationMovieResponse> getMovieSimilar(@PathVariable final Integer id,
+    public ResponseEntity<SearchResponse<MediaResponse>> getMediaSimilar(@PathVariable final Integer id,
+            @RequestParam(value = "type", required = true) final MediaType type,
             @RequestParam(value = "language", defaultValue = "en-US") final String language,
             @RequestParam(value = "page", defaultValue = "1") final Integer page)
     {
         try
         {
-            log.info("getMovieSimilar() - Successful.....");
-            return ResponseEntity.ok(this.service.getMovieSimilar(id, language, page));
+            log.info("getMediaSimilar() - Successful.....");
+            return ResponseEntity.ok(this.service.getMediaSimilar(id, type, language, page));
         }
         catch(Exception e)
         {
-            log.error("Error in getMovieSimilar: {}", e.getMessage(), e);
+            log.error("Error in getMediaSimilar: {}", e.getMessage(), e);
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).build();
         }
     }
 
-    @GetMapping("get/movie/video/{id}")
-    public ResponseEntity<MovieVideoResponse> getMovieVideo(@PathVariable final Integer id,
-            @RequestParam(value = "language", defaultValue = "en-US") final String language)
+    @GetMapping("get/media/video/{id}")
+    public ResponseEntity<MediaVideoResponse> getMediaVideo(@PathVariable final Integer id,
+            @RequestParam(value = "type", required = true) final MediaType type,
+            @RequestParam(value = "language", defaultValue = "en-US") final String language,
+            @RequestParam(value = "include_video_language", required = false) final String include_video_language)
     {
         try
         {
-            log.info("getMovieVideo() - Successful.....");
-            return ResponseEntity.ok(this.service.getMovieVideo(id, language));
+            log.info("getMediaVideo() - Successful.....");
+            return ResponseEntity.ok(this.service.getMediaVideo(id, type, language, include_video_language));
         }
         catch(Exception e)
         {
@@ -487,12 +502,13 @@ public class Controller
     }
 
     @GetMapping("get/movie/watch/provider/{id}")
-    public ResponseEntity<MovieWatchProvidersResponse> getMovieWatchProvider(@PathVariable final Integer id)
+    public ResponseEntity<MediaWatchProvidersResponse> getMediaWatchProvider(@PathVariable final Integer id,
+            @RequestParam(value = "type", required = true) final MediaType type)
     {
         try
         {
-            log.info("getMovieWatchProvider() - Successful.....");
-            return ResponseEntity.ok(this.service.getMovieWatchProvider(id));
+            log.info("getMediaWatchProvider() - Successful.....");
+            return ResponseEntity.ok(this.service.getMediaWatchProvider(id, type));
         }
         catch(Exception e)
         {
@@ -748,7 +764,8 @@ public class Controller
     }
 
     @GetMapping("get/trending/media")
-    public ResponseEntity<SearchResponse<MediaResponse>> getTrendingMediaResponse(@RequestParam(value = "type", required = false) final MediaType type,
+    public ResponseEntity<SearchResponse<MediaResponse>> getTrendingMediaResponse(
+            @RequestParam(value = "type", required = false) final MediaType type,
             @RequestParam(value = "time_window", required = true) final String time_window,
             @RequestParam(value = "language", defaultValue = "en-US") final String language)
     {
@@ -794,6 +811,252 @@ public class Controller
         catch(Exception e)
         {
             log.error("Error in getTvDetails: {}", e.getMessage(), e);
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).build();
+        }
+    }
+
+    @GetMapping("get/tv/aggregate/credit/{id}")
+    public ResponseEntity<CreditResponse> getTvAggregateCredits(@PathVariable final Integer id,
+            @RequestParam(value = "language", defaultValue = "en-US") final String language)
+    {
+        try
+        {
+            log.info("getTvAggregateCredits() - Successful.....");
+            return ResponseEntity.ok(this.service.getTvAggregateCredits(id, language));
+        }
+        catch(Exception e)
+        {
+            log.error("Error in getTvAggregateCredits: {}", e.getMessage(), e);
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).build();
+        }
+    }
+
+    @GetMapping("get/tv/external/{id}")
+    public ResponseEntity<MediaExternalIdResponse> getTvExternalIds(@PathVariable final Integer id)
+    {
+        try
+        {
+            log.info("getTvExternalIds() - Successful.....");
+            return ResponseEntity.ok(this.service.getTvExternalIds(id));
+        }
+        catch(Exception e)
+        {
+            log.error("Error in getTvExternalIds: {}", e.getMessage(), e);
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).build();
+        }
+    }
+
+    @GetMapping("get/tv/images/{id}")
+    public ResponseEntity<MediaImagesResponse> getTvImages(@PathVariable final Integer id,
+            @RequestParam(value = "include_image_language", required = false) final String include_image_language,
+            @RequestParam(value = "language", required = false) final String language)
+    {
+        try
+        {
+            log.info("getTvImages() - Successful.....");
+            return ResponseEntity.ok(this.service.getTvImages(id, include_image_language, language));
+        }
+        catch(Exception e)
+        {
+            log.error("Error in getTvImages: {}", e.getMessage(), e);
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).build();
+        }
+    }
+
+    @GetMapping("get/tv/keyword/{id}")
+    public ResponseEntity<MediaKeywordResponse> getTvKeyword(@PathVariable final Integer id)
+    {
+        try
+        {
+            log.info("getTvKeyword() - Successful.....");
+            return ResponseEntity.ok(this.service.getTvKeyword(id));
+        }
+        catch(Exception e)
+        {
+            log.error("Error in getTvKeyword: {}", e.getMessage(), e);
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).build();
+        }
+    }
+
+    @GetMapping("get/tv/season/details/{series_id}/{series_number}")
+    public ResponseEntity<TvSeasonDetailsResponse> getTvSeasonDetails(@PathVariable final Integer series_id,
+            @PathVariable final Integer series_number, @RequestParam(value = "append_to_response", required = false) final String append_to_response,
+            @RequestParam(value = "language", defaultValue = "en-US") final String language)
+    {
+        try
+        {
+            log.info("getTvSeasonDetails() - Successful.....");
+            return ResponseEntity.ok(this.service.getTvSeasonDetails(series_id, series_number, append_to_response, language));
+        }
+        catch(Exception e)
+        {
+            log.error("Error in getTvSeasonDetails: {}", e.getMessage(), e);
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).build();
+        }
+    }
+
+    @GetMapping("get/tv/season/credits/{series_id}/{series_number}")
+    public ResponseEntity<CreditResponse> getTvSeasonCredit(@PathVariable final Integer series_id, @PathVariable final Integer series_number,
+            @RequestParam(value = "language", defaultValue = "en-US") final String language)
+    {
+        try
+        {
+            log.info("getTvSeasonCredit() - Successful.....");
+            return ResponseEntity.ok(this.service.getTvSeasonCredit(series_id, series_number, language));
+        }
+        catch(Exception e)
+        {
+            log.error("Error in getTvSeasonCredit: {}", e.getMessage(), e);
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).build();
+        }
+    }
+
+    @GetMapping("get/tv/season/externalId/{series_id}/{series_number}")
+    public ResponseEntity<MediaExternalIdResponse> getTvSeasonExternalId(@PathVariable final Integer series_id,
+            @PathVariable final Integer series_number)
+    {
+        try
+        {
+            log.info("getTvSeasonExternalId() - Successful.....");
+            return ResponseEntity.ok(this.service.getTvSeasonExternalId(series_id, series_number));
+        }
+        catch(Exception e)
+        {
+            log.error("Error in getTvSeasonExternalId: {}", e.getMessage(), e);
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).build();
+        }
+    }
+
+    @GetMapping("get/tv/season/watch/provider/{series_id}/{series_number}")
+    public ResponseEntity<MediaWatchProvidersResponse> getTvSeasonMediaWatchProvider(@PathVariable final Integer series_id,
+            @PathVariable final Integer series_number, @RequestParam(value = "language", defaultValue = "en-US") final String language)
+    {
+        try
+        {
+            log.info("getTvSeasonMediaWatchProvider() - Successful.....");
+            return ResponseEntity.ok(this.service.getTvSeasonMediaWatchProvider(series_id, series_number, language));
+        }
+        catch(Exception e)
+        {
+            log.error("Error in getTvSeasonMediaWatchProvider: {}", e.getMessage(), e);
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).build();
+        }
+    }
+
+    @GetMapping("get/tv/season/video/{series_id}/{season_number}")
+    public ResponseEntity<MediaVideoResponse> getTvSeasonMediaVideo(@PathVariable final Integer series_id, @PathVariable final Integer season_number,
+            @RequestParam(value = "include_video_language", required = false) final String include_video_language,
+            @RequestParam(value = "language", defaultValue = "en-US") final String language)
+    {
+        try
+        {
+            log.info("getTvSeasonMediaVideo() - Successful.....");
+            return ResponseEntity.ok(this.service.getTvSeasonMediaVideo(series_id, season_number, include_video_language, language));
+        }
+        catch(Exception e)
+        {
+            log.error("Error in getTvSeasonMediaVideo: {}", e.getMessage(), e);
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).build();
+        }
+    }
+
+    @GetMapping("get/tv/season/image/{series_id}/{season_number}")
+    public ResponseEntity<MediaImagesResponse> getTvSeasonMediaImage(@PathVariable final Integer series_id, @PathVariable final Integer season_number,
+            @RequestParam(value = "include_video_language", required = false) final String include_video_language,
+            @RequestParam(value = "language", defaultValue = "en-US") final String language)
+    {
+        try
+        {
+            log.info("getTvSeasonMediaImage() - Successful.....");
+            return ResponseEntity.ok(this.service.getTvSeasonMediaImage(series_id, season_number, include_video_language, language));
+        }
+        catch(Exception e)
+        {
+            log.error("Error in getTvSeasonMediaImage: {}", e.getMessage(), e);
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).build();
+        }
+    }
+
+    @GetMapping("get/tv/season/episode/external_ids/{series_id}/{season_number}/{episode_number}")
+    public ResponseEntity<MediaExternalIdResponse> getTvSeasonEpisodeExternal(@PathVariable final Integer series_id,
+            @PathVariable final Integer season_number, @PathVariable final Integer episode_number)
+    {
+        try
+        {
+            log.info("getTvSeasonEpisodeExternal() - Successful.....");
+            return ResponseEntity.ok(this.service.getTvSeasonEpisodeExternal(series_id, season_number, episode_number));
+        }
+        catch(Exception e)
+        {
+            log.error("Error in getTvSeasonEpisodeExternal: {}", e.getMessage(), e);
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).build();
+        }
+    }
+
+    @GetMapping("get/tv/season/episode/images/{series_id}/{season_number}/{episode_number}")
+    public ResponseEntity<MediaImagesResponse> getTvSeasonEpisodeImage(@PathVariable final Integer series_id,
+            @PathVariable final Integer season_number, @PathVariable final Integer episode_number,
+            @RequestParam(name = "include_image_language", required = false) final String include_image_language,
+            @RequestParam(name = "language", required = false) final String language)
+    {
+        try
+        {
+            log.info("getTvSeasonEpisodeImage() - Successful.....");
+            return ResponseEntity.ok(
+                    this.service.getTvSeasonEpisodeImage(series_id, season_number, episode_number, include_image_language, language));
+        }
+        catch(Exception e)
+        {
+            log.error("Error in getTvSeasonEpisodeImage: {}", e.getMessage(), e);
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).build();
+        }
+    }
+
+    @GetMapping("get/tv/season/episode/videos/{series_id}/{season_number}/{episode_number}")
+    public ResponseEntity<MediaVideoResponse> getTvSeasonEpisodeVideo(@PathVariable final Integer series_id,
+            @PathVariable final Integer season_number, @PathVariable final Integer episode_number,
+            @RequestParam(name = "include_image_language", required = false) final String include_image_language,
+            @RequestParam(name = "language", required = false) final String language)
+    {
+        try
+        {
+            log.info("getTvSeasonEpisodeVideo() - Successful.....");
+            return ResponseEntity.ok(
+                    this.service.getTvSeasonEpisodeVideo(series_id, season_number, episode_number, include_image_language, language));
+        }
+        catch(Exception e)
+        {
+            log.error("Error in getTvSeasonEpisodeVideo: {}", e.getMessage(), e);
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).build();
+        }
+    }
+
+    @GetMapping("get/change/{type}")
+    public ResponseEntity<ChangesResponse> getChangeResponse(@PathVariable final MediaType type,
+            @RequestParam(name = "end_date", required = false) final Date end_date,
+            @RequestParam(name = "page", defaultValue = "1") final Integer page,
+            @RequestParam(name = "start_date", required = false) final Date start_date)
+    {
+        try
+        {
+            log.info("getChangeResponse() - Successful.....");
+            int count = 0;
+            ChangesResponse changesResponse = new ChangesResponse();
+            do
+            {
+                count++;
+                changesResponse = this.service.getChangeResponse(MediaType.MOVIE, null, page, null);
+                for(ChangesResponse.Change change : changesResponse.getResults())
+                {
+                    this.mediaService.getMediaByIdAndType(change.getId(), type);
+                }
+            }
+            while(count == 1);
+            return ResponseEntity.ok(this.service.getChangeResponse(type, end_date, page, start_date));
+        }
+        catch(Exception e)
+        {
+            log.error("Error in getChangeResponse: {}", e.getMessage(), e);
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).build();
         }
     }

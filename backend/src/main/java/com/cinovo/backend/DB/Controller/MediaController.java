@@ -21,12 +21,13 @@ public class MediaController
     private MediaService mediaService;
 
     @GetMapping("/get/recommendation/{id}")
-    public ResponseEntity<List<Media>> findMediaByRecommendation(@PathVariable final Integer id)
+    public ResponseEntity<List<Media>> findRecommendationByIdAndType(@PathVariable final Integer id,
+            @RequestParam(value = "type", required = true) final MediaType type)
     {
         try
         {
-            log.info("findMediaByRecommendation() - Successful.....");
-            return ResponseEntity.ok(this.mediaService.findMediaByRecommendation(id));
+            log.info("findRecommendationByIdAndType() - Successful.....");
+            return ResponseEntity.ok(this.mediaService.findRecommendationByIdAndType(id, type));
         }
         catch(Exception e)
         {
@@ -36,12 +37,13 @@ public class MediaController
     }
 
     @GetMapping("/get/similar/{id}")
-    public ResponseEntity<List<Media>> findMediaBySimilar(@PathVariable final Integer id)
+    public ResponseEntity<List<Media>> findMediaBySimilar(@PathVariable final Integer id,
+            @RequestParam(value = "type", required = true) final MediaType type)
     {
         try
         {
             log.info("findMediaBySimilar() - Successful.....");
-            return ResponseEntity.ok(this.mediaService.findMediaBySimilar(id));
+            return ResponseEntity.ok(this.mediaService.findMediaBySimilar(id, type));
         }
         catch(Exception e)
         {

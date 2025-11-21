@@ -9,6 +9,7 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import lombok.extern.jbosslog.JBossLog;
 import org.springframework.stereotype.Component;
 
+import javax.print.attribute.HashPrintJobAttributeSet;
 import java.net.http.HttpResponse;
 import java.util.HashMap;
 import java.util.Map;
@@ -28,6 +29,9 @@ public class Client extends AbstractHttpClient
     private final String SEARCH = "search";
     private final String TRENDING = "trending";
     private final String TV = "tv";
+    private final String SEASON = "season";
+    private final String EPISODE = "episode";
+    private final String CHANGES = "changes";
 
     public Client(ApiProperties apiProperties)
     {
@@ -100,9 +104,9 @@ public class Client extends AbstractHttpClient
         return this.generateGetCall("credit/" + id, null, DetailsResponse.class);
     }
 
-    protected RecommendationMovieResponse getDiscoverMovie() throws Exception
+    protected SearchResponse<MediaResponse> getDiscoverMovie() throws Exception
     {
-        return this.generateGetCall(DISCOVER + "/movie", null, RecommendationMovieResponse.class);
+        return this.generateGetCall(DISCOVER + "/movie", null, SearchResponse.class);
     }
 
     protected DiscoverTVResponse getDiscoverTV() throws Exception
@@ -150,24 +154,25 @@ public class Client extends AbstractHttpClient
         return this.generateGetCall(MOVIE + "/" + id, map, MediaResponse.class);
     }
 
-    protected MovieExternalIdsResponse getMovieExternalIds(final Integer id) throws Exception
+    protected MediaExternalIdResponse getMovieExternalIds(final Integer id) throws Exception
     {
-        return this.generateGetCall(MOVIE + "/" + id + "/external_ids", null, MovieExternalIdsResponse.class);
+        return this.generateGetCall(MOVIE + "/" + id + "/external_ids", null, MediaExternalIdResponse.class);
     }
 
-    protected MovieImagesResponse getMovieImages(final Integer id) throws Exception
+    protected MediaImagesResponse getMovieImages(final Integer id) throws Exception
     {
-        return this.generateGetCall(MOVIE + "/" + id + "/images", null, MovieImagesResponse.class);
+        return this.generateGetCall(MOVIE + "/" + id + "/images", null, MediaImagesResponse.class);
     }
 
-    protected MovieKeywordResponse getKeywordMovie(final Integer id) throws Exception
+    protected MediaKeywordResponse getKeywordMovie(final Integer id) throws Exception
     {
-        return this.generateGetCall(MOVIE + "/" + id + "/keywords", null, MovieKeywordResponse.class);
+        return this.generateGetCall(MOVIE + "/" + id + "/keywords", null, MediaKeywordResponse.class);
     }
 
-    protected RecommendationMovieResponse getMovieRecommendation(final Integer id, HashMap<String, String> map) throws Exception
+    protected SearchResponse<MediaResponse> getMediaRecommendation(final Integer id, final MediaType type, HashMap<String, String> map)
+            throws Exception
     {
-        return this.generateGetCall(MOVIE + "/" + id + "/recommendations", null, RecommendationMovieResponse.class);
+        return this.generateGetCall((type.equals(MediaType.MOVIE) ? MOVIE : TV) + "/" + id + "/recommendations", map, SearchResponse.class);
     }
 
     protected MovieReleaseDateResponse getMovieReleaseDate(final Integer id) throws Exception
@@ -175,19 +180,20 @@ public class Client extends AbstractHttpClient
         return this.generateGetCall(MOVIE + "/" + id + "/release_dates", null, MovieReleaseDateResponse.class);
     }
 
-    protected RecommendationMovieResponse getMovieSimilar(final Integer id, HashMap<String, String> map) throws Exception
+    protected SearchResponse<MediaResponse> getMediaSimilar(final Integer id, final MediaType type, HashMap<String, String> map) throws Exception
     {
-        return this.generateGetCall(MOVIE + "/" + id + "/similar", null, RecommendationMovieResponse.class);
+        return this.generateGetCall((type.equals(MediaType.MOVIE) ? MOVIE : TV) + "/" + id + "/similar", map, SearchResponse.class);
     }
 
-    protected MovieVideoResponse getMovieVideo(final Integer id, HashMap<String, String> map) throws Exception
+    protected MediaVideoResponse getMediaVideo(final Integer id, final MediaType type, HashMap<String, String> map) throws Exception
     {
-        return this.generateGetCall(MOVIE + "/" + id + "/videos", null, MovieVideoResponse.class);
+        return this.generateGetCall((type.equals(MediaType.MOVIE) ? MOVIE : TV) + "/" + id + "/videos", map, MediaVideoResponse.class);
     }
 
-    protected MovieWatchProvidersResponse getMovieWatchProvider(final Integer id) throws Exception
+    protected MediaWatchProvidersResponse getMediaWatchProvider(final Integer id, final MediaType type) throws Exception
     {
-        return this.generateGetCall(MOVIE + "/" + id + "/watch/providers", null, MovieWatchProvidersResponse.class);
+        return this.generateGetCall((type.equals(MediaType.MOVIE) ? MOVIE : TV) + "/" + id + "/watch/providers", null,
+                MediaWatchProvidersResponse.class);
     }
 
     protected NetworkDetailResponse getNetworkDetail(final Integer id) throws Exception
@@ -269,8 +275,9 @@ public class Client extends AbstractHttpClient
     protected SearchResponse<MediaResponse> getTrendingMediaResponse(final MediaType type, final String time_window, final Map<String, String> map)
             throws Exception
     {
-        return this.generateGetCall(TRENDING + (type == null ? "/all" : MediaType.MOVIE.name().equals(type.name()) ? "/movie" : "/tv") + "/" + time_window,
-                map, SearchResponse.class);
+        return this.generateGetCall(
+                TRENDING + (type == null ? "/all" : MediaType.MOVIE.name().equals(type.name()) ? "/movie" : "/tv") + "/" + time_window, map,
+                SearchResponse.class);
     }
 
     protected SearchResponse<PeopleResponse> getTrendingPeopleResponse(final String time_window, final Map<String, String> map) throws Exception
@@ -281,6 +288,89 @@ public class Client extends AbstractHttpClient
     protected MediaResponse getTvDetails(final Integer id, final Map<String, String> map) throws Exception
     {
         return this.generateGetCall(TV + "/" + id, map, MediaResponse.class);
+    }
+
+    protected CreditResponse getTvAggregateCredits(final Integer id, Map<String, String> map) throws Exception
+    {
+        return this.generateGetCall(TV + "/" + id + "/aggregate_credits", map, CreditResponse.class);
+    }
+
+    protected MediaExternalIdResponse getTvExternalIds(final Integer id) throws Exception
+    {
+        return this.generateGetCall(TV + "/" + id + "/external_ids", null, MediaExternalIdResponse.class);
+    }
+
+    protected MediaImagesResponse getTvImages(final Integer id, Map<String, String> map) throws Exception
+    {
+        return this.generateGetCall(TV + "/" + id + "/images", map, MediaImagesResponse.class);
+    }
+
+    protected MediaKeywordResponse getTvKeyword(final Integer id) throws Exception
+    {
+        return this.generateGetCall(TV + "/" + id + "/keywords", null, MediaKeywordResponse.class);
+    }
+
+    protected TvSeasonDetailsResponse getTvSeasonDetails(final Integer series_id, final Integer series_number, final Map<String, String> map)
+            throws Exception
+    {
+        return this.generateGetCall(TV + "/" + series_id + "/" + SEASON + "/" + series_number, map, TvSeasonDetailsResponse.class);
+    }
+
+    protected CreditResponse getTvSeasonCredit(final Integer series_id, final Integer series_number, final Map<String, String> map) throws Exception
+    {
+        return this.generateGetCall(TV + "/" + series_id + "/" + SEASON + "/" + series_number + "/aggregate_credits", map, CreditResponse.class);
+    }
+
+    protected MediaExternalIdResponse getTvSeasonExternalId(final Integer series_id, final Integer series_number) throws Exception
+    {
+        return this.generateGetCall(TV + "/" + series_id + "/" + SEASON + "/" + series_number + "/external_ids", null, MediaExternalIdResponse.class);
+    }
+
+    protected MediaWatchProvidersResponse getTvSeasonMediaWatchProvider(final Integer series_id, final Integer series_number,
+            final Map<String, String> map) throws Exception
+    {
+        return this.generateGetCall(TV + "/" + series_id + "/" + SEASON + "/" + series_number + "/watch/providers", map,
+                MediaWatchProvidersResponse.class);
+    }
+
+    protected MediaVideoResponse getTvSeasonMediaVideo(final Integer series_id, final Integer season_number, Map<String, String> map) throws Exception
+    {
+        return this.generateGetCall(TV + "/" + series_id + "/" + SEASON + "/" + season_number + "/videos", map, MediaVideoResponse.class);
+    }
+
+    protected MediaImagesResponse getTvSeasonMediaImage(final Integer series_id, final Integer season_number, Map<String, String> map)
+            throws Exception
+    {
+        return this.generateGetCall(TV + "/" + series_id + "/" + SEASON + "/" + season_number + "/images", map, MediaImagesResponse.class);
+    }
+
+    protected MediaExternalIdResponse getTvSeasonEpisodeExternal(final Integer series_id, final Integer season_number, final Integer episode_number)
+            throws Exception
+    {
+        return this.generateGetCall(
+                TV + "/" + series_id + "/" + SEASON + "/" + season_number + "/" + EPISODE + "/" + episode_number + "/external_ids", null,
+                MediaExternalIdResponse.class);
+    }
+
+    protected MediaImagesResponse getTvSeasonEpisodeImage(final Integer series_id, final Integer season_number, final Integer episode_number,
+            final HashMap<String, String> map) throws Exception
+    {
+        return this.generateGetCall(TV + "/" + series_id + "/" + SEASON + "/" + season_number + "/" + EPISODE + "/" + episode_number + "/images", map,
+                MediaImagesResponse.class);
+    }
+
+    protected MediaVideoResponse getTvSeasonEpisodeVideo(final Integer series_id, final Integer season_number, final Integer episode_number,
+            Map<String, String> map) throws Exception
+    {
+        return this.generateGetCall(TV + "/" + series_id + "/" + SEASON + "/" + season_number + "/" + EPISODE + "/" + episode_number + "/videos", map,
+                MediaVideoResponse.class);
+    }
+
+    protected ChangesResponse getChangeResponse(final MediaType type, HashMap<String, String> map) throws Exception
+    {
+        return this.generateGetCall(
+                (type == MediaType.MOVIE ? "movie" : type == MediaType.TV ? "tv" : type == MediaType.PERSON ? "person" : "") + "/changes", map,
+                ChangesResponse.class);
     }
 
     private <T> T generateGetCall(final String url, final Map<String, String> map, final Class<T> clazz) throws Exception

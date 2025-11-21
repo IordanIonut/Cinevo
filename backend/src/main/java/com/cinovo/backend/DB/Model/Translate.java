@@ -12,7 +12,8 @@ import org.hibernate.annotations.GenericGenerator;
 @Getter
 @Setter
 @Table(name = "TRANSLATE")
-public class Translate extends BaseEntity {
+public class Translate extends BaseEntity
+{
     @Column(name = "ID")
     private Integer id;
 
@@ -39,5 +40,6 @@ public class Translate extends BaseEntity {
 
     public final static String TABLE_AS = "translate";
     public final static String TABLE_NAME = "TRANSLATE ";
-    public final static String ID = TABLE_AS +".ID";
+    public final static String ID = TABLE_AS + ".ID";
+    public final static String ISO_UPPER = TABLE_AS + ".ISO_UPPER";
 }

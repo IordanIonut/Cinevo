@@ -5,7 +5,8 @@ import lombok.Getter;
 @Getter
 public enum MediaStatus
 {
-    RELEASED("RELEASED"), IN_PRODUCTION("IN PRODUCTION"), PLANNED("PLANNED"), RETURNING_SERIES("Returning Series");
+    RELEASED("RELEASED"), IN_PRODUCTION("IN PRODUCTION"), PLANNED("PLANNED"), RETURNING_SERIES("Returning Series"), ENDED("Ended"),
+    CANCELED("Canceled");
 
     private final String label;
 

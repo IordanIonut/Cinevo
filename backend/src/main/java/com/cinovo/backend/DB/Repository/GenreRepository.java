@@ -15,5 +15,5 @@ public interface GenreRepository extends JpaRepository<Genre, String> {
     Optional<List<Genre>> findGenresByType(@Param("type") String type);
 
     @Query(value = "SELECT " + Genre.TABLE_AS + ".* FROM " + Genre.TABLE_NAME + Genre.TABLE_AS + " WHERE " + Genre.TYPE + " = :type AND " + Genre.ID + " = :id", nativeQuery = true)
-    Genre findGenresByIdAndType(@Param("id") final Integer id, @Param("type") final String type);
+    Optional<Genre> findGenresByIdAndType(@Param("id") final Integer id, @Param("type") final String type);
 }

@@ -2,5 +2,5 @@ package com.cinovo.backend.Enum;
 
 public enum EpisodeType
 {
-    FINALE
+    FINALE, STANDARD, MID_SEASON
 }

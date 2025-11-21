@@ -15,12 +15,16 @@ public class MediaResponse
     private Boolean adult;
     private String backdrop_path;
     private List<CreatedBy> created_by;
-    private List<EpisodeRunTime> episode_run_time;
+    private List<Integer> episode_run_time;
     private List<Integer> genre_ids;
     private List<GenresResponse.Genre> genres;
+    private Integer gender;
+    private String known_for_department;
+    private String total_episode_count;
+    private String profile_path;
     private Integer id;
     private String original_language;
-    @JsonAlias({"original_title", "original_name"})
+    @JsonAlias({ "original_title", "original_name" })
     private String original_title;
     private String overview;
     private Double popularity;
@@ -51,18 +55,20 @@ public class MediaResponse
     private String job;
     private Boolean in_production;
     private String last_air_date;
-    private String next_episode_to_air;
     private Integer number_of_episodes;
     private Integer number_of_seasons;
     private String type;
     private List<String> languages;
     private List<Network> networks;
     private List<Season> seasons;
-    private LastEpisodeToAir last_episode_to_air;
+    private EpisodeToAir last_episode_to_air;
+    private EpisodeToAir next_episode_to_air;
     private BelongsToCollection belongs_to_collection;
     private List<ProductionCompany> production_companies;
     private List<ProductionCountry> production_countries;
     private List<SpokenLanguage> spoken_languages;
+    private List<Role> roles;
+    private List<Job> jobs;
 
     @Data
     @Getter
@@ -121,15 +127,7 @@ public class MediaResponse
     @Getter
     @Setter
     @Data
-    public static class EpisodeRunTime
-    {
-
-    }
-
-    @Getter
-    @Setter
-    @Data
-    public static class LastEpisodeToAir
+    public static class EpisodeToAir
     {
         private Integer id;
         private String name;
@@ -170,5 +168,25 @@ public class MediaResponse
         private String poster_path;
         private Integer season_number;
         private Integer vote_average;
+    }
+
+    @Data
+    @Getter
+    @Setter
+    public static class Role
+    {
+        private String credit_id;
+        private String character;
+        private Integer episode_count;
+    }
+
+    @Data
+    @Getter
+    @Setter
+    public static class Job
+    {
+        private String credit_id;
+        private String job;
+        private Integer episode_count;
     }
 }

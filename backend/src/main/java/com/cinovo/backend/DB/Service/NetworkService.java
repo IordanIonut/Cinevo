@@ -45,7 +45,7 @@ public class NetworkService implements TMDBLogically<Integer, Network>
         List<Network.NetworkAlternativeName> networkAlternativeNames = new ArrayList<>();
         List<Network.NetworkImage> networkImages = new ArrayList<>();
 
-        Network network = new Network();
+        Network network = this.networkRepository.getNetworkById(networkDetailResponse.getId()).orElse(new Network());
         network.setId(networkDetailResponse.getId());
         network.setHeadquarters(networkDetailResponse.getHeadquarters());
         network.setHomepage(networkDetailResponse.getHomepage());

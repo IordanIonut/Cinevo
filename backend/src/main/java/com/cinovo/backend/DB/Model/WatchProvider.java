@@ -41,15 +41,25 @@ public class WatchProvider extends BaseEntity
     @Column(name = "DISPLAY_PRIORITY")
     private Integer display_priority;
 
-    @ManyToOne(fetch = FetchType.LAZY, cascade = CascadeType.ALL)
+    @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "MEDIA_ID")
     @JsonIgnoreProperties("hibernateLazyInitializer")
     @JsonBackReference
     private Media media;
 
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "SEASON_ID")
+    @JsonIgnoreProperties("hibernateLazyInitializer")
+    @JsonBackReference
+    private Media.Season season;
+
     public final static String TABLE_AS = "provider";
     public final static String TABLE_NAME = "WATCH_PROVIDER ";
-    public final static String ID = TABLE_AS + ".ID";
     public final static String JOIN_MEDIA = TABLE_AS + ".MEDIA_ID";
-    public final static String CINEVO_ID =  TABLE_AS + ".CINEVO_ID";
+    public final static String CINEVO_ID = TABLE_AS + ".CINEVO_ID";
+    public final static String TYPE = TABLE_AS + ".TYPE";
+    public final static String SEASON_ID = TABLE_AS + ".SEASON_ID";
+    public final static String PROVIDER_TYPE = TABLE_AS + ".PROVIDER_TYPE";
+    public final static String LOCATION = TABLE_AS + ".LOCATION";
+    public final static String PROVIDER_ID = TABLE_AS + ".PROVIDER_ID";
 }

@@ -2,6 +2,7 @@ package com.cinovo.backend.DB.Model;
 
 import com.cinovo.backend.DB.Util.BaseEntity;
 import com.cinovo.backend.Enum.Gender;
+import com.fasterxml.jackson.annotation.JsonBackReference;
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.fasterxml.jackson.annotation.JsonManagedReference;
 import jakarta.persistence.*;
@@ -95,13 +96,13 @@ public class Person extends BaseEntity
     @Column(name = "PLACE_OF_BIRTH")
     private String place_of_birth;
 
-    //save only 3
-    @ManyToMany(fetch = FetchType.LAZY, cascade = CascadeType.ALL)
-    @JoinTable(name = "PERSON_MEDIA", joinColumns = @JoinColumn(name = "PERSON_ID"), inverseJoinColumns = @JoinColumn(name = "MEDIA_ID"))
-    @JsonIgnoreProperties("hibernateLazyInitializer")
+    @ManyToMany(fetch = FetchType.LAZY)
+    @JoinTable(name = "PERSON_MEDIA", joinColumns = @JoinColumn(name = "PERSON_ID", referencedColumnName = "CINEVO_ID"),
+            inverseJoinColumns = @JoinColumn(name = "MEDIA_ID", referencedColumnName = "CINEVO_ID"))
+    @JsonBackReference
     private List<Media> medias;
 
-    @OneToMany(mappedBy = "person", cascade = CascadeType.ALL, fetch = FetchType.LAZY)
+    @OneToMany(mappedBy = "person", fetch = FetchType.LAZY)
     @JsonIgnoreProperties("hibernateLazyInitializer")
     @JsonManagedReference
     private List<Image> images;
@@ -109,4 +110,9 @@ public class Person extends BaseEntity
     public final static String TABLE_AS = "person";
     public final static String TABLE_NAME = "PERSON ";
     public final static String ID = TABLE_AS + ".ID";
+    public final static String PERSON_MEDIA_NAME = "PERSON_MEDIA ";
+    public final static String PERSON_MEDIA_AS = "person_media";
+    public final static String MEDIA_ID = PERSON_MEDIA_AS + ".MEDIA_ID";
+    public final static String PERSON_ID = PERSON_MEDIA_AS + ".PERSON_ID";
+    public final static String CINEVO_ID = TABLE_AS + ".CINEVO_ID";
 }

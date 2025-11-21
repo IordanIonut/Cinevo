@@ -14,6 +14,7 @@ import com.cinovo.backend.TMDB.Response.PersonExternalIdsResponse;
 import com.cinovo.backend.TMDB.Response.SearchResponse;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import lombok.extern.jbosslog.JBossLog;
+import org.springframework.cache.annotation.Cacheable;
 import org.springframework.context.annotation.Lazy;
 import org.springframework.stereotype.Service;
 
@@ -21,6 +22,7 @@ import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
+import java.util.concurrent.ConcurrentHashMap;
 
 @Service
 @JBossLog
@@ -31,8 +33,10 @@ public class PersonService implements TMDBLogically<Object, Object>
     private final MediaService mediaService;
     private final ImageService imageService;
 
+    private final ConcurrentHashMap<Integer, Object> locks = new ConcurrentHashMap<>();
+
     public PersonService(PersonRepository personRepository, com.cinovo.backend.TMDB.Service service, @Lazy MediaService mediaService,
-            ImageService imageService)
+            @Lazy ImageService imageService)
     {
         this.personRepository = personRepository;
         this.service = service;
@@ -42,12 +46,31 @@ public class PersonService implements TMDBLogically<Object, Object>
 
     public Person findPersonById(final Integer id) throws Exception
     {
-        Optional<Person> person = this.personRepository.findPersonById(id);
-        if(person.isEmpty())
+        Object lock = locks.computeIfAbsent(id, k -> new Object());
+        synchronized(lock)
         {
-            return (Person) this.onConvertTMDB(id);
+            try
+            {
+                Optional<Person> person = personRepository.findPersonById(id);
+                if(person.isPresent())
+                {
+                    return person.get();
+                }
+                Person newPerson = (Person) this.onConvertTMDB(id);
+                return newPerson;
+            }
+            finally
+            {
+                locks.remove(id);
+            }
         }
-        return person.get();
+
+        //        Optional<Person> person = this.personRepository.findPersonById(id);
+        //        if(person.isEmpty())
+        //        {
+        //            return (Person) this.onConvertTMDB(id);
+        //        }
+        //        return person.get();
     }
 
     public List<Person> getPeoplePopularity(final Integer page) throws Exception
@@ -68,13 +91,13 @@ public class PersonService implements TMDBLogically<Object, Object>
     }
 
     @Override
-    public Object onConvertTMDB(Object input) throws Exception
+    public Object onConvertTMDB(Object obj) throws Exception
     {
-        String[] parts = Shared.onSplitObject(input);
+        String[] parts = Shared.onSplitObject(obj);
 
-        if(input instanceof Integer)
+        if(obj instanceof Integer)
         {
-            return this.generatePerson((Integer) input, null);
+            return this.generatePerson((Integer) obj, null);
         }
         else if(MediaType.valueOf(parts[0]) == MediaType.POPULARITY)
         {
@@ -104,7 +127,7 @@ public class PersonService implements TMDBLogically<Object, Object>
             return this.onParseSearchResponseToPeopleResponse(rawResponse);
         }
 
-        log.error("Type case is not foud: " + input);
+        log.error("Type case is not foud: " + obj);
         return null;
     }
 
@@ -112,6 +135,8 @@ public class PersonService implements TMDBLogically<Object, Object>
     {
         PeopleResponse peopleResponse = this.service.getPeopleDetail(id, "en-US");
         PersonExternalIdsResponse personExternalIdsResponse = this.service.getPersonExternalIds(id);
+        if(peopleResponse.getId() == null)
+            return null;
 
         Person per = this.personRepository.findPersonById(id).orElse(new Person());
         per.setAdult(peopleResponse.getAdult());
@@ -132,8 +157,6 @@ public class PersonService implements TMDBLogically<Object, Object>
                 : null);
         per.setHomepage(peopleResponse.getHomepage());
         per.setPlace_of_birth(peopleResponse.getPlace_of_birth());
-        per.setImages(this.imageService.findImageById(id, MediaType.PERSON));
-
         per.setFreebase_mid(personExternalIdsResponse.getFreebase_mid());
         per.setImdb_id(personExternalIdsResponse.getImdb_id());
         per.setFreebase_id(personExternalIdsResponse.getFreebase_id());
@@ -144,40 +167,43 @@ public class PersonService implements TMDBLogically<Object, Object>
         per.setYoutube_id(personExternalIdsResponse.getYoutube_id());
         per.setInstagram_id(personExternalIdsResponse.getInstagram_id());
         per.setTiktok_id(personExternalIdsResponse.getTiktok_id());
+        this.personRepository.save(per);
 
+        per.setImages(this.imageService.findImageByMediaIdAndMediaType(id, MediaType.PERSON));
         if(know_for != null)
         {
             List<Media> updatedMedias = new ArrayList<>();
             for(MediaResponse mediaResponse : know_for)
             {
-                Media movie = this.mediaService.getMediaByIdAndType(mediaResponse.getId(), MediaType.MOVIE);
-                updatedMedias.add(movie);
+                Media media =
+                        this.mediaService.getMediaByIdAndType(mediaResponse.getId(), MediaType.valueOf(mediaResponse.getMedia_type().toUpperCase()));
+                updatedMedias.add(media);
             }
-            List<Media> currentMedies = per.getMedias();
-            if(currentMedies == null)
+            List<Media> currentMedias = per.getMedias();
+            if(currentMedias == null)
             {
                 per.setMedias(updatedMedias);
             }
             else
             {
                 List<Media> toRemove = new ArrayList<>();
-                for(Media oldMedia : currentMedies)
+                for(Media oldMedia : currentMedias)
                 {
                     if(!updatedMedias.contains(oldMedia))
                     {
                         toRemove.add(oldMedia);
                     }
                 }
-                currentMedies.removeAll(toRemove);
+                currentMedias.removeAll(toRemove);
 
                 for(Media newMedia : updatedMedias)
                 {
-                    if(!currentMedies.contains(newMedia))
+                    if(!currentMedias.contains(newMedia))
                     {
-                        currentMedies.add(newMedia);
+                        currentMedias.add(newMedia);
                     }
                 }
-                per.setMedias(currentMedies);
+                per.setMedias(currentMedias);
             }
         }
 

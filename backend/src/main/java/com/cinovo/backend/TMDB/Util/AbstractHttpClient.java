@@ -93,7 +93,7 @@ public abstract class AbstractHttpClient
             boolean success = root.path("success").asBoolean(true);
             int statusCode = root.path("status_code").asInt(0);
 
-            return !success && (statusCode == 34);
+            return !success && ((statusCode == 34) || (statusCode == 7));
         }
         catch(Exception e)
         {

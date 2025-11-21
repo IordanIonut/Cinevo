@@ -14,7 +14,8 @@ import java.util.List;
 @NoArgsConstructor
 @Getter
 @Setter
-public class TV extends BaseEntity {
+public class TV extends BaseEntity
+{
     @Column(name = "ADULT")
     private Boolean adult;
 
@@ -55,11 +56,8 @@ public class TV extends BaseEntity {
     private Integer vote_count;
 
     @ManyToMany
-    @JoinTable(
-            name = "TV_GENRE",
-            joinColumns = @JoinColumn(name = "TV_ID"),
-            inverseJoinColumns = @JoinColumn(name = "GENRE_ID")
-    )
+    @JoinTable(name = "TV_GENRE", joinColumns = @JoinColumn(name = "TV_ID", referencedColumnName = "CINEVO_ID"),
+            inverseJoinColumns = @JoinColumn(name = "GENRE_ID", referencedColumnName = "CINEVO_ID"))
     private List<Genre> genres;
 
     public final static String TABLE_AS = "tv";

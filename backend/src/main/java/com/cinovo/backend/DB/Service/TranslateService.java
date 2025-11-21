@@ -12,27 +12,36 @@ import java.util.List;
 import java.util.Optional;
 
 @Service
-public class TranslateService implements TMDBLogically<Integer, List<Translate>> {
-    @Autowired
-    private TranslateRepository translateRepository;
-    @Autowired
-    private com.cinovo.backend.TMDB.Service service;
+public class TranslateService implements TMDBLogically<Integer, List<Translate>>
+{
+    private final TranslateRepository translateRepository;
+    private final com.cinovo.backend.TMDB.Service service;
 
-    public List<Translate> findAllTranslateById(final Integer id) throws Exception {
+    public TranslateService(TranslateRepository translateRepository, com.cinovo.backend.TMDB.Service service)
+    {
+        this.translateRepository = translateRepository;
+        this.service = service;
+    }
+
+    public List<Translate> findAllTranslateById(final Integer id) throws Exception
+    {
         Optional<List<Translate>> translates = this.translateRepository.findAllTranslateById(id);
-        if (translates.isEmpty() || translates.get().isEmpty()) {
+        if(translates.isEmpty() || translates.get().isEmpty())
+        {
             return this.onConvertTMDB(id);
         }
         return translates.get();
     }
 
     @Override
-    public List<Translate> onConvertTMDB(Integer id) throws Exception {
+    public List<Translate> onConvertTMDB(Integer id) throws Exception
+    {
         List<Translate> translates = new ArrayList<>();
         TranslationResponse translationResponse = this.service.getTranslate(id);
 
-        for (TranslationResponse.Translate translate : translationResponse.getTranslations()) {
-            Translate trans = new Translate();
+        for(TranslationResponse.Translate translate : translationResponse.getTranslations())
+        {
+            Translate trans = this.translateRepository.findByIdAndIso(translationResponse.getId(), translate.getIso_639_1()).orElse(new Translate());
             trans.setId(translationResponse.getId());
             trans.setIso_upper(translate.getIso_3166_1());
             trans.setIso_lower(translate.getIso_639_1());

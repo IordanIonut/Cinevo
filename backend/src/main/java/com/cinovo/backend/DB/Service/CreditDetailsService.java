@@ -20,12 +20,16 @@ import java.util.Optional;
 @Service
 public class CreditDetailsService implements TMDBLogically<String, CreditDetails>
 {
-    @Autowired
-    private CreditDetailsRepository creditDetailsRepository;
-    @Autowired
-    private GenreService genreService;
-    @Autowired
-    private com.cinovo.backend.TMDB.Service service;
+    private final CreditDetailsRepository creditDetailsRepository;
+    private final GenreService genreService;
+    private final com.cinovo.backend.TMDB.Service service;
+
+    public CreditDetailsService(CreditDetailsRepository creditDetailsRepository, GenreService genreService, com.cinovo.backend.TMDB.Service service)
+    {
+        this.creditDetailsRepository = creditDetailsRepository;
+        this.service = service;
+        this.genreService = genreService;
+    }
 
     public CreditDetails findCreditDetailsById(final String id) throws Exception
     {
