@@ -1,5 +1,6 @@
 package com.cinovo.backend.DB.Util;
 
+import com.cinovo.backend.DB.Model.Credit;
 import com.cinovo.backend.DB.Model.Media;
 import com.cinovo.backend.DB.Service.*;
 import com.cinovo.backend.Enum.MediaType;
@@ -8,6 +9,7 @@ import org.springframework.context.annotation.Lazy;
 import org.springframework.scheduling.annotation.Async;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Isolation;
+import org.springframework.transaction.annotation.Propagation;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.util.ArrayList;
@@ -62,13 +64,17 @@ public class MediaResolver
                 Shared.onStringParseToInteger(parts[2]), Shared.onStringParseToInteger(parts[3]));
     }
 
-    @Async
-    @Transactional(isolation = Isolation.READ_COMMITTED)
+    @Async("customExecutorMedia")
+    @Transactional
     public void generateDateAsync(final Integer media_id, final MediaType type) throws Exception
     {
         Media media = mediaService.getMediaByIdAndType(media_id, type);
         media.setImages(imageService.findImageByMediaIdAndMediaType(media_id, media.getType()));
+        mediaService.saveAndUpdate(media);
+
         media.setVideos(videoService.findVideosByMovieIdAndMediaType(media_id, media.getType()));
+        mediaService.saveAndUpdate(media);
+
         media.setWatch_providers(watchProviderService.findWatchProviderByMediaIdAndType(media_id, media.getType()));
         mediaService.saveAndUpdate(media);
 
@@ -100,10 +106,18 @@ public class MediaResolver
             }
             media.setSeasons(seasons);
         }
-
         mediaService.saveAndUpdate(media);
-        media.setCredits(creditService.findCreditByMediaIdAndType(media_id, type));
 
-        mediaService.saveAndUpdate(media);
+        //INFO: have some errors on db when call this maybe can fixed
+        //        collectCreditsAsync(media_id, type);
     }
+
+    //    @Async("customExecutorMedia")
+    //    @Transactional
+    //    public void collectCreditsAsync(final Integer media_id, final MediaType type) throws Exception
+    //    {
+    //        Media media = mediaService.getMediaByIdAndType(media_id, type);
+    //        media.setCredits(creditService.findCreditByMediaIdAndType(media_id, type));
+    //        mediaService.saveAndUpdate(media);
+    //    }
 }
