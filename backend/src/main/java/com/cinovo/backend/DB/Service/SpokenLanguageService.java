@@ -3,13 +3,12 @@ package com.cinovo.backend.DB.Service;
 import com.cinovo.backend.DB.Model.SpokenLanguage;
 import com.cinovo.backend.DB.Repository.SpokenLanguageRepository;
 import com.cinovo.backend.DB.Util.TMDBLogically;
-import com.cinovo.backend.TMDB.Response.Common.MediaResponse;
 import com.cinovo.backend.TMDB.Response.ConfigurationLanguageResponse;
 import jakarta.validation.constraints.Null;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.List;
 import java.util.Optional;
 
@@ -41,6 +40,7 @@ public class SpokenLanguageService implements TMDBLogically<Null, List<SpokenLan
     }
 
     @Override
+    @Transactional
     public List<SpokenLanguage> onConvertTMDB(Null input) throws Exception
     {
         ConfigurationLanguageResponse[] spokenLanguage = this.service.getConfigurationLanguages();

@@ -1,15 +1,13 @@
-package com.cinovo.backend.DB.Util;
+package com.cinovo.backend.DB.Util.Resolver;
 
-import com.cinovo.backend.DB.Model.Credit;
 import com.cinovo.backend.DB.Model.Media;
 import com.cinovo.backend.DB.Service.*;
+import com.cinovo.backend.DB.Util.Shared;
 import com.cinovo.backend.Enum.MediaType;
 import lombok.extern.jbosslog.JBossLog;
 import org.springframework.context.annotation.Lazy;
 import org.springframework.scheduling.annotation.Async;
 import org.springframework.stereotype.Service;
-import org.springframework.transaction.annotation.Isolation;
-import org.springframework.transaction.annotation.Propagation;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.util.ArrayList;
@@ -66,54 +64,131 @@ public class MediaResolver
 
     @Async("customExecutorMedia")
     @Transactional
-    public void generateDateAsync(final Integer media_id, final MediaType type) throws Exception
+    public void generateDateAsync(final Integer mediaId, final MediaType type) throws Exception
     {
-        Media media = mediaService.getMediaByIdAndType(media_id, type);
-        media.setImages(imageService.findImageByMediaIdAndMediaType(media_id, media.getType()));
-        mediaService.saveAndUpdate(media);
-
-        media.setVideos(videoService.findVideosByMovieIdAndMediaType(media_id, media.getType()));
-        mediaService.saveAndUpdate(media);
-
-        media.setWatch_providers(watchProviderService.findWatchProviderByMediaIdAndType(media_id, media.getType()));
-        mediaService.saveAndUpdate(media);
+        Media media = mediaService.getMediaByIdAndType(mediaId, type);
+        if(media.getImages() != null)
+        {
+            media.getImages().clear();
+            media.getImages().addAll(imageService.findImageByMediaIdAndMediaType(mediaId, media.getType()));
+        }
+        if(media.getVideo() != null)
+        {
+            media.getVideos().clear();
+            media.getVideos().addAll(videoService.findVideosByMovieIdAndMediaType(mediaId, media.getType()));
+        }
+        if(media.getWatch_providers() != null)
+        {
+            media.getWatch_providers().clear();
+            media.getWatch_providers().addAll(watchProviderService.findWatchProviderByMediaIdAndType(mediaId, media.getType()));
+        }
 
         if(media.getSeasons() != null)
         {
-            List<Media.Season> seasons = new ArrayList<>();
             for(Media.Season season : media.getSeasons())
             {
                 Media.Season ses = mediaService.getSeasonById(season.getId());
-                ses.setWatch_providers(
-                        watchProviderService.findWatchProviderBySeasonIdAndType(media.getId(), season.getSeason_number(), MediaType.TV_SEASON));
-                ses.setVideos(videoService.findVideosBySeriesIdAndMediaType(media.getId(), season.getSeason_number(), MediaType.TV_SEASON));
-                ses.setImages(imageService.findImageBySeasonIdAndSeasonNumber(media.getId(), season.getSeason_number(), MediaType.TV_SEASON));
 
-                List<Media.Season.Episode> episodes = new ArrayList<>();
-                for(Media.Season.Episode episode : ses.getEpisodes())
+                if(ses.getWatch_providers() != null)
                 {
-                    Media.Season.Episode epi = mediaService.findEpisodeById(episode.getId());
-                    epi.setVideos(videoService.findVideoBySeriesIdAndSeasonNumberAndEpisodeAndMediaType(media.getId(), ses.getSeason_number(),
-                            episode.getEpisode_number(), MediaType.TV_EPISODE));
-                    epi.setImages(imageService.findImageBySeasonIdAndSeasonNumberAndEpisodeAndMediaType(media.getId(), ses.getSeason_number(),
-                            episode.getEpisode_number(), MediaType.TV_EPISODE));
-
-                    episodes.add(epi);
+                    ses.getWatch_providers().clear();
+                    ses.getWatch_providers().addAll(watchProviderService.findWatchProviderBySeasonIdAndType(media.getId(), season.getSeason_number(),
+                            MediaType.TV_SEASON));
                 }
 
-                ses.setEpisodes(episodes);
-                seasons.add(ses);
-            }
-            media.setSeasons(seasons);
-        }
-        mediaService.saveAndUpdate(media);
+                if(ses.getVideos() != null)
+                {
+                    ses.getVideos().clear();
+                    ses.getVideos()
+                            .addAll(videoService.findVideosBySeriesIdAndMediaType(media.getId(), season.getSeason_number(), MediaType.TV_SEASON));
+                }
 
-        //INFO: have some errors on db when call this maybe can fixed
-        //        collectCreditsAsync(media_id, type);
+                if(ses.getImages() != null)
+                {
+                    ses.getImages().clear();
+                    ses.getImages()
+                            .addAll(imageService.findImageBySeasonIdAndSeasonNumber(media.getId(), season.getSeason_number(), MediaType.TV_SEASON));
+                }
+
+                if(ses.getEpisodes() != null)
+                {
+                    for(Media.Season.Episode episode : ses.getEpisodes())
+                    {
+                        Media.Season.Episode epi = mediaService.findEpisodeById(episode.getId());
+
+                        if(epi.getVideos() != null)
+                        {
+                            epi.getVideos().clear();
+                            epi.getVideos().addAll(videoService.findVideoBySeriesIdAndSeasonNumberAndEpisodeAndMediaType(media.getId(),
+                                    ses.getSeason_number(), episode.getEpisode_number(), MediaType.TV_EPISODE));
+                        }
+
+                        if(epi.getImages() != null)
+                        {
+                            epi.getImages().clear();
+                            epi.getImages().addAll(imageService.findImageBySeasonIdAndSeasonNumberAndEpisodeAndMediaType(media.getId(),
+                                    ses.getSeason_number(), episode.getEpisode_number(), MediaType.TV_EPISODE));
+                        }
+                        epi.setSeason(ses);
+                    }
+                }
+                ses.setMedia(media);
+            }
+        }
+
+        mediaService.saveAndUpdate(media);
     }
 
     //    @Async("customExecutorMedia")
     //    @Transactional
+    //    public void generateDateAsync(final Integer media_id, final MediaType type) throws Exception
+    //    {
+    //        Media media = mediaService.getMediaByIdAndType(media_id, type);
+    //        media.setImages(imageService.findImageByMediaIdAndMediaType(media_id, media.getType()));
+    //        mediaService.saveAndUpdate(media);
+    //
+    //        media.setVideos(videoService.findVideosByMovieIdAndMediaType(media_id, media.getType()));
+    //        mediaService.saveAndUpdate(media);
+    //
+    //        media.setWatch_providers(watchProviderService.findWatchProviderByMediaIdAndType(media_id, media.getType()));
+    //        mediaService.saveAndUpdate(media);
+    //
+    //        if(media.getSeasons() != null)
+    //        {
+    //            List<Media.Season> seasons = new ArrayList<>();
+    //            for(Media.Season season : media.getSeasons())
+    //            {
+    //                Media.Season ses = mediaService.getSeasonById(season.getId());
+    //                ses.setWatch_providers(
+    //                        watchProviderService.findWatchProviderBySeasonIdAndType(media.getId(), season.getSeason_number(), MediaType.TV_SEASON));
+    //                ses.setVideos(videoService.findVideosBySeriesIdAndMediaType(media.getId(), season.getSeason_number(), MediaType.TV_SEASON));
+    //                ses.setImages(imageService.findImageBySeasonIdAndSeasonNumber(media.getId(), season.getSeason_number(), MediaType.TV_SEASON));
+    //
+    //                List<Media.Season.Episode> episodes = new ArrayList<>();
+    //                for(Media.Season.Episode episode : ses.getEpisodes())
+    //                {
+    //                    Media.Season.Episode epi = mediaService.findEpisodeById(episode.getId());
+    //                    epi.setVideos(videoService.findVideoBySeriesIdAndSeasonNumberAndEpisodeAndMediaType(media.getId(), ses.getSeason_number(),
+    //                            episode.getEpisode_number(), MediaType.TV_EPISODE));
+    //                    epi.setImages(imageService.findImageBySeasonIdAndSeasonNumberAndEpisodeAndMediaType(media.getId(), ses.getSeason_number(),
+    //                            episode.getEpisode_number(), MediaType.TV_EPISODE));
+    //
+    //                    episodes.add(epi);
+    //                }
+
+    //
+    //                ses.setEpisodes(episodes);
+    //                seasons.add(ses);
+    //            }
+    //            media.setSeasons(seasons);
+    //        }
+    //        mediaService.saveAndUpdate(media);
+
+    ////INFO: have some errors on db when call this maybe can fixed
+    //    //            collectCreditsAsync(media_id, type);
+    //    }
+
+    //    @Async("customExecutorMedia")
     //    public void collectCreditsAsync(final Integer media_id, final MediaType type) throws Exception
     //    {
     //        Media media = mediaService.getMediaByIdAndType(media_id, type);

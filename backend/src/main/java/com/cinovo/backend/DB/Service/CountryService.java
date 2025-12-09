@@ -6,8 +6,8 @@ import com.cinovo.backend.DB.Util.TMDBLogically;
 import com.cinovo.backend.Enum.MediaType;
 import com.cinovo.backend.TMDB.Response.CertificationResponse;
 import lombok.extern.jbosslog.JBossLog;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDate;
 import java.util.*;
@@ -41,6 +41,7 @@ public class CountryService implements TMDBLogically<MediaType, List<Country>>
     }
 
     @Override
+    @Transactional
     public List<Country> onConvertTMDB(MediaType type) throws Exception
     {
         for(Map.Entry<String, List<CertificationResponse.Certification>> country : this.service.getCertification(type).getCertifications().entrySet())
@@ -54,11 +55,12 @@ public class CountryService implements TMDBLogically<MediaType, List<Country>>
             for(CertificationResponse.Certification certification : country.getValue())
             {
                 Country.Certification cert =
-                        this.countryRepository.findCountryCertificationByCountryCineVoId(de.getCinevo_id()).orElse(new Country.Certification());
+                        this.countryRepository.findCountryCertificationByCountryCinevoId(de.getCinevo_id()).orElse(new Country.Certification());
                 cert.setCertification(certification.getCertification());
                 cert.setMeaning(certification.getMeaning());
                 cert.setOrder(certification.getOrder());
                 cert.setCountry(de);
+
                 deCerts.add(cert);
             }
 

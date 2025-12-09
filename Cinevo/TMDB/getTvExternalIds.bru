@@ -1,0 +1,16 @@
+meta {
+  name: getTvExternalIds
+  type: http
+  seq: 50
+}
+
+get {
+  url: http://localhost:8080/api/TMDB/get/tv/external/71912
+  body: none
+  auth: inherit
+}
+
+settings {
+  encodeUrl: true
+  timeout: 0
+}

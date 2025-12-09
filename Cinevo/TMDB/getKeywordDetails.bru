@@ -1,0 +1,15 @@
+meta {
+  name: getKeywordDetails
+  type: http
+  seq: 16
+}
+
+get {
+  url: http://localhost:8080/api/TMDB/get/keyword/1701
+  body: none
+  auth: inherit
+}
+
+settings {
+  encodeUrl: true
+}

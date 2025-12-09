@@ -1,0 +1,15 @@
+meta {
+  name: getDiscoverTV
+  type: http
+  seq: 15
+}
+
+get {
+  url: http://localhost:8080/api/TMDB/get/discover/tv
+  body: none
+  auth: inherit
+}
+
+settings {
+  encodeUrl: true
+}

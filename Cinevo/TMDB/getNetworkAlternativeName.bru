@@ -1,0 +1,16 @@
+meta {
+  name: getNetworkAlternativeName
+  type: http
+  seq: 33
+}
+
+get {
+  url: http://localhost:8080/api/TMDB/get/network/alternative/names/49
+  body: none
+  auth: inherit
+}
+
+settings {
+  encodeUrl: true
+  timeout: 0
+}

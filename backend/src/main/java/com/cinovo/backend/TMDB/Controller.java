@@ -1,13 +1,10 @@
 package com.cinovo.backend.TMDB;
 
-import com.cinovo.backend.DB.Model.CreditDetails;
 import com.cinovo.backend.DB.Service.MediaService;
 import com.cinovo.backend.Enum.MediaType;
 import com.cinovo.backend.TMDB.Response.*;
 import com.cinovo.backend.TMDB.Response.Common.*;
-import lombok.Getter;
 import lombok.extern.jbosslog.JBossLog;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -241,7 +238,7 @@ public class Controller
     }
 
     @GetMapping("/get/discover/tv")
-    public ResponseEntity<DiscoverTVResponse> getDiscoverTV()
+    public ResponseEntity<SearchResponse> getDiscoverTV()
     {
         try
         {

@@ -1,0 +1,20 @@
+meta {
+  name: getSearchMediaResponse
+  type: http
+  seq: 44
+}
+
+get {
+  url: http://localhost:8080/api/TMDB/get/search/media?query=Star Wars
+  body: none
+  auth: inherit
+}
+
+params:query {
+  query: Star Wars
+}
+
+settings {
+  encodeUrl: true
+  timeout: 0
+}

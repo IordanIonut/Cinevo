@@ -24,6 +24,6 @@ public interface CountryRepository extends JpaRepository<Country, String>
 
     @Query(nativeQuery = true,
             value = "SELECT " + Country.Certification.TABLE_AS + ".* FROM " + Country.Certification.TABLE_NAME + Country.Certification.TABLE_AS
-                    + " WHERE " + Country.Certification.COUNTRY_CINEVO_ID + " :country_id")
-    Optional<Country.Certification> findCountryCertificationByCountryCineVoId(@Param("country_id") String country_id);
+                    + " WHERE " + Country.Certification.COUNTRY_CINEVO_ID + " = :country_id")
+    Optional<Country.Certification> findCountryCertificationByCountryCinevoId(@Param("country_id") String country_id);
 }

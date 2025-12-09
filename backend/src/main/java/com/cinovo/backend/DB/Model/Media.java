@@ -4,9 +4,7 @@ import com.cinovo.backend.DB.Util.BaseEntity;
 import com.cinovo.backend.Enum.EpisodeType;
 import com.cinovo.backend.Enum.MediaStatus;
 import com.cinovo.backend.Enum.MediaType;
-import com.fasterxml.jackson.annotation.JsonBackReference;
-import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
-import com.fasterxml.jackson.annotation.JsonManagedReference;
+import com.fasterxml.jackson.annotation.*;
 import jakarta.persistence.*;
 import lombok.*;
 
@@ -21,6 +19,7 @@ import java.util.List;
 @Getter
 @Setter
 @EqualsAndHashCode(callSuper = true, onlyExplicitlyIncluded = true)
+@JsonIdentityInfo(generator = ObjectIdGenerators.PropertyGenerator.class, property = "id")
 public class Media extends BaseEntity
 {
     @Column(name = "ADULT")
@@ -104,7 +103,7 @@ public class Media extends BaseEntity
     private LocalDate release_date;
 
     @Column(name = "REVENUE")
-    private Integer revenue;
+    private Long revenue;
 
     @Column(name = "RUNTIME")
     private Integer runtime;
@@ -137,22 +136,23 @@ public class Media extends BaseEntity
             inverseJoinColumns = @JoinColumn(name = "GENRE_ID", referencedColumnName = "CINEVO_ID"))
     private List<Genre> genres;
 
-    @ManyToOne(fetch = FetchType.LAZY, cascade = CascadeType.ALL)
+    @ManyToOne(fetch = FetchType.LAZY, cascade = { CascadeType.REFRESH, CascadeType.DETACH })
     @JoinColumn(name = "BELONG_TO_COLLECTION_ID")
     @JsonIgnoreProperties("hibernateLazyInitializer")
-    private BelongToCollection belong_to_collection;
+    @JsonBackReference
+    private Collection belong_to_collection;
 
-    @ManyToMany(fetch = FetchType.LAZY, cascade = CascadeType.ALL)
+    @ManyToMany(fetch = FetchType.LAZY, cascade = { CascadeType.REFRESH, CascadeType.DETACH })
     @JoinTable(name = "MEDIA_PRODUCTION_COMPANY", joinColumns = @JoinColumn(name = "MEDIA_ID", referencedColumnName = "CINEVO_ID"),
             inverseJoinColumns = @JoinColumn(name = "PRODUCTION_COMPANY_ID", referencedColumnName = "CINEVO_ID"))
-    private List<ProductionCompany> production_companies;
+    private List<Company> production_companies;
 
-    @ManyToMany(fetch = FetchType.LAZY, cascade = CascadeType.ALL)
+    @ManyToMany(fetch = FetchType.LAZY, cascade = { CascadeType.REFRESH, CascadeType.DETACH })
     @JoinTable(name = "MEDIA_PRODUCTION_COUNTRY", joinColumns = @JoinColumn(name = "MEDIA_ID", referencedColumnName = "CINEVO_ID"),
             inverseJoinColumns = @JoinColumn(name = "PRODUCTION_COUNTRY_ID", referencedColumnName = "CINEVO_ID"))
     private List<ProductionCountry> production_countries;
 
-    @ManyToMany(fetch = FetchType.LAZY, cascade = CascadeType.ALL)
+    @ManyToMany(fetch = FetchType.LAZY, cascade = { CascadeType.REFRESH, CascadeType.DETACH })
     @JoinTable(name = "MEDIA_SPOKEN_LANGUAGE", joinColumns = @JoinColumn(name = "MEDIA_ID", referencedColumnName = "CINEVO_ID"),
             inverseJoinColumns = @JoinColumn(name = "SPOKEN_LANGUAGE_ID", referencedColumnName = "CINEVO_ID"))
     private List<SpokenLanguage> spoken_languages;
@@ -182,35 +182,39 @@ public class Media extends BaseEntity
     @JsonBackReference
     private Collection detail;
 
-    @ManyToMany(mappedBy = "medias", fetch = FetchType.LAZY)
+    @ManyToMany(mappedBy = "medias", fetch = FetchType.LAZY, cascade = CascadeType.ALL)
     @JsonIgnoreProperties("hibernateLazyInitializer")
     @JsonManagedReference
     private List<Person> created_by;
 
-    @ManyToMany(fetch = FetchType.LAZY, cascade = CascadeType.ALL)
+    @ManyToMany(fetch = FetchType.LAZY, cascade = { CascadeType.REFRESH, CascadeType.DETACH })
     @JoinTable(name = "MEDIA_NETWORK", joinColumns = @JoinColumn(name = "MEDIA_ID", referencedColumnName = "CINEVO_ID"),
             inverseJoinColumns = @JoinColumn(name = "NETWORK_ID", referencedColumnName = "CINEVO_ID"))
     private List<Network> networks;
 
-    @ManyToMany(fetch = FetchType.LAZY, cascade = CascadeType.ALL)
-    @JoinTable(name = "MEDIA_SEASON", joinColumns = @JoinColumn(name = "MEDIA_ID", referencedColumnName = "CINEVO_ID"),
-            inverseJoinColumns = @JoinColumn(name = "SEASON_ID", referencedColumnName = "CINEVO_ID"))
-    @JsonIgnoreProperties({ "hibernateLazyInitializer" })
+    //    @ManyToMany(fetch = FetchType.EAGER, cascade = { CascadeType.REFRESH, CascadeType.DETACH })
+    //    @JoinTable(name = "MEDIA_SEASON", joinColumns = @JoinColumn(name = "MEDIA_ID", referencedColumnName = "CINEVO_ID"),
+    //            inverseJoinColumns = @JoinColumn(name = "SEASON_ID", referencedColumnName = "CINEVO_ID"))
+    //    @JsonIgnoreProperties({ "hibernateLazyInitializer" })
+    //    private List<Season> seasons;
+
+    @OneToMany(mappedBy = "media", fetch = FetchType.LAZY, cascade = { CascadeType.PERSIST, CascadeType.MERGE }, orphanRemoval = true)
+    @JsonManagedReference
     private List<Season> seasons;
 
-    @ManyToOne(fetch = FetchType.LAZY, cascade = CascadeType.ALL)
+    @ManyToOne(fetch = FetchType.LAZY, cascade = { CascadeType.REFRESH, CascadeType.DETACH })
     @JoinColumn(name = "LAST_EPISODE_TO_AIR_CINEVO_ID", referencedColumnName = "CINEVO_ID")
     @JsonIgnoreProperties("hibernateLazyInitializer")
     @JsonManagedReference
     private EpisodeToAir last_episode_to_air;
 
-    @ManyToOne(fetch = FetchType.LAZY, cascade = CascadeType.ALL)
+    @ManyToOne(fetch = FetchType.LAZY, cascade = { CascadeType.REFRESH, CascadeType.DETACH })
     @JoinColumn(name = "NEXT_EPISODE_TO_AIR_CINEVO_ID", referencedColumnName = "CINEVO_ID")
     @JsonIgnoreProperties("hibernateLazyInitializer")
     @JsonManagedReference
     private EpisodeToAir next_episode_to_air;
 
-    @ManyToMany(fetch = FetchType.LAZY)
+    @ManyToMany(fetch = FetchType.LAZY, cascade = { CascadeType.REFRESH, CascadeType.DETACH })
     @JoinTable(name = "MEDIA_CREDIT", joinColumns = @JoinColumn(name = "MEDIA_ID", referencedColumnName = "CINEVO_ID"),
             inverseJoinColumns = @JoinColumn(name = "CREDIT_ID", referencedColumnName = "CINEVO_ID"))
     @JsonManagedReference
@@ -221,104 +225,6 @@ public class Media extends BaseEntity
     public final static String ID = TABLE_AS + ".ID";
     public final static String TYPE = TABLE_AS + ".TYPE";
     public final static String CINEVO_ID = TABLE_AS + ".CINEVO_ID";
-
-    @Data
-    @Entity
-    @Table(name = "BELONG_TO_COLLECTION")
-    @Getter
-    @Setter
-    @AllArgsConstructor
-    @NoArgsConstructor
-    public static class BelongToCollection extends BaseEntity
-    {
-        @Column(name = "ID")
-        private Integer id;
-
-        @Column(name = "NAME")
-        private String name;
-
-        @Column(name = "POSTER_PATH")
-        private String poster_path;
-
-        @Column(name = "BACKDROP_PATH")
-        private String backdrop_path;
-
-        public final static String TABLE_AS = "belong_to_collection";
-        public final static String TABLE_NAME = "BELONG_TO_COLLECTION ";
-        public final static String ID = TABLE_AS + ".ID";
-    }
-
-    @Data
-    @Entity
-    @Table(name = "PRODUCTION_COMPANY")
-    @Getter
-    @Setter
-    @AllArgsConstructor
-    @NoArgsConstructor
-    public static class ProductionCompany extends BaseEntity
-    {
-        @Column(name = "ID")
-        private Integer id;
-
-        @Column(name = "NAME")
-        private String name;
-
-        @Column(name = "LOGO_PATH")
-        private String logo_path;
-
-        @Column(name = "ORIGIN_COUNTRY")
-        private String origin_country;
-
-        public final static String TABLE_AS = "production_company";
-        public final static String TABLE_NAME = "PRODUCTION_COMPANY ";
-        public final static String ID = TABLE_AS + ".ID";
-    }
-
-    @Data
-    @Entity
-    @Table(name = "PRODUCTION_COUNTRY")
-    @Getter
-    @Setter
-    @AllArgsConstructor
-    @NoArgsConstructor
-    public static class ProductionCountry extends BaseEntity
-    {
-        @Column(name = "ISO_3166_1")
-        private String iso_3166_1;
-
-        @Column(name = "NAME")
-        private String name;
-
-        public final static String TABLE_AS = "production_country";
-        public final static String TABLE_NAME = "PRODUCTION_COUNTRY ";
-        public final static String ISO = TABLE_AS + ".ISO_3166_1";
-    }
-
-    @Data
-    @Entity
-    @Table(name = "NETWORK")
-    @Getter
-    @Setter
-    @AllArgsConstructor
-    @NoArgsConstructor
-    public static class Network extends BaseEntity
-    {
-        @Column(name = "ID")
-        private Integer id;
-
-        @Column(name = "LOGO_PATH")
-        private String logo_path;
-
-        @Column(name = "NAME")
-        private String name;
-
-        @Column(name = "ORIGIN_COUNTRY")
-        private String origin_country;
-
-        public final static String TABLE_AS = "network";
-        public final static String TABLE_NAME = "NETWORK ";
-        public final static String ID = TABLE_AS + ".ID";
-    }
 
     @Data
     @Entity
@@ -382,8 +288,12 @@ public class Media extends BaseEntity
         @Column(name = "TWITTER_ID")
         private String twitter_id;
 
-        @OneToMany(mappedBy = "season", cascade = CascadeType.ALL)
-        @JsonIgnoreProperties("hibernateLazyInitializer")
+        //        @OneToMany(mappedBy = "season", fetch = FetchType.EAGER, cascade = { CascadeType.REFRESH, CascadeType.DETACH })
+        //        @JsonIgnoreProperties("hibernateLazyInitializer")
+        //        @JsonManagedReference
+        //        private List<Episode> episodes;
+
+        @OneToMany(mappedBy = "season", fetch = FetchType.LAZY, cascade = { CascadeType.PERSIST, CascadeType.MERGE }, orphanRemoval = true)
         @JsonManagedReference
         private List<Episode> episodes;
 
@@ -402,9 +312,14 @@ public class Media extends BaseEntity
         @JsonManagedReference
         private List<WatchProvider> watch_providers;
 
+        //        @ManyToOne(fetch = FetchType.LAZY)
+        //        @JoinColumn(name = "MEDIA_ID")
+        //        @JsonIgnoreProperties("hibernateLazyInitializer")
+        //        @JsonBackReference
+        //        private Media media;
+
         @ManyToOne(fetch = FetchType.LAZY)
-        @JoinColumn(name = "MEDIA_ID")
-        @JsonIgnoreProperties("hibernateLazyInitializer")
+        @JoinColumn(name = "MEDIA_ID", nullable = false)
         @JsonBackReference
         private Media media;
 
@@ -484,9 +399,14 @@ public class Media extends BaseEntity
             @Column(name = "TWITTER_ID")
             private String twitter_id;
 
-            @ManyToOne(fetch = FetchType.LAZY, cascade = CascadeType.ALL)
-            @JoinColumn(name = "SEASON_ID")
-            @JsonIgnoreProperties("hibernateLazyInitializer")
+            //            @ManyToOne(fetch = FetchType.LAZY, cascade = { CascadeType.REFRESH, CascadeType.DETACH })
+            //            @JoinColumn(name = "SEASON_ID")
+            //            @JsonIgnoreProperties("hibernateLazyInitializer")
+            //            @JsonBackReference
+            //            private Season season;
+
+            @ManyToOne(fetch = FetchType.LAZY)
+            @JoinColumn(name = "SEASON_ID", nullable = false)
             @JsonBackReference
             private Season season;
 

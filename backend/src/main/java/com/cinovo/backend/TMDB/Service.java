@@ -83,6 +83,7 @@ public class Service
         return this.client.getConfigurationDetails();
     }
 
+    //TODO: not use
     public DetailsResponse getCreditsDetails(final String id) throws Exception
     {
         return this.client.getCreditsDetails(id);
@@ -93,7 +94,7 @@ public class Service
         return this.client.getDiscoverMovie();
     }
 
-    public DiscoverTVResponse getDiscoverTV() throws Exception
+    public SearchResponse getDiscoverTV() throws Exception
     {
         return this.client.getDiscoverTV();
     }

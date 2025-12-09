@@ -16,7 +16,8 @@ public class Company extends BaseEntity {
     @Column(name = "ID")
     private Integer id;
 
-    @Column(name = "DESCRIPTION")
+    @Lob
+    @Column(name = "DESCRIPTION", columnDefinition = "TEXT")
     private String description;
 
     @Column(name = "HEADQUARTERS")

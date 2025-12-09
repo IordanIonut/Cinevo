@@ -1,0 +1,15 @@
+meta {
+  name: getMovieNowPlaying
+  type: http
+  seq: 18
+}
+
+get {
+  url: http://localhost:8080/api/TMDB/get/movie/now_playing
+  body: none
+  auth: inherit
+}
+
+settings {
+  encodeUrl: true
+}

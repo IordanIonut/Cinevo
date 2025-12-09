@@ -1,0 +1,16 @@
+meta {
+  name: getMovieImages
+  type: http
+  seq: 25
+}
+
+get {
+  url: http://localhost:8080/api/TMDB/get/movie/images/103635
+  body: none
+  auth: inherit
+}
+
+settings {
+  encodeUrl: true
+  timeout: 0
+}

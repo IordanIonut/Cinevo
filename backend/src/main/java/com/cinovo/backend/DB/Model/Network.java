@@ -64,7 +64,7 @@ public class Network extends BaseEntity
         @Column(name = "TYPE")
         private String type;
 
-        @ManyToOne(fetch = FetchType.LAZY, cascade = CascadeType.ALL)
+        @ManyToOne(fetch = FetchType.LAZY, cascade = { CascadeType.REFRESH, CascadeType.DETACH })
         @JoinColumn(name = "NETWORK_ID")
         @JsonBackReference
         private Network network;
@@ -104,7 +104,7 @@ public class Network extends BaseEntity
         @Column(name = "VOTE_COUNT")
         private Integer vote_count;
 
-        @ManyToOne(fetch = FetchType.LAZY, cascade = CascadeType.ALL)
+        @ManyToOne(fetch = FetchType.LAZY, cascade = { CascadeType.REFRESH, CascadeType.DETACH })
         @JoinColumn(name = "NETWORK_ID")
         @JsonBackReference
         private Network network;

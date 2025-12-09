@@ -1,0 +1,20 @@
+meta {
+  name: getPersonUsingSearch
+  type: http
+  seq: 4
+}
+
+get {
+  url: http://localhost:8080/api/person/get/search?query=metro
+  body: none
+  auth: inherit
+}
+
+params:query {
+  query: metro
+}
+
+settings {
+  encodeUrl: true
+  timeout: 0
+}

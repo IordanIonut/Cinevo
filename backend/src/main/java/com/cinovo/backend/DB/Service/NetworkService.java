@@ -9,6 +9,7 @@ import com.cinovo.backend.TMDB.Response.NetworkDetailResponse;
 import com.cinovo.backend.TMDB.Response.NetworkImageResponse;
 import org.springframework.data.repository.query.Param;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -37,6 +38,7 @@ public class NetworkService implements TMDBLogically<Integer, Network>
     }
 
     @Override
+    @Transactional
     public Network onConvertTMDB(Integer input) throws Exception
     {
         NetworkDetailResponse networkDetailResponse = this.service.getNetworkDetail(input);

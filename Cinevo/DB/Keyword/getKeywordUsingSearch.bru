@@ -1,0 +1,20 @@
+meta {
+  name: getKeywordUsingSearch
+  type: http
+  seq: 2
+}
+
+get {
+  url: http://localhost:8080/api/keyword/get/search/by?query=metro
+  body: none
+  auth: inherit
+}
+
+params:query {
+  query: metro
+}
+
+settings {
+  encodeUrl: true
+  timeout: 0
+}

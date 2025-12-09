@@ -46,33 +46,34 @@ public abstract class AbstractHttpClient
     protected HttpResponse<String> sendGet(String baseUrl, Map<String, String> queryParams) throws Exception
     {
         String fullUrl = buildUrlWithParams(apiProperties.getUrl() + baseUrl, queryParams);
-        System.out.println("Sending GET request to: " + fullUrl);
+        log.info("Sending GET request to: " + fullUrl);
         HttpRequest request = HttpRequest.newBuilder().uri(URI.create(fullUrl)).header("Accept", "application/json")
                 .header("Authorization", "Bearer " + apiProperties.getKey()).GET().build();
 
-        int maxRetries = 15;
-        int attempt = 0;
-
-        while(attempt < maxRetries)
+        //        int maxRetries = 15;
+        //        int attempt = 0;
+        //
+        //        while(attempt < maxRetries)
+        //        {
+        HttpResponse<String> response = client.send(request, HttpResponse.BodyHandlers.ofString());
+        if(isNull(response.body()))
         {
-            HttpResponse<String> response = client.send(request, HttpResponse.BodyHandlers.ofString());
-            if(isNull(response.body()))
-            {
-                return null;
-            }
-            //to add when is timeout
-            //            else if(){
-            //                System.out.println("Retryable error detected. Attempt " + (attempt + 1));
-            //                Thread.sleep(4000);
-            //                log.info(response.body());
-            //                attempt++;
-            //            }
-            else
-            {
-                return response;
-            }
+            return null;
         }
-        throw new RuntimeException("Failed after " + maxRetries + " retries: " + fullUrl);
+        //to add when is timeout
+        //            else if(){
+        //                System.out.println("Retryable error detected. Attempt " + (attempt + 1));
+        //                Thread.sleep(4000);
+        //                log.info(response.body());
+        //                attempt++;
+        //            }
+        else
+        {
+            return response;
+        }
+
+        //        }
+        //        throw new RuntimeException("Failed after " + maxRetries + " retries: " + fullUrl);
     }
 
     protected HttpResponse<String> sendPost(String url, String jsonBody) throws Exception
@@ -90,15 +91,16 @@ public abstract class AbstractHttpClient
             ObjectMapper mapper = new ObjectMapper();
             JsonNode root = mapper.readTree(responseBody);
 
-            boolean success = root.path("success").asBoolean(true);
-            int statusCode = root.path("status_code").asInt(0);
-
-            return !success && ((statusCode == 34) || (statusCode == 7));
+            if(root.has("success") && !root.get("success").asBoolean())
+            {
+                int statusCode = root.path("status_code").asInt(0);
+                return statusCode == 34 || statusCode == 7;
+            }
+            return false;
         }
         catch(Exception e)
         {
             return false;
         }
     }
-
 }

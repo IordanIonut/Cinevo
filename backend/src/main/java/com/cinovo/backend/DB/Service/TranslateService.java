@@ -4,8 +4,8 @@ import com.cinovo.backend.DB.Model.Translate;
 import com.cinovo.backend.DB.Repository.TranslateRepository;
 import com.cinovo.backend.DB.Util.TMDBLogically;
 import com.cinovo.backend.TMDB.Response.TranslationResponse;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -34,6 +34,7 @@ public class TranslateService implements TMDBLogically<Integer, List<Translate>>
     }
 
     @Override
+    @Transactional
     public List<Translate> onConvertTMDB(Integer id) throws Exception
     {
         List<Translate> translates = new ArrayList<>();

@@ -11,25 +11,6 @@ import java.util.Optional;
 @Repository
 public interface MediaRepository extends JpaRepository<Media, String>
 {
-    @Query(nativeQuery = true, value = "SELECT " + Media.BelongToCollection.TABLE_AS + ".* FROM " + Media.BelongToCollection.TABLE_NAME
-            + Media.BelongToCollection.TABLE_AS + " WHERE " + Media.BelongToCollection.ID + " = :id")
-    Optional<Media.BelongToCollection> getBelongToCollectionById(@Param("id") Integer id);
-
-    @Query(nativeQuery = true,
-            value = "SELECT " + Media.ProductionCompany.TABLE_AS + ".* FROM " + Media.ProductionCompany.TABLE_NAME + Media.ProductionCompany.TABLE_AS
-                    + " WHERE " + Media.ProductionCompany.ID + " = :id")
-    Optional<Media.ProductionCompany> getProductionCompanyById(@Param("id") Integer id);
-
-    @Query(nativeQuery = true,
-            value = "SELECT " + Media.ProductionCountry.TABLE_AS + ".* FROM " + Media.ProductionCountry.TABLE_NAME + Media.ProductionCountry.TABLE_AS
-                    + " WHERE " + Media.ProductionCountry.ISO + " = :iso")
-    Optional<Media.ProductionCountry> getProductionCountryById(@Param("iso") String iso);
-
-    @Query(nativeQuery = true,
-            value = "SELECT " + Media.Network.TABLE_AS + ".* FROM " + Media.Network.TABLE_NAME + Media.Network.TABLE_AS + " WHERE " + Media.Network.ID
-                    + " = :id")
-    Optional<Media.Network> getNetworkById(@Param("id") Integer id);
-
     @Query(nativeQuery = true,
             value = "SELECT " + Media.Season.TABLE_AS + ".* FROM " + Media.Season.TABLE_NAME + Media.Season.TABLE_AS + " WHERE " + Media.Season.ID
                     + " = :id")

@@ -3,7 +3,7 @@ package com.cinovo.backend.DB.Service;
 import com.cinovo.backend.DB.Model.Media;
 import com.cinovo.backend.DB.Model.WatchProvider;
 import com.cinovo.backend.DB.Repository.WatchProviderRepository;
-import com.cinovo.backend.DB.Util.MediaResolver;
+import com.cinovo.backend.DB.Util.Resolver.MediaResolver;
 import com.cinovo.backend.DB.Util.Shared;
 import com.cinovo.backend.DB.Util.TMDBLogically;
 import com.cinovo.backend.Enum.MediaType;
@@ -12,6 +12,7 @@ import com.cinovo.backend.TMDB.Response.MediaWatchProvidersResponse;
 import lombok.extern.jbosslog.JBossLog;
 import org.springframework.context.annotation.Lazy;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.util.*;
 
@@ -52,6 +53,7 @@ public class WatchProviderService implements TMDBLogically<Object, List<WatchPro
     }
 
     @Override
+    @Transactional
     public List<WatchProvider> onConvertTMDB(Object obj) throws Exception
     {
         String[] parts = Shared.onSplitObject(obj);
@@ -73,8 +75,11 @@ public class WatchProviderService implements TMDBLogically<Object, List<WatchPro
                 {
                     for(MediaWatchProvidersResponse.WatchProvider.Possibility possibility : entry.getValue().getBuy())
                     {
-                        watchProviders.add(
-                                createWatchProvider(possibility, entry.getKey(), ProviderType.BUY, MediaType.valueOf(parts[0]), media, season));
+                        if(this.conditionInsert(entry.getKey()))
+                        {
+                            watchProviders.add(
+                                    createWatchProvider(possibility, entry.getKey(), ProviderType.BUY, MediaType.valueOf(parts[0]), media, season));
+                        }
                     }
                 }
 
@@ -82,8 +87,12 @@ public class WatchProviderService implements TMDBLogically<Object, List<WatchPro
                 {
                     for(MediaWatchProvidersResponse.WatchProvider.Possibility possibility : entry.getValue().getFlatrate())
                     {
-                        watchProviders.add(
-                                createWatchProvider(possibility, entry.getKey(), ProviderType.FLATRATE, MediaType.valueOf(parts[0]), media, season));
+                        if(this.conditionInsert(entry.getKey()))
+                        {
+                            watchProviders.add(
+                                    createWatchProvider(possibility, entry.getKey(), ProviderType.FLATRATE, MediaType.valueOf(parts[0]), media,
+                                            season));
+                        }
                     }
                 }
 
@@ -91,8 +100,11 @@ public class WatchProviderService implements TMDBLogically<Object, List<WatchPro
                 {
                     for(MediaWatchProvidersResponse.WatchProvider.Possibility possibility : entry.getValue().getRent())
                     {
-                        watchProviders.add(
-                                createWatchProvider(possibility, entry.getKey(), ProviderType.RENT, MediaType.valueOf(parts[0]), media, season));
+                        if(this.conditionInsert(entry.getKey()))
+                        {
+                            watchProviders.add(
+                                    createWatchProvider(possibility, entry.getKey(), ProviderType.RENT, MediaType.valueOf(parts[0]), media, season));
+                        }
                     }
                 }
 
@@ -100,8 +112,11 @@ public class WatchProviderService implements TMDBLogically<Object, List<WatchPro
                 {
                     for(MediaWatchProvidersResponse.WatchProvider.Possibility possibility : entry.getValue().getAds())
                     {
-                        watchProviders.add(
-                                createWatchProvider(possibility, entry.getKey(), ProviderType.ADS, MediaType.valueOf(parts[0]), media, season));
+                        if(this.conditionInsert(entry.getKey()))
+                        {
+                            watchProviders.add(
+                                    createWatchProvider(possibility, entry.getKey(), ProviderType.ADS, MediaType.valueOf(parts[0]), media, season));
+                        }
                     }
                 }
 
@@ -109,8 +124,11 @@ public class WatchProviderService implements TMDBLogically<Object, List<WatchPro
                 {
                     for(MediaWatchProvidersResponse.WatchProvider.Possibility possibility : entry.getValue().getFree())
                     {
-                        watchProviders.add(
-                                createWatchProvider(possibility, entry.getKey(), ProviderType.FREE, MediaType.valueOf(parts[0]), media, season));
+                        if(this.conditionInsert(entry.getKey()))
+                        {
+                            watchProviders.add(
+                                    createWatchProvider(possibility, entry.getKey(), ProviderType.FREE, MediaType.valueOf(parts[0]), media, season));
+                        }
                     }
                 }
             }
@@ -137,6 +155,11 @@ public class WatchProviderService implements TMDBLogically<Object, List<WatchPro
         watchProvider.setSeason(season);
 
         return watchProvider;
+    }
+
+    private Boolean conditionInsert(final String key)
+    {
+        return key.equals("US");
     }
 }
 

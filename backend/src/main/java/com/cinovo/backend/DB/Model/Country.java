@@ -25,7 +25,7 @@ public class Country extends BaseEntity
     @Enumerated(EnumType.STRING)
     private MediaType type;
 
-    @OneToMany(mappedBy = "country")
+    @OneToMany(mappedBy = "country", cascade = { CascadeType.REFRESH, CascadeType.DETACH }, fetch = FetchType.LAZY)
     @JsonManagedReference
     private List<Certification> certifications;
 

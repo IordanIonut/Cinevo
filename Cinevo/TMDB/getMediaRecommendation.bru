@@ -1,0 +1,20 @@
+meta {
+  name: getMediaRecommendation
+  type: http
+  seq: 27
+}
+
+get {
+  url: http://localhost:8080/api/TMDB/get/movie/recommendation/1007734?type=MOVIE
+  body: none
+  auth: inherit
+}
+
+params:query {
+  type: MOVIE
+}
+
+settings {
+  encodeUrl: true
+  timeout: 0
+}

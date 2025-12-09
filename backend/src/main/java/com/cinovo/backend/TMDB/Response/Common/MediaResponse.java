@@ -41,7 +41,7 @@ public class MediaResponse
     private Integer budget;
     private String homepage;
     private String imdb_id;
-    private Integer revenue;
+    private Long revenue;
     private Integer runtime;
     private String status;
     private String tagline;
@@ -69,6 +69,8 @@ public class MediaResponse
     private List<SpokenLanguage> spoken_languages;
     private List<Role> roles;
     private List<Job> jobs;
+    private String person_id;
+    private List<Episode> episodes;
 
     @Data
     @Getter
@@ -168,6 +170,29 @@ public class MediaResponse
         private String poster_path;
         private Integer season_number;
         private Integer vote_average;
+        private String media_type;
+        private Integer show_id;
+    }
+
+    @Data
+    @Getter
+    @Setter
+    public static class Episode
+    {
+        private Integer id;
+        private String name;
+        private String overview;
+        private String media_type;
+        private Double vote_average;
+        private Integer vote_count;
+        private String air_date;
+        private Integer episode_number;
+        private String episode_type;
+        private String production_code;
+        private Integer runtime;
+        private Integer season_number;
+        private Integer show_id;
+        private String still_path;
     }
 
     @Data

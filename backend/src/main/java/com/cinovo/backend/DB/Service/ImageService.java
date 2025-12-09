@@ -4,7 +4,7 @@ import com.cinovo.backend.DB.Model.Image;
 import com.cinovo.backend.DB.Model.Media;
 import com.cinovo.backend.DB.Model.Person;
 import com.cinovo.backend.DB.Repository.ImageRepository;
-import com.cinovo.backend.DB.Util.MediaResolver;
+import com.cinovo.backend.DB.Util.Resolver.MediaResolver;
 import com.cinovo.backend.DB.Util.Shared;
 import com.cinovo.backend.DB.Util.TMDBLogically;
 import com.cinovo.backend.Enum.ImageType;
@@ -15,6 +15,7 @@ import com.cinovo.backend.TMDB.Response.Common.MediaImagesResponse;
 import com.cinovo.backend.TMDB.Response.PeopleImagesResponse;
 import org.springframework.context.annotation.Lazy;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -77,6 +78,7 @@ public class ImageService implements TMDBLogically<Object, Object>
                 Shared.onStringParseToInteger(parts[3]), MediaType.valueOf(parts[0]));
     }
 
+    @Transactional
     private List<Image> onConvertTMDB(final Integer id, final Integer season_number, final Integer episode_number, final MediaType type)
             throws Exception
     {
@@ -92,7 +94,8 @@ public class ImageService implements TMDBLogically<Object, Object>
             case MediaType.PERSON ->
             {
                 PeopleImagesResponse response = service.getPeopleImages(id);
-                Person person = this.personService.findPersonById(id);
+                Person person = null;
+                //                        this.personService.findPersonById(id);
                 yield convertImageResponseToImages(null, null, null, response.getProfiles(), null, null, null, null, person, null, MediaType.PERSON);
             }
             case MediaType.COLLECTION ->
@@ -134,8 +137,10 @@ public class ImageService implements TMDBLogically<Object, Object>
                 yield new ArrayList<>();
             }
         };
-
-        this.imageRepository.saveAll(images);
+        if(!type.equals(MediaType.PERSON))
+        {
+            this.imageRepository.saveAll(images);
+        }
         return images;
     }
 
@@ -149,7 +154,10 @@ public class ImageService implements TMDBLogically<Object, Object>
         {
             for(ImageResponse backdrop : backdrops)
             {
-                images.add(createImageObject(backdrop, media, season, episode, person, collectionId, ImageType.BACKDROP, type));
+                if(this.conditionInsert(type, backdrop))
+                {
+                    images.add(createImageObject(backdrop, media, season, episode, person, collectionId, ImageType.BACKDROP, type));
+                }
             }
         }
 
@@ -157,7 +165,10 @@ public class ImageService implements TMDBLogically<Object, Object>
         {
             for(ImageResponse poster : posters)
             {
-                images.add(createImageObject(poster, media, season, episode, person, collectionId, ImageType.POSTER, type));
+                if(this.conditionInsert(type, poster))
+                {
+                    images.add(createImageObject(poster, media, season, episode, person, collectionId, ImageType.POSTER, type));
+                }
             }
         }
 
@@ -165,7 +176,10 @@ public class ImageService implements TMDBLogically<Object, Object>
         {
             for(ImageResponse logo : logos)
             {
-                images.add(createImageObject(logo, media, season, episode, person, collectionId, ImageType.LOGO, type));
+                if(this.conditionInsert(type, logo))
+                {
+                    images.add(createImageObject(logo, media, season, episode, person, collectionId, ImageType.LOGO, type));
+                }
             }
         }
 
@@ -173,7 +187,10 @@ public class ImageService implements TMDBLogically<Object, Object>
         {
             for(ImageResponse profile : profiles)
             {
-                images.add(createImageObject(profile, media, season, episode, person, collectionId, ImageType.PROFILE, type));
+                if(this.conditionInsert(type, profile))
+                {
+                    images.add(createImageObject(profile, media, season, episode, person, collectionId, ImageType.PROFILE, type));
+                }
             }
         }
 
@@ -181,7 +198,10 @@ public class ImageService implements TMDBLogically<Object, Object>
         {
             for(ImageResponse still : stills)
             {
-                images.add(createImageObject(still, media, season, episode, person, collectionId, ImageType.STILL, type));
+                if(this.conditionInsert(type, still))
+                {
+                    images.add(createImageObject(still, media, season, episode, person, collectionId, ImageType.STILL, type));
+                }
             }
         }
 
@@ -211,5 +231,13 @@ public class ImageService implements TMDBLogically<Object, Object>
         img.setEpisode(episode);
 
         return img;
+    }
+
+    private Boolean conditionInsert(final MediaType type, final ImageResponse imageResponse)
+    {
+        return type == MediaType.PERSON || type == MediaType.TV_EPISODE || type == MediaType.TV_SEASON || (imageResponse.getIso_639_1() != null
+                && imageResponse.getIso_639_1().equals("US")) || (imageResponse.getIso_3166_1() != null && imageResponse.getIso_3166_1()
+                .equals("US"));
+        //        return true;
     }
 }

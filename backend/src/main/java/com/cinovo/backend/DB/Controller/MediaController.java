@@ -52,13 +52,13 @@ public class MediaController
         }
     }
 
-    @GetMapping("/get/discovery")
-    public ResponseEntity<List<Media>> findMediaByDiscovery()
+    @GetMapping("/get/discovery/{type}")
+    public ResponseEntity<List<Media>> findMediaByDiscovery(@PathVariable final MediaType type)
     {
         try
         {
             log.info("findMediaByDiscovery() - Successful.....");
-            return ResponseEntity.ok(this.mediaService.findMediaByDiscovery());
+            return ResponseEntity.ok(this.mediaService.findMediaByDiscovery(type));
         }
         catch(Exception e)
         {

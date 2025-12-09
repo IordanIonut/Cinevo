@@ -13,8 +13,9 @@ import lombok.*;
 @AllArgsConstructor
 @Getter
 @Setter
-public class Keyword extends BaseEntity {
-    @Column(name = "ID")
+public class Keyword extends BaseEntity
+{
+    @Column(name = "ID", nullable = false, unique = true)
     private Integer id;
 
     @Column(name = "NAME")
@@ -22,5 +23,5 @@ public class Keyword extends BaseEntity {
 
     public final static String TABLE_AS = "keyword";
     public final static String TABLE_NAME = "KEYWORD ";
-    public final static String ID = TABLE_AS +".ID";
+    public final static String ID = TABLE_AS + ".ID";
 }

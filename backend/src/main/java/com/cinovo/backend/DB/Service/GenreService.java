@@ -6,8 +6,8 @@ import com.cinovo.backend.DB.Util.TMDBLogically;
 import com.cinovo.backend.Enum.MediaType;
 import com.cinovo.backend.TMDB.Response.Common.GenresResponse;
 import lombok.extern.jbosslog.JBossLog;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDate;
 import java.util.ArrayList;
@@ -42,6 +42,11 @@ public class GenreService implements TMDBLogically<MediaType, List<Genre>>
         return genres.get();
     }
 
+    public String findMediaTypeByIDs(List<Integer> ids)
+    {
+        return this.genreRepository.findMediaTypeByIDs(ids).orElse(MediaType.MOVIE.name());
+    }
+
     public List<Genre> parsLongToObjects(final List<Integer> genre_ids, final MediaType type)
     {
         List<Genre> genres = new ArrayList<>();
@@ -63,6 +68,7 @@ public class GenreService implements TMDBLogically<MediaType, List<Genre>>
     }
 
     @Override
+    @Transactional
     public List<Genre> onConvertTMDB(MediaType type) throws Exception
     {
         List<Genre> convertedGenres = new ArrayList<>();

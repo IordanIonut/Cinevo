@@ -10,7 +10,9 @@ import com.cinovo.backend.TMDB.Response.Common.MediaResponse;
 import com.cinovo.backend.TMDB.Response.SearchResponse;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import lombok.extern.jbosslog.JBossLog;
+import org.springframework.context.annotation.Lazy;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -24,7 +26,7 @@ public class CollectionService implements TMDBLogically<Object, Object>
     private final com.cinovo.backend.TMDB.Service service;
     private final MediaService movieService;
 
-    public CollectionService(CollectionRepository collectionRepository, MediaService movieService, com.cinovo.backend.TMDB.Service service)
+    public CollectionService(CollectionRepository collectionRepository, @Lazy MediaService movieService, com.cinovo.backend.TMDB.Service service)
     {
         this.detailRepository = collectionRepository;
         this.movieService = movieService;
@@ -72,6 +74,7 @@ public class CollectionService implements TMDBLogically<Object, Object>
         throw new IllegalArgumentException("Invalid input and instanceof object for: " + input);
     }
 
+    @Transactional
     public Collection generateCollection(CollectionResponse collection) throws Exception
     {
         Collection detail = this.detailRepository.findCollectionById(collection.getId()).orElse(new Collection());
@@ -83,13 +86,15 @@ public class CollectionService implements TMDBLogically<Object, Object>
         detail.setOriginal_language(collection.getOriginal_language());
         detail.setOriginal_name(collection.getOriginal_name());
         detail.setAdult(collection.getAdult());
+        this.detailRepository.save(detail);
 
         if(collection.getParts() != null)
         {
             List<Media> medias = new ArrayList<>();
             for(MediaResponse movieResponse : collection.getParts())
             {
-                Media movie = this.movieService.getMediaByIdAndType(movieResponse.getId(), MediaType.valueOf(movieResponse.getMedia_type()));
+                Media movie =
+                        this.movieService.getMediaByIdAndType(movieResponse.getId(), MediaType.valueOf(movieResponse.getMedia_type().toUpperCase()));
                 medias.add(movie);
             }
             detail.setMedias(medias);

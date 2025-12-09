@@ -1,5 +1,7 @@
 package com.cinovo.backend.DB.Util;
 
+import java.time.LocalDate;
+
 public class Shared
 {
     public final static String REGEX = "//././/";
@@ -19,4 +21,9 @@ public class Shared
     {
         return Shared.onStringEqualsWithNull(str) == null ? null : Integer.parseInt(str);
     }
+
+    public static LocalDate onStringParseDate(String date) {
+        return (date != null && !date.isBlank()) ? LocalDate.parse(date) : null;
+    }
+
 }

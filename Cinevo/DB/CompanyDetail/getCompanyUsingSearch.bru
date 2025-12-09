@@ -1,0 +1,20 @@
+meta {
+  name: getCompanyUsingSearch
+  type: http
+  seq: 2
+}
+
+get {
+  url: http://localhost:8080/api/company/detail/get/search/by?query=hbo
+  body: none
+  auth: inherit
+}
+
+params:query {
+  query: hbo
+}
+
+settings {
+  encodeUrl: true
+  timeout: 0
+}

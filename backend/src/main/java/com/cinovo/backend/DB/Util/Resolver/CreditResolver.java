@@ -27,9 +27,9 @@ public class CreditResolver
 
     @Async("customExecutorCredit")
     @Transactional
-    public void generateDateAsync(final MediaResponse mediaResponse, final String cinevo_id, final Person person, final Media media)
+    public void generateDateAsync(final MediaResponse mediaResponse, Credit credit, final Person person, final Media media)
     {
-        Credit credit = this.creditService.findCreditByCinevoId(cinevo_id);
+        credit = this.creditService.findCreditByCinevoId(credit.getCinevo_id());
         List<String> departments = credit.getDepartment() != null ? new ArrayList<>(credit.getDepartment()) : new ArrayList<>();
         if(mediaResponse.getDepartment() != null && !departments.contains(mediaResponse.getDepartment()))
         {

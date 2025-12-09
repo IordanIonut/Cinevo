@@ -2,9 +2,7 @@ package com.cinovo.backend.DB.Model;
 
 import com.cinovo.backend.DB.Util.BaseEntity;
 import com.cinovo.backend.Enum.Gender;
-import com.fasterxml.jackson.annotation.JsonBackReference;
-import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
-import com.fasterxml.jackson.annotation.JsonManagedReference;
+import com.fasterxml.jackson.annotation.*;
 import jakarta.persistence.*;
 import lombok.*;
 
@@ -18,6 +16,7 @@ import java.util.List;
 @NoArgsConstructor
 @Getter
 @Setter
+@JsonIdentityInfo(generator = ObjectIdGenerators.PropertyGenerator.class, property = "id")
 public class Person extends BaseEntity
 {
     @Column(name = "ID")
@@ -96,13 +95,14 @@ public class Person extends BaseEntity
     @Column(name = "PLACE_OF_BIRTH")
     private String place_of_birth;
 
-    @ManyToMany(fetch = FetchType.LAZY)
-    @JoinTable(name = "PERSON_MEDIA", joinColumns = @JoinColumn(name = "PERSON_ID", referencedColumnName = "CINEVO_ID"),
+    @ManyToMany(fetch = FetchType.LAZY, cascade = { CascadeType.REFRESH, CascadeType.DETACH })
+    @JoinTable(name = "PERSON_MEDIA_CREATED", joinColumns = @JoinColumn(name = "PERSON_ID", referencedColumnName = "CINEVO_ID"),
             inverseJoinColumns = @JoinColumn(name = "MEDIA_ID", referencedColumnName = "CINEVO_ID"))
     @JsonBackReference
+    @JsonIgnoreProperties("hibernateLazyInitializer")
     private List<Media> medias;
 
-    @OneToMany(mappedBy = "person", fetch = FetchType.LAZY)
+    @OneToMany(mappedBy = "person", fetch = FetchType.LAZY, cascade = CascadeType.ALL)
     @JsonIgnoreProperties("hibernateLazyInitializer")
     @JsonManagedReference
     private List<Image> images;

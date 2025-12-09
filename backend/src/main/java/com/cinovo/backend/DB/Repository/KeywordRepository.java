@@ -11,8 +11,9 @@ import java.security.Key;
 import java.util.Optional;
 
 @Repository
-public interface KeywordRepository extends JpaRepository<Keyword, String> {
-    @Query(value = "SELECT " + Keyword.TABLE_AS + ".* FROM " + Keyword.TABLE_NAME + Keyword.TABLE_AS + " WHERE " + Keyword.ID + " = :id", nativeQuery = true)
+public interface KeywordRepository extends JpaRepository<Keyword, String>
+{
+    @Query(nativeQuery = true,
+            value = "SELECT " + Keyword.TABLE_AS + ".* FROM " + Keyword.TABLE_NAME + Keyword.TABLE_AS + " WHERE " + Keyword.ID + " = :id")
     Optional<Keyword> findKeywordById(@Param("id") final Integer id);
-
 }

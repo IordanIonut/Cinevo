@@ -8,6 +8,7 @@ import com.cinovo.backend.TMDB.Response.Common.KeywordsResponse;
 import com.cinovo.backend.TMDB.Response.SearchResponse;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -66,6 +67,7 @@ public class KeywordService implements TMDBLogically<Object, Object>
         throw new IllegalArgumentException("Input of type object not find: " + input);
     }
 
+    @Transactional
     private Keyword genereateKeyword(KeywordsResponse response)
     {
         Keyword keyword = this.keywordRepository.findKeywordById(response.getId()).orElse(new Keyword());

@@ -52,25 +52,25 @@ public class Image extends BaseEntity
     @Column(name = "COLLECTION_ID")
     private Integer collection_id;
 
-    @ManyToOne(fetch = FetchType.LAZY)
+    @ManyToOne(fetch = FetchType.LAZY, cascade = { CascadeType.REFRESH, CascadeType.DETACH })
     @JoinColumn(name = "MEDIA_ID")
     @JsonIgnoreProperties("hibernateLazyInitializer")
     @JsonBackReference
     private Media media;
 
-    @ManyToOne(fetch = FetchType.LAZY)
+    @ManyToOne(fetch = FetchType.LAZY, cascade = { CascadeType.REFRESH, CascadeType.DETACH })
     @JoinColumn(name = "SEASON_ID")
     @JsonIgnoreProperties("hibernateLazyInitializer")
     @JsonBackReference
     private Media.Season season;
 
-    @ManyToOne(fetch = FetchType.LAZY)
+    @ManyToOne(fetch = FetchType.LAZY, cascade = { CascadeType.REFRESH, CascadeType.DETACH })
     @JoinColumn(name = "EPISODE_ID")
     @JsonIgnoreProperties("hibernateLazyInitializer")
     @JsonBackReference
     private Media.Season.Episode episode;
 
-    @ManyToOne(fetch = FetchType.LAZY)
+    @ManyToOne(fetch = FetchType.LAZY, cascade = { CascadeType.REFRESH, CascadeType.DETACH })
     @JoinColumn(name = "PERSON_ID")
     @JsonIgnoreProperties("hibernateLazyInitializer")
     @JsonBackReference

@@ -7,6 +7,7 @@ import com.cinovo.backend.TMDB.Response.Common.CompanyResponse;
 import com.cinovo.backend.TMDB.Response.SearchResponse;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -64,6 +65,7 @@ public class CompanyService implements TMDBLogically<Object, Object>
         throw new IllegalArgumentException("Input of type object not find: " + input);
     }
 
+    @Transactional
     public Company generateCompany(CompanyResponse company) throws Exception
     {
         Company companyDetail = this.companyRepository.findCompanyById(company.getId()).orElse(new Company());

@@ -1,6 +1,6 @@
 package com.cinovo.backend.DB.Service;
 
-import com.cinovo.backend.DB.Model.Media;
+import com.cinovo.backend.DB.Model.Image;
 import com.cinovo.backend.DB.Model.Person;
 import com.cinovo.backend.DB.Repository.PersonRepository;
 import com.cinovo.backend.DB.Util.Shared;
@@ -14,11 +14,10 @@ import com.cinovo.backend.TMDB.Response.PersonExternalIdsResponse;
 import com.cinovo.backend.TMDB.Response.SearchResponse;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import lombok.extern.jbosslog.JBossLog;
-import org.springframework.cache.annotation.Cacheable;
 import org.springframework.context.annotation.Lazy;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
-import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
@@ -44,33 +43,18 @@ public class PersonService implements TMDBLogically<Object, Object>
         this.imageService = imageService;
     }
 
+    public void saveOrUpdate(final Person person){
+        this.personRepository.save(person);
+    }
+
     public Person findPersonById(final Integer id) throws Exception
     {
-        Object lock = locks.computeIfAbsent(id, k -> new Object());
-        synchronized(lock)
+        Optional<Person> person = personRepository.findPersonById(id);
+        if(person.isPresent())
         {
-            try
-            {
-                Optional<Person> person = personRepository.findPersonById(id);
-                if(person.isPresent())
-                {
-                    return person.get();
-                }
-                Person newPerson = (Person) this.onConvertTMDB(id);
-                return newPerson;
-            }
-            finally
-            {
-                locks.remove(id);
-            }
+            return person.get();
         }
-
-        //        Optional<Person> person = this.personRepository.findPersonById(id);
-        //        if(person.isEmpty())
-        //        {
-        //            return (Person) this.onConvertTMDB(id);
-        //        }
-        //        return person.get();
+        return (Person) this.onConvertTMDB(id);
     }
 
     public List<Person> getPeoplePopularity(final Integer page) throws Exception
@@ -99,17 +83,15 @@ public class PersonService implements TMDBLogically<Object, Object>
         {
             return this.generatePerson((Integer) obj, null);
         }
-        else if(MediaType.valueOf(parts[0]) == MediaType.POPULARITY)
+        List<Person> persons = new ArrayList<>();
+        if(MediaType.valueOf(parts[0]) == MediaType.POPULARITY)
         {
-            List<Person> persons = new ArrayList<>();
             PeoplePopularResponse peoplePopularResponse = this.service.getPeoplePopular("en-US", Shared.onStringParseToInteger(parts[1]));
             for(PeopleResponse person : peoplePopularResponse.getResults())
             {
                 Person per = this.generatePerson(person.getId(), person.getKnown_for());
                 persons.add(per);
             }
-
-            return persons;
         }
         else if(MediaType.valueOf(parts[0]) == MediaType.SEARCH)
         {
@@ -117,31 +99,36 @@ public class PersonService implements TMDBLogically<Object, Object>
                     this.service.getSearchPeopleResponse(Shared.onStringEqualsWithNull(parts[1]), Boolean.parseBoolean(parts[2]),
                             Shared.onStringEqualsWithNull(parts[3]), Integer.parseInt(parts[4]));
 
-            return this.onParseSearchResponseToPeopleResponse(rawResponse);
+            persons = this.onParseSearchResponseToPeopleResponse(rawResponse);
         }
         else if(MediaType.valueOf(parts[0]) == MediaType.TRENDING)
         {
             SearchResponse<?> rawResponse =
                     this.service.getTrendingPeopleResponse(Shared.onStringEqualsWithNull(parts[1]), Shared.onStringEqualsWithNull(parts[2]));
 
-            return this.onParseSearchResponseToPeopleResponse(rawResponse);
+            persons = this.onParseSearchResponseToPeopleResponse(rawResponse);
         }
-
         log.error("Type case is not foud: " + obj);
-        return null;
+
+        this.personRepository.saveAll(persons);
+        return persons;
     }
 
-    private Person generatePerson(final Integer id, List<MediaResponse> know_for) throws Exception
+    @Transactional
+    private Person generatePerson(final Integer id, List<MediaResponse> knownForMedias) throws Exception
     {
+        //fixed the connection to not give errors
         PeopleResponse peopleResponse = this.service.getPeopleDetail(id, "en-US");
         PersonExternalIdsResponse personExternalIdsResponse = this.service.getPersonExternalIds(id);
         if(peopleResponse.getId() == null)
+        {
             return null;
+        }
 
-        Person per = this.personRepository.findPersonById(id).orElse(new Person());
+        Person per = personRepository.findPersonById(id).orElse(new Person());
+        per.setId(peopleResponse.getId());
         per.setAdult(peopleResponse.getAdult());
         per.setGender(Gender.fromCode(peopleResponse.getGender()));
-        per.setId(peopleResponse.getId());
         per.setKnown_for_department(peopleResponse.getKnown_for_department());
         per.setName(peopleResponse.getName());
         per.setPopularity(peopleResponse.getPopularity());
@@ -149,14 +136,11 @@ public class PersonService implements TMDBLogically<Object, Object>
         per.setOriginal_name(peopleResponse.getOriginal_name());
         per.setAlso_known_as(peopleResponse.getAlso_known_as());
         per.setBiography(peopleResponse.getBiography());
-        per.setBirthday(peopleResponse.getBirthday() != null && !peopleResponse.getBirthday().isEmpty()
-                ? LocalDate.parse(peopleResponse.getBirthday())
-                : null);
-        per.setDeathday(peopleResponse.getDeathday() != null && !peopleResponse.getDeathday().isEmpty()
-                ? LocalDate.parse(peopleResponse.getDeathday())
-                : null);
+        per.setBirthday(Shared.onStringParseDate(peopleResponse.getBirthday()));
+        per.setDeathday(Shared.onStringParseDate(peopleResponse.getDeathday()));
         per.setHomepage(peopleResponse.getHomepage());
         per.setPlace_of_birth(peopleResponse.getPlace_of_birth());
+
         per.setFreebase_mid(personExternalIdsResponse.getFreebase_mid());
         per.setImdb_id(personExternalIdsResponse.getImdb_id());
         per.setFreebase_id(personExternalIdsResponse.getFreebase_id());
@@ -167,50 +151,78 @@ public class PersonService implements TMDBLogically<Object, Object>
         per.setYoutube_id(personExternalIdsResponse.getYoutube_id());
         per.setInstagram_id(personExternalIdsResponse.getInstagram_id());
         per.setTiktok_id(personExternalIdsResponse.getTiktok_id());
-        this.personRepository.save(per);
 
-        per.setImages(this.imageService.findImageByMediaIdAndMediaType(id, MediaType.PERSON));
-        if(know_for != null)
+        List<Image> images = imageService.findImageByMediaIdAndMediaType(id, MediaType.PERSON);
+        if(per.getImages() == null)
         {
-            List<Media> updatedMedias = new ArrayList<>();
-            for(MediaResponse mediaResponse : know_for)
-            {
-                Media media =
-                        this.mediaService.getMediaByIdAndType(mediaResponse.getId(), MediaType.valueOf(mediaResponse.getMedia_type().toUpperCase()));
-                updatedMedias.add(media);
-            }
-            List<Media> currentMedias = per.getMedias();
-            if(currentMedias == null)
-            {
-                per.setMedias(updatedMedias);
-            }
-            else
-            {
-                List<Media> toRemove = new ArrayList<>();
-                for(Media oldMedia : currentMedias)
-                {
-                    if(!updatedMedias.contains(oldMedia))
-                    {
-                        toRemove.add(oldMedia);
-                    }
-                }
-                currentMedias.removeAll(toRemove);
+            per.setImages(new ArrayList<>());
+        }
+        per.getImages().clear();
 
-                for(Media newMedia : updatedMedias)
-                {
-                    if(!currentMedias.contains(newMedia))
-                    {
-                        currentMedias.add(newMedia);
-                    }
-                }
-                per.setMedias(currentMedias);
-            }
+        for(Image img : images)
+        {
+            img.setPerson(per);
+            per.getImages().add(img);
         }
 
-        this.personRepository.save(per);
         return per;
     }
 
+    //    @Transactional
+    //    private Person generatePerson(final Integer id, List<MediaResponse> know_for) throws Exception
+    //    {
+    //        PeopleResponse peopleResponse = this.service.getPeopleDetail(id, "en-US");
+    //        PersonExternalIdsResponse personExternalIdsResponse = this.service.getPersonExternalIds(id);
+    //        if(peopleResponse.getId() == null)
+    //            return null;
+    //
+    //        Person per = this.personRepository.findPersonById(id).orElse(new Person());
+    //        per.setAdult(peopleResponse.getAdult());
+    //        per.setGender(Gender.fromCode(peopleResponse.getGender()));
+    //        per.setId(peopleResponse.getId());
+    //        per.setKnown_for_department(peopleResponse.getKnown_for_department());
+    //        per.setName(peopleResponse.getName());
+    //        per.setPopularity(peopleResponse.getPopularity());
+    //        per.setProfile_file(peopleResponse.getProfile_path());
+    //        per.setOriginal_name(peopleResponse.getOriginal_name());
+    //        per.setAlso_known_as(peopleResponse.getAlso_known_as());
+    //        per.setBiography(peopleResponse.getBiography());
+    //        this.personRepository.save(per);
+    //
+    //        per.setBirthday(peopleResponse.getBirthday() != null && !peopleResponse.getBirthday().isEmpty()
+    //                ? LocalDate.parse(peopleResponse.getBirthday())
+    //                : null);
+    //        per.setDeathday(peopleResponse.getDeathday() != null && !peopleResponse.getDeathday().isEmpty()
+    //                ? LocalDate.parse(peopleResponse.getDeathday())
+    //                : null);
+    //        per.setHomepage(peopleResponse.getHomepage());
+    //        per.setPlace_of_birth(peopleResponse.getPlace_of_birth());
+    //        per.setFreebase_mid(personExternalIdsResponse.getFreebase_mid());
+    //        per.setImdb_id(personExternalIdsResponse.getImdb_id());
+    //        per.setFreebase_id(personExternalIdsResponse.getFreebase_id());
+    //        per.setTvrage_id(personExternalIdsResponse.getTvrage_id());
+    //        per.setWikidata_id(personExternalIdsResponse.getWikidata_id());
+    //        per.setFacebook_id(personExternalIdsResponse.getFacebook_id());
+    //        per.setTwitter_id(personExternalIdsResponse.getTwitter_id());
+    //        per.setYoutube_id(personExternalIdsResponse.getYoutube_id());
+    //        per.setInstagram_id(personExternalIdsResponse.getInstagram_id());
+    //        per.setTiktok_id(personExternalIdsResponse.getTiktok_id());
+    //
+    //        per.setImages(this.imageService.findImageByMediaIdAndMediaType(id, MediaType.PERSON));
+
+    /// /        if(know_for != null) /        { /            List<Media> updatedMedias = new ArrayList<>(); /            for(MediaResponse
+    /// mediaResponse : know_for) /            { /                Media media = / this.mediaService.getMediaByIdAndType(mediaResponse.getId(),
+    /// MediaType.valueOf(mediaResponse.getMedia_type().toUpperCase())); / updatedMedias.add(media); /            } /            List<Media>
+    /// currentMedias = per.getMedias(); /            if(currentMedias == null) / { /                per.setMedias(updatedMedias); /            } /
+    /// else /            { /                List<Media> toRemove = new ArrayList<>(); /                for(Media oldMedia : currentMedias) / { /
+    /// if(!updatedMedias.contains(oldMedia)) /                    { /                        toRemove.add(oldMedia); / } / } /
+    /// currentMedias.removeAll(toRemove); / /                for(Media newMedia : updatedMedias) /                { /
+    /// if(!currentMedias.contains(newMedia)) /                    { /                        currentMedias.add(newMedia); / } /                } /
+    /// per.setMedias(currentMedias); /            } /        }
+    //
+    //        this.personRepository.save(per);
+    //        return per;
+    //    }
     private List<Person> onParseSearchResponseToPeopleResponse(final SearchResponse<?> rawResponse) throws Exception
     {
         ObjectMapper mapper = new ObjectMapper();

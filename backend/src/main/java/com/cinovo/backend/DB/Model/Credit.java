@@ -41,12 +41,12 @@ public class Credit extends BaseEntity
     @Column(name = "FIRST_CREDIT_AIR_DATE")
     private LocalDate first_credit_air_date;
 
-    @ElementCollection
+    @ElementCollection(fetch = FetchType.EAGER)
     @CollectionTable(name = "CREDIT_DEPARTMENT", joinColumns = @JoinColumn(name = "CINEVO_ID"))
     @Column(name = "DEPARTMENT")
     private List<String> department;
 
-    @ElementCollection
+    @ElementCollection(fetch = FetchType.EAGER)
     @CollectionTable(name = "CREDIT_JOB_LIST", joinColumns = @JoinColumn(name = "CINEVO_ID"))
     @Column(name = "JOB")
     private List<String> job;
@@ -62,12 +62,12 @@ public class Credit extends BaseEntity
     @JsonIgnoreProperties("hibernateLazyInitializer")
     private Person person;
 
-    @ManyToMany(fetch = FetchType.LAZY, cascade = CascadeType.ALL)
+    @ManyToMany(fetch = FetchType.LAZY, cascade = { CascadeType.REFRESH, CascadeType.DETACH })
     @JoinTable(name = "CREDIT_ROLE", joinColumns = @JoinColumn(name = "CREDIT_ID", referencedColumnName = "CINEVO_ID"),
             inverseJoinColumns = @JoinColumn(name = "ROLE_ID", referencedColumnName = "CINEVO_ID"))
     private List<Role> roles;
 
-    @ManyToMany(fetch = FetchType.LAZY, cascade = CascadeType.ALL)
+    @ManyToMany(fetch = FetchType.LAZY, cascade = { CascadeType.REFRESH, CascadeType.DETACH })
     @JoinTable(name = "CREDIT_JOB", joinColumns = @JoinColumn(name = "CREDIT_ID", referencedColumnName = "CINEVO_ID"),
             inverseJoinColumns = @JoinColumn(name = "JOB_ID", referencedColumnName = "CINEVO_ID"))
     private List<Job> jobs;
@@ -78,6 +78,7 @@ public class Credit extends BaseEntity
     public final static String PERSON_ID = TABLE_AS + ".PERSON_ID";
     public final static String CREDIT_ID = TABLE_AS + ".CREDIT_ID";
     public final static String JOIN_MEDIA = MEDIA_ID + " = " + Media.CINEVO_ID;
+    public final static String CINEVO_ID = TABLE_AS + ".CINEVO_ID";
 
     @Data
     @Entity

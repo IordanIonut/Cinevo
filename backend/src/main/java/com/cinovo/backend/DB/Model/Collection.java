@@ -1,6 +1,7 @@
 package com.cinovo.backend.DB.Model;
 
 import com.cinovo.backend.DB.Util.BaseEntity;
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.fasterxml.jackson.annotation.JsonManagedReference;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import jakarta.persistence.*;
@@ -42,7 +43,7 @@ public class Collection extends BaseEntity
     @Column(name = "ADULT")
     private Boolean adult;
 
-    @OneToMany(mappedBy = "detail")
+    @OneToMany(mappedBy = "belong_to_collection")
     @JsonManagedReference
     private List<Media> medias;
 

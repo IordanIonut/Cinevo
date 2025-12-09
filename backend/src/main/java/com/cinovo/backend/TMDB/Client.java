@@ -1,5 +1,6 @@
 package com.cinovo.backend.TMDB;
 
+import com.cinovo.backend.DB.Model.Media;
 import com.cinovo.backend.Enum.MediaType;
 import com.cinovo.backend.TMDB.Response.*;
 import com.cinovo.backend.TMDB.Response.Common.*;
@@ -109,9 +110,9 @@ public class Client extends AbstractHttpClient
         return this.generateGetCall(DISCOVER + "/movie", null, SearchResponse.class);
     }
 
-    protected DiscoverTVResponse getDiscoverTV() throws Exception
+    protected SearchResponse<MediaResponse> getDiscoverTV() throws Exception
     {
-        return this.generateGetCall(DISCOVER + "/tv", null, DiscoverTVResponse.class);
+        return this.generateGetCall(DISCOVER + "/tv", null, SearchResponse.class);
     }
 
     protected KeywordsResponse getKeywordDetails(final Integer id) throws Exception
