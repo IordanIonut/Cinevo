@@ -1,0 +1,23 @@
+meta {
+  name: checkUrl
+  type: http
+  seq: 1
+}
+
+post {
+  url: http://localhost:8080/api/vidfast/check-url
+  body: json
+  auth: inherit
+}
+
+body:json {
+  {
+    "url": "https://vidfast.pro/movie/533535"
+  }
+  
+}
+
+settings {
+  encodeUrl: true
+  timeout: 0
+}

@@ -1,0 +1,23 @@
+meta {
+  name: checkAllUrl
+  type: http
+  seq: 2
+}
+
+post {
+  url: http://localhost:8080/api/vidfast/check-all
+  body: json
+  auth: inherit
+}
+
+body:json {
+  {
+    "url": "https://vidfast.{type}/movie/533535"
+  }
+  
+}
+
+settings {
+  encodeUrl: true
+  timeout: 0
+}

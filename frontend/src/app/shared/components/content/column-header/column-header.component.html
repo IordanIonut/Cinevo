@@ -1,0 +1,31 @@
+<section class="page-style">
+  <div class="flex flex-row gap-6 items-center">
+    <div class="flex items-center h-8">
+      <h3 class="bg-cinevo-accent w-1 h-full mr-2.5"></h3>
+      <span class="text-xl text-cinevo-primary">{{ columnHeader$()!.name }}</span>
+    </div>
+
+    @for (data of columnHeader$()!.toggle_group; track data.name) {
+    <mat-button-toggle-group
+      class="relative z-10"
+      [name]="data.name"
+      [aria-label]="data.aria_label"
+      [value]="data.selected_value"
+      (valueChange)="onToggleChange($event, data)"
+    >
+      @for (toggle of data.possibility; track toggle.name) {
+      <mat-button-toggle [value]="toggle.value">{{
+        toggle.name
+      }}</mat-button-toggle>
+      }
+    </mat-button-toggle-group>
+    }
+
+    <!-- TODO: send to link what display-->
+    <div>
+      <mat-icon class="text-cinevo-primary hover:text-cinevo-accent"
+        >arrow_forward_ios</mat-icon
+      >
+    </div>
+  </div>
+</section>

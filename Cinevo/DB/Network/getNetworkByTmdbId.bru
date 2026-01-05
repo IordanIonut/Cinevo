@@ -1,0 +1,16 @@
+meta {
+  name: getNetworkByTmdbId
+  type: http
+  seq: 1
+}
+
+get {
+  url: http://localhost:8080/api/network/get/49
+  body: none
+  auth: inherit
+}
+
+settings {
+  encodeUrl: true
+  timeout: 0
+}

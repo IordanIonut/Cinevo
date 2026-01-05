@@ -1,0 +1,13 @@
+<section class="flex flex-col gap-4 my-4">
+  <app-column-header
+    [columnHeader$]="columnHeader$()"
+    (toggleChange$)="onToggleChange($event)"
+  ></app-column-header>
+  <div
+    class="page-style flex flex-row gap-3 overflow-x-auto scroll-progress px-2 pb-3"
+  >
+    @for (item of data$(); track trackByCinevoId($index, item)) {
+    <app-poster [data$]="item"></app-poster>
+    }
+  </div>
+</section>

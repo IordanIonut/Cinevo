@@ -1,0 +1,21 @@
+meta {
+  name: findImageByMediaTmdbIdOrPersonTmdbIdAndMediaType
+  type: http
+  seq: 1
+}
+
+get {
+  url: http://localhost:8080/api/image/get/by?id=1007734&type=MOVIE
+  body: none
+  auth: inherit
+}
+
+params:query {
+  id: 1007734
+  type: MOVIE
+}
+
+settings {
+  encodeUrl: true
+  timeout: 0
+}
