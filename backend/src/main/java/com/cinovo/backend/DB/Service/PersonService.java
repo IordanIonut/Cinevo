@@ -1,12 +1,12 @@
 package com.cinovo.backend.DB.Service;
 
+import com.cinovo.backend.DB.Model.Enum.Gender;
+import com.cinovo.backend.DB.Model.Enum.MediaType;
 import com.cinovo.backend.DB.Model.Image;
 import com.cinovo.backend.DB.Model.Person;
 import com.cinovo.backend.DB.Repository.PersonRepository;
 import com.cinovo.backend.DB.Util.Shared;
 import com.cinovo.backend.DB.Util.TMDBLogically;
-import com.cinovo.backend.Enum.Gender;
-import com.cinovo.backend.Enum.MediaType;
 import com.cinovo.backend.TMDB.Response.Common.MediaResponse;
 import com.cinovo.backend.TMDB.Response.Common.PeopleResponse;
 import com.cinovo.backend.TMDB.Response.PeoplePopularResponse;
@@ -43,18 +43,19 @@ public class PersonService implements TMDBLogically<Object, Object>
         this.imageService = imageService;
     }
 
-    public void saveOrUpdate(final Person person){
+    public void saveOrUpdate(final Person person)
+    {
         this.personRepository.save(person);
     }
 
-    public Person findPersonById(final Integer id) throws Exception
+    public Person findByTmdbId(final Integer tmdb_id) throws Exception
     {
-        Optional<Person> person = personRepository.findPersonById(id);
+        Optional<Person> person = personRepository.findByTmdbId(tmdb_id);
         if(person.isPresent())
         {
             return person.get();
         }
-        return (Person) this.onConvertTMDB(id);
+        return (Person) this.onConvertTMDB(tmdb_id);
     }
 
     public List<Person> getPeoplePopularity(final Integer page) throws Exception
@@ -115,7 +116,7 @@ public class PersonService implements TMDBLogically<Object, Object>
     }
 
     @Transactional
-    private Person generatePerson(final Integer id, List<MediaResponse> knownForMedias) throws Exception
+    protected Person generatePerson(final Integer id, List<MediaResponse> knownForMedias) throws Exception
     {
         //fixed the connection to not give errors
         PeopleResponse peopleResponse = this.service.getPeopleDetail(id, "en-US");
@@ -125,8 +126,8 @@ public class PersonService implements TMDBLogically<Object, Object>
             return null;
         }
 
-        Person per = personRepository.findPersonById(id).orElse(new Person());
-        per.setId(peopleResponse.getId());
+        Person per = personRepository.findByTmdbId(id).orElse(new Person());
+        per.setTmdb_id(peopleResponse.getId());
         per.setAdult(peopleResponse.getAdult());
         per.setGender(Gender.fromCode(peopleResponse.getGender()));
         per.setKnown_for_department(peopleResponse.getKnown_for_department());
@@ -152,7 +153,7 @@ public class PersonService implements TMDBLogically<Object, Object>
         per.setInstagram_id(personExternalIdsResponse.getInstagram_id());
         per.setTiktok_id(personExternalIdsResponse.getTiktok_id());
 
-        List<Image> images = imageService.findImageByMediaIdAndMediaType(id, MediaType.PERSON);
+        List<Image> images = imageService.findByTmdbIdAndMediaType(id, MediaType.PERSON);
         if(per.getImages() == null)
         {
             per.setImages(new ArrayList<>());
@@ -165,7 +166,7 @@ public class PersonService implements TMDBLogically<Object, Object>
             per.getImages().add(img);
         }
 
-        return per;
+        return this.personRepository.save(per);
     }
 
     //    @Transactional

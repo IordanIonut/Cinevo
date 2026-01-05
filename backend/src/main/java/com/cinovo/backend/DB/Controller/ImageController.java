@@ -1,8 +1,8 @@
 package com.cinovo.backend.DB.Controller;
 
+import com.cinovo.backend.DB.Model.Enum.MediaType;
 import com.cinovo.backend.DB.Model.Image;
 import com.cinovo.backend.DB.Service.ImageService;
-import com.cinovo.backend.Enum.MediaType;
 import lombok.extern.jbosslog.JBossLog;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
@@ -20,12 +20,12 @@ public class ImageController {
     private ImageService imageService;
 
     @GetMapping("/get/by")
-    public ResponseEntity<List<Image>> getImageById(@RequestParam("id") final Integer id, @RequestParam("type")  final MediaType type) {
+    public ResponseEntity<List<Image>> findByTmdbIdAndMediaType(@RequestParam("tmdb_id") final Integer tmdb_id, @RequestParam("media_type")  final MediaType media_type) {
         try {
-            log.info("getImageById() - Successful.....");
-            return ResponseEntity.ok(this.imageService.findImageByMediaIdAndMediaType(id, type));
+            log.info("findByTmdbIdAndMediaType() - Successful.....");
+            return ResponseEntity.ok(this.imageService.findByTmdbIdAndMediaType(tmdb_id, media_type));
         } catch (Exception e) {
-            log.error("Error in getImageById: {}", e.getMessage(), e);
+            log.error("Error in findByTmdbIdAndMediaType: {}", e.getMessage(), e);
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).build();
         }
     }

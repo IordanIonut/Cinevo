@@ -1,8 +1,8 @@
 package com.cinovo.backend.DB.Controller;
 
+import com.cinovo.backend.DB.Model.Enum.MediaType;
 import com.cinovo.backend.DB.Model.Media;
 import com.cinovo.backend.DB.Service.MediaService;
-import com.cinovo.backend.Enum.MediaType;
 import lombok.extern.jbosslog.JBossLog;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
@@ -67,17 +67,17 @@ public class MediaController
         }
     }
 
-    @GetMapping("/get/{id}/{type}")
-    public ResponseEntity<Media> getMediaByIdAndType(@PathVariable final Integer id, @PathVariable final MediaType type)
+    @GetMapping("/get/{media_tmdb_id}/{type}")
+    public ResponseEntity<Media> getMediaByTmdbIdAndMediaType(@PathVariable final Integer media_tmdb_id, @PathVariable final MediaType type)
     {
         try
         {
-            log.info("getMediaById() - Successful.....");
-            return ResponseEntity.ok(this.mediaService.getMediaByIdAndType(id, type));
+            log.info("getMediaByTmdbIdAndMediaType() - Successful.....");
+            return ResponseEntity.ok(this.mediaService.getMediaByTmdbIdAndMediaType(media_tmdb_id, type));
         }
         catch(Exception e)
         {
-            log.error("Error in getMediaById: {}", e.getMessage(), e);
+            log.error("Error in getMediaByTmdbIdAndMediaType: {}", e.getMessage(), e);
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).build();
         }
     }

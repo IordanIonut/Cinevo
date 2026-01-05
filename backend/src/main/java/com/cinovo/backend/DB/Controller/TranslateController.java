@@ -14,17 +14,22 @@ import java.util.List;
 @RestController
 @RequestMapping("/api/translate")
 @JBossLog
-public class TranslateController {
+public class TranslateController
+{
     @Autowired
     private TranslateService translateService;
 
     @GetMapping("/get/by")
-    public ResponseEntity<List<Translate>> getTranslateById(@RequestParam("id") final Integer id) {
-        try {
-            log.info("getTranslateById() - Successful.....");
-            return ResponseEntity.ok(this.translateService.findAllTranslateById(id));
-        } catch (Exception e) {
-            log.error("Error in getTranslateById: {}", e.getMessage(), e);
+    public ResponseEntity<List<Translate>> findByTmdbId(@RequestParam("tmdb_id") final Integer tmdb_id)
+    {
+        try
+        {
+            log.info("findByTmdbId() - Successful.....");
+            return ResponseEntity.ok(this.translateService.findByTmdbId(tmdb_id));
+        }
+        catch(Exception e)
+        {
+            log.error("Error in findByTmdbId: {}", e.getMessage(), e);
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).build();
         }
     }

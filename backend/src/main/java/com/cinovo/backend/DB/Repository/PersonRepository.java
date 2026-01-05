@@ -12,7 +12,7 @@ import java.util.Optional;
 @Repository
 public interface PersonRepository extends JpaRepository<Person, String>
 {
-    @Query(value = "SELECT " + Person.TABLE_AS + ".* FROM " + Person.TABLE_NAME + Person.TABLE_AS + " WHERE " + Person.ID + " = :id",
-            nativeQuery = true)
-    Optional<Person> findPersonById(@Param("id") final Integer id);
+    @Query(nativeQuery = true,
+            value = "SELECT " + Person.TABLE_AS + ".* FROM " + Person.TABLE_NAME + Person.TABLE_AS + " WHERE " + Person.TMDB_ID + " = :tmdb_id")
+    Optional<Person> findByTmdbId(@Param("tmdb_id") final Integer tmdb_id);
 }

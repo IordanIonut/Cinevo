@@ -4,6 +4,7 @@ import com.cinovo.backend.DB.Model.Translate;
 import com.cinovo.backend.DB.Repository.TranslateRepository;
 import com.cinovo.backend.DB.Util.TMDBLogically;
 import com.cinovo.backend.TMDB.Response.TranslationResponse;
+import lombok.extern.jbosslog.JBossLog;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -12,6 +13,7 @@ import java.util.List;
 import java.util.Optional;
 
 @Service
+@JBossLog
 public class TranslateService implements TMDBLogically<Integer, List<Translate>>
 {
     private final TranslateRepository translateRepository;
@@ -23,12 +25,12 @@ public class TranslateService implements TMDBLogically<Integer, List<Translate>>
         this.service = service;
     }
 
-    public List<Translate> findAllTranslateById(final Integer id) throws Exception
+    public List<Translate> findByTmdbId(final Integer tmdb_id) throws Exception
     {
-        Optional<List<Translate>> translates = this.translateRepository.findAllTranslateById(id);
+        Optional<List<Translate>> translates = this.translateRepository.findByTmdbId(tmdb_id);
         if(translates.isEmpty() || translates.get().isEmpty())
         {
-            return this.onConvertTMDB(id);
+            return this.onConvertTMDB(tmdb_id);
         }
         return translates.get();
     }
@@ -42,8 +44,9 @@ public class TranslateService implements TMDBLogically<Integer, List<Translate>>
 
         for(TranslationResponse.Translate translate : translationResponse.getTranslations())
         {
-            Translate trans = this.translateRepository.findByIdAndIso(translationResponse.getId(), translate.getIso_639_1()).orElse(new Translate());
-            trans.setId(translationResponse.getId());
+            Translate trans =
+                    this.translateRepository.findByTmdbIdAndIso(translationResponse.getId(), translate.getIso_639_1()).orElse(new Translate());
+            trans.setTmdb_id(translationResponse.getId());
             trans.setIso_upper(translate.getIso_3166_1());
             trans.setIso_lower(translate.getIso_639_1());
             trans.setName(translate.getName());
@@ -53,7 +56,7 @@ public class TranslateService implements TMDBLogically<Integer, List<Translate>>
             trans.setHome_page(translate.getData().getHomepage());
             translates.add(trans);
         }
-
+        log.error(translates);
         this.translateRepository.saveAll(translates);
         return translates;
     }

@@ -25,12 +25,12 @@ public class CompanyService implements TMDBLogically<Object, Object>
         this.service = service;
     }
 
-    public Company findCompanyById(final Integer id) throws Exception
+    public Company findCompanyByTmdbId(final Integer tmdb_id) throws Exception
     {
-        Optional<Company> companyDetail = this.companyRepository.findCompanyById(id);
+        Optional<Company> companyDetail = this.companyRepository.findCompanyByTmdbId(tmdb_id);
         if(companyDetail.isEmpty())
         {
-            return (Company) this.onConvertTMDB(id);
+            return (Company) this.onConvertTMDB(tmdb_id);
         }
         return companyDetail.get();
     }
@@ -68,8 +68,8 @@ public class CompanyService implements TMDBLogically<Object, Object>
     @Transactional
     public Company generateCompany(CompanyResponse company) throws Exception
     {
-        Company companyDetail = this.companyRepository.findCompanyById(company.getId()).orElse(new Company());
-        companyDetail.setId(company.getId());
+        Company companyDetail = this.companyRepository.findCompanyByTmdbId(company.getId()).orElse(new Company());
+        companyDetail.setTmdb_id(company.getId());
         companyDetail.setDescription(company.getDescription());
         companyDetail.setHeadquarters(company.getHeadquarters());
         companyDetail.setHomepage(company.getHomepage());

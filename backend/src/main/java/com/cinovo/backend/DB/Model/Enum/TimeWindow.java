@@ -1,4 +1,4 @@
-package com.cinovo.backend.Enum;
+package com.cinovo.backend.DB.Model.Enum;
 
 import lombok.Getter;
 import lombok.Setter;

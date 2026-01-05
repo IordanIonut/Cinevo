@@ -22,12 +22,10 @@ import java.util.regex.Pattern;
 public class VidFastService
 {
     private final HttpClient client;
-    private final RegexpURLValidator regexpURLValidator;
 
-    public VidFastService(RegexpURLValidator regexpURLValidator)
+    public VidFastService()
     {
         this.client = HttpClient.newBuilder().followRedirects(HttpClient.Redirect.NORMAL).connectTimeout(Duration.ofSeconds(6)).build();
-        this.regexpURLValidator = regexpURLValidator;
     }
 
     public Result check(String urlStr)
@@ -51,7 +49,8 @@ public class VidFastService
             HttpResponse<byte[]> finalResp;
             if(headResp == null || headResp.statusCode() == 405 || headResp.headers().firstValue("content-type").isEmpty())
             {
-                HttpRequest getReq = HttpRequest.newBuilder(uri).GET().timeout(Duration.ofSeconds(10)).header("User-Agent", "url-checker/1.0").build();
+                HttpRequest getReq =
+                        HttpRequest.newBuilder(uri).GET().timeout(Duration.ofSeconds(10)).header("User-Agent", "url-checker/1.0").build();
                 finalResp = client.send(getReq, HttpResponse.BodyHandlers.ofByteArray());
                 result.setHttpStatus(finalResp.statusCode());
                 result.setFinalUrl(finalResp.uri().toString());

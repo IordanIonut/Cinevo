@@ -1,15 +1,15 @@
 package com.cinovo.backend.DB.Model;
 
+import com.cinovo.backend.DB.Model.Enum.ImageType;
+import com.cinovo.backend.DB.Model.Enum.MediaType;
 import com.cinovo.backend.DB.Util.BaseEntity;
-import com.cinovo.backend.Enum.ImageType;
-import com.cinovo.backend.Enum.MediaType;
 import com.fasterxml.jackson.annotation.*;
 import jakarta.persistence.*;
 import lombok.*;
 
 @Data
 @Entity
-@Table(name = "IMAGE")
+@Table(name = "IMAGE", uniqueConstraints = { @UniqueConstraint(columnNames = { "TMDB_ID", "FILE_PATH" }) })
 @NoArgsConstructor
 @AllArgsConstructor
 @Getter
@@ -86,4 +86,5 @@ public class Image extends BaseEntity
     public final static String COLLECTION_ID = TABLE_AS + ".COLLECTION_ID";
     public final static String TYPE = TABLE_AS + ".TYPE";
     public final static String PERSON_ID = TABLE_AS + ".PERSON_ID";
+    public final static String FILE_PATH = TABLE_AS + ".FILE_PATH";
 }

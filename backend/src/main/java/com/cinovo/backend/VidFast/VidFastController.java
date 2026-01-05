@@ -12,11 +12,11 @@ import com.cinovo.backend.VidFast.Model.Result;
 @RequestMapping("/api/vidfast")
 public class VidFastController
 {
-    private final Service service;
+    private final VidFastService vidFastService;
 
-    public VidFastController(Service service)
+    public VidFastController(VidFastService vidFastService)
     {
-        this.service = service;
+        this.vidFastService = vidFastService;
     }
 
     @PostMapping("/check-url")
@@ -26,7 +26,7 @@ public class VidFastController
         {
             return ResponseEntity.badRequest().build();
         }
-        Result result = service.check(req.getUrl());
+        Result result = vidFastService.check(req.getUrl());
         return ResponseEntity.ok(result);
     }
 }

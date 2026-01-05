@@ -1,4 +1,4 @@
-package com.cinovo.backend.Enum;
+package com.cinovo.backend.DB.Model.Enum;
 
 public enum Gender
 {

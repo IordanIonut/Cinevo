@@ -26,12 +26,12 @@ public class KeywordService implements TMDBLogically<Object, Object>
         this.service = service;
     }
 
-    public Keyword findKeywordById(final Integer id) throws Exception
+    public Keyword findByTmdbId(final Integer tmdb_id) throws Exception
     {
-        Optional<Keyword> keyword = this.keywordRepository.findKeywordById(id);
+        Optional<Keyword> keyword = this.keywordRepository.findByTmdbId(tmdb_id);
         if(keyword.isEmpty())
         {
-            return (Keyword) this.onConvertTMDB(id);
+            return (Keyword) this.onConvertTMDB(tmdb_id);
         }
         return keyword.get();
     }
@@ -70,8 +70,8 @@ public class KeywordService implements TMDBLogically<Object, Object>
     @Transactional
     private Keyword genereateKeyword(KeywordsResponse response)
     {
-        Keyword keyword = this.keywordRepository.findKeywordById(response.getId()).orElse(new Keyword());
-        keyword.setId(response.getId());
+        Keyword keyword = this.keywordRepository.findByTmdbId(response.getId()).orElse(new Keyword());
+        keyword.setTmdb_id(response.getId());
         keyword.setName(response.getName());
 
         keywordRepository.save(keyword);

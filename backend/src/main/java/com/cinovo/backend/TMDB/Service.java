@@ -1,7 +1,7 @@
 package com.cinovo.backend.TMDB;
 
+import com.cinovo.backend.DB.Model.Enum.MediaType;
 import com.cinovo.backend.DB.Model.Media;
-import com.cinovo.backend.Enum.MediaType;
 import com.cinovo.backend.TMDB.Response.*;
 import com.cinovo.backend.TMDB.Response.Common.*;
 import org.springframework.stereotype.Component;

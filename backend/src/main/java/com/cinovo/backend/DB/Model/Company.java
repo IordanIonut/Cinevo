@@ -13,8 +13,8 @@ import lombok.*;
 @Getter
 @Setter
 public class Company extends BaseEntity {
-    @Column(name = "ID")
-    private Integer id;
+    @Column(name = "TMDB_ID", nullable = true, unique = true)
+    private Integer tmdb_id;
 
     @Lob
     @Column(name = "DESCRIPTION", columnDefinition = "TEXT")
@@ -40,7 +40,7 @@ public class Company extends BaseEntity {
 
     public final static String TABLE_AS = "company";
     public final static String TABLE_NAME = "COMPANY ";
-    public final static String ID = TABLE_AS + ".ID";
+    public final static String TMDB_ID = TABLE_AS + ".TMDB_ID";
 
     @JsonProperty("logo_path")
     public String getLogo_path() {

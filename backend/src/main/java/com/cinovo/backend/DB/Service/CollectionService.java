@@ -1,10 +1,10 @@
 package com.cinovo.backend.DB.Service;
 
 import com.cinovo.backend.DB.Model.Collection;
+import com.cinovo.backend.DB.Model.Enum.MediaType;
 import com.cinovo.backend.DB.Model.Media;
 import com.cinovo.backend.DB.Repository.CollectionRepository;
 import com.cinovo.backend.DB.Util.TMDBLogically;
-import com.cinovo.backend.Enum.MediaType;
 import com.cinovo.backend.TMDB.Response.Common.CollectionResponse;
 import com.cinovo.backend.TMDB.Response.Common.MediaResponse;
 import com.cinovo.backend.TMDB.Response.SearchResponse;
@@ -33,12 +33,12 @@ public class CollectionService implements TMDBLogically<Object, Object>
         this.service = service;
     }
 
-    public Collection findCollectionById(final Integer id) throws Exception
+    public Collection findByTmdbId(final Integer tmdb_id) throws Exception
     {
-        Optional<Collection> detail = this.detailRepository.findCollectionById(id);
+        Optional<Collection> detail = this.detailRepository.findByTmdbId(tmdb_id);
         if(detail.isEmpty())
         {
-            return (Collection) this.onConvertTMDB(id);
+            return (Collection) this.onConvertTMDB(tmdb_id);
         }
         return detail.get();
     }
@@ -77,8 +77,8 @@ public class CollectionService implements TMDBLogically<Object, Object>
     @Transactional
     public Collection generateCollection(CollectionResponse collection) throws Exception
     {
-        Collection detail = this.detailRepository.findCollectionById(collection.getId()).orElse(new Collection());
-        detail.setId(collection.getId());
+        Collection detail = this.detailRepository.findByTmdbId(collection.getId()).orElse(new Collection());
+        detail.setTmdb_id(collection.getId());
         detail.setName(collection.getName());
         detail.setOverview(collection.getOverview());
         detail.setPoster_path(collection.getPoster_path());
@@ -94,7 +94,7 @@ public class CollectionService implements TMDBLogically<Object, Object>
             for(MediaResponse movieResponse : collection.getParts())
             {
                 Media movie =
-                        this.movieService.getMediaByIdAndType(movieResponse.getId(), MediaType.valueOf(movieResponse.getMedia_type().toUpperCase()));
+                        this.movieService.getMediaByTmdbIdAndMediaType(movieResponse.getId(), MediaType.valueOf(movieResponse.getMedia_type().toUpperCase()));
                 medias.add(movie);
             }
             detail.setMedias(medias);

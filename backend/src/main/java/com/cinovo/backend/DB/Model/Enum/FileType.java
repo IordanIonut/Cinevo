@@ -1,4 +1,4 @@
-package com.cinovo.backend.Enum;
+package com.cinovo.backend.DB.Model.Enum;
 
 public enum FileType
 {
@@ -24,6 +24,6 @@ public enum FileType
                 return status;
             }
         }
-        throw new IllegalArgumentException("Unknown status: " + label);
+        throw new IllegalArgumentException("Unknown file type: " + label);
     }
 }

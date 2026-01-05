@@ -1,5 +1,7 @@
 package com.cinovo.backend.DB.Service;
 
+import com.cinovo.backend.DB.Model.Enum.ImageType;
+import com.cinovo.backend.DB.Model.Enum.MediaType;
 import com.cinovo.backend.DB.Model.Image;
 import com.cinovo.backend.DB.Model.Media;
 import com.cinovo.backend.DB.Model.Person;
@@ -7,21 +9,19 @@ import com.cinovo.backend.DB.Repository.ImageRepository;
 import com.cinovo.backend.DB.Util.Resolver.MediaResolver;
 import com.cinovo.backend.DB.Util.Shared;
 import com.cinovo.backend.DB.Util.TMDBLogically;
-import com.cinovo.backend.Enum.ImageType;
-import com.cinovo.backend.Enum.MediaType;
 import com.cinovo.backend.TMDB.Response.CollectionImageResponse;
 import com.cinovo.backend.TMDB.Response.Common.ImageResponse;
 import com.cinovo.backend.TMDB.Response.Common.MediaImagesResponse;
 import com.cinovo.backend.TMDB.Response.PeopleImagesResponse;
+import lombok.extern.jbosslog.JBossLog;
 import org.springframework.context.annotation.Lazy;
 import org.springframework.stereotype.Service;
-import org.springframework.transaction.annotation.Transactional;
-
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 
 @Service
+@JBossLog
 public class ImageService implements TMDBLogically<Object, Object>
 {
     private final ImageRepository imageRepository;
@@ -38,12 +38,12 @@ public class ImageService implements TMDBLogically<Object, Object>
         this.service = service;
     }
 
-    public List<Image> findImageByMediaIdAndMediaType(final Integer id, final MediaType type) throws Exception
+    public List<Image> findByTmdbIdAndMediaType(final Integer tmdb_id, final MediaType type) throws Exception
     {
-        Optional<List<Image>> image = this.imageRepository.findImageByMediaIdAndMediaType(id, type.name());
+        Optional<List<Image>> image = this.imageRepository.findByTmdbIdAndMediaType(tmdb_id, type.name());
         if(image.isEmpty() || image.get().isEmpty())
         {
-            return (List<Image>) this.onConvertTMDB(type + Shared.REGEX + id + Shared.REGEX + null + Shared.REGEX + null);
+            return (List<Image>) this.onConvertTMDB(type + Shared.REGEX + tmdb_id + Shared.REGEX + null + Shared.REGEX + null);
         }
         return image.get();
     }
@@ -58,14 +58,15 @@ public class ImageService implements TMDBLogically<Object, Object>
         return images.get();
     }
 
-    public List<Image> findImageBySeasonIdAndSeasonNumberAndEpisodeAndMediaType(final Integer series_id, final Integer season_number,
+    public List<Image> findByMediaTmdbIdAndSeasonNumberAndEpisodeNumber(final Integer media_tmdb_id, final Integer season_number,
             final Integer episode_number, final MediaType type) throws Exception
     {
         Optional<List<Image>> images =
-                this.imageRepository.findImageBySeasonIdAndSeasonNumberAndEpisodeAndMediaType(series_id, season_number, episode_number);
+                this.imageRepository.findByMediaTmdbIdAndSeasonNumberAndEpisodeNumber(media_tmdb_id, season_number, episode_number);
         if(images.isEmpty() || images.get().isEmpty())
         {
-            return (List<Image>) this.onConvertTMDB(type + Shared.REGEX + series_id + Shared.REGEX + season_number + Shared.REGEX + episode_number);
+            return (List<Image>) this.onConvertTMDB(
+                    type + Shared.REGEX + media_tmdb_id + Shared.REGEX + season_number + Shared.REGEX + episode_number);
         }
         return images.get();
     }
@@ -78,7 +79,6 @@ public class ImageService implements TMDBLogically<Object, Object>
                 Shared.onStringParseToInteger(parts[3]), MediaType.valueOf(parts[0]));
     }
 
-    @Transactional
     private List<Image> onConvertTMDB(final Integer id, final Integer season_number, final Integer episode_number, final MediaType type)
             throws Exception
     {
@@ -87,7 +87,7 @@ public class ImageService implements TMDBLogically<Object, Object>
             case MediaType.MOVIE ->
             {
                 MediaImagesResponse response = service.getMovieImages(id);
-                Media media = mediaService.getMediaByIdAndType(response.getId(), MediaType.MOVIE);
+                Media media = mediaService.getMediaByTmdbIdAndMediaType(response.getId(), MediaType.MOVIE);
                 yield convertImageResponseToImages(response.getBackdrops(), response.getPosters(), response.getLogos(), null, null, media, null, null,
                         null, null, MediaType.MOVIE);
             }
@@ -95,7 +95,7 @@ public class ImageService implements TMDBLogically<Object, Object>
             {
                 PeopleImagesResponse response = service.getPeopleImages(id);
                 Person person = null;
-                //                        this.personService.findPersonById(id);
+                //                        this.personService.findByTmdbId(id);
                 yield convertImageResponseToImages(null, null, null, response.getProfiles(), null, null, null, null, person, null, MediaType.PERSON);
             }
             case MediaType.COLLECTION ->
@@ -108,7 +108,7 @@ public class ImageService implements TMDBLogically<Object, Object>
             case MediaType.TV ->
             {
                 MediaImagesResponse response = service.getTvImages(id, null, null);
-                Media media = mediaService.getMediaByIdAndType(response.getId(), MediaType.TV);
+                Media media = mediaService.getMediaByTmdbIdAndMediaType(response.getId(), MediaType.TV);
                 yield convertImageResponseToImages(response.getBackdrops(), response.getPosters(), response.getLogos(), null, null, media, null, null,
                         null, null, MediaType.TV);
             }
@@ -137,10 +137,10 @@ public class ImageService implements TMDBLogically<Object, Object>
                 yield new ArrayList<>();
             }
         };
-        if(!type.equals(MediaType.PERSON))
-        {
-            this.imageRepository.saveAll(images);
-        }
+        //        if(!type.equals(MediaType.PERSON))
+        //        {
+        //            this.imageRepository.saveAll(images);
+        //        }
         return images;
     }
 
@@ -211,9 +211,8 @@ public class ImageService implements TMDBLogically<Object, Object>
     private Image createImageObject(final ImageResponse image, final Media media, final Media.Season season, final Media.Season.Episode episode,
             final Person person, final Integer collection, final ImageType imageType, final MediaType type)
     {
-        Image img =
-                this.imageRepository.findByMediaIdAndCollectionIdAndImageTypeAndType(media != null ? media.getCinevo_id() : null, imageType.name(),
-                        collection, type.name()).orElse(new Image());
+        Image img = this.imageRepository.findByMediaIdAndCollectionIdAndImageTypeAndTypeAndFilePath(media != null ? media.getCinevo_id() : null,
+                imageType.name(), collection, type.name(), image.getFile_path()).orElse(new Image());
         img.setAspect_ratio(image.getAspect_ratio());
         img.setHeight(image.getHeight());
         img.setWidth(image.getWidth());
@@ -230,7 +229,7 @@ public class ImageService implements TMDBLogically<Object, Object>
         img.setPerson(person);
         img.setEpisode(episode);
 
-        return img;
+        return this.imageRepository.save(img);
     }
 
     private Boolean conditionInsert(final MediaType type, final ImageResponse imageResponse)

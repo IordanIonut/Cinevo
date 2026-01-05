@@ -17,17 +17,17 @@ public class NetworkController
     @Autowired
     private NetworkService networkService;
 
-    @GetMapping("/get/{id}")
-    public ResponseEntity<Network> getNetworkById(@PathVariable final Integer id)
+    @GetMapping("/get/{tmdb_id}")
+    public ResponseEntity<Network> getNetworkByTmdbId(@PathVariable final Integer tmdb_id)
     {
         try
         {
-            log.info("getNetworkById() - Successful.....");
-            return ResponseEntity.ok(this.networkService.getNetworkById(id));
+            log.info("getNetworkByTmdbId() - Successful.....");
+            return ResponseEntity.ok(this.networkService.getNetworkByTmdbId(tmdb_id));
         }
         catch(Exception e)
         {
-            log.error("Error in getNetworkById: {}", e.getMessage(), e);
+            log.error("Error in getNetworkByTmdbId: {}", e.getMessage(), e);
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).build();
         }
     }

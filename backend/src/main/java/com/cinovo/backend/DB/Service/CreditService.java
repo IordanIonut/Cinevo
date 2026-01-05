@@ -1,14 +1,14 @@
 package com.cinovo.backend.DB.Service;
 
 import com.cinovo.backend.DB.Model.Credit;
+import com.cinovo.backend.DB.Model.Enum.CreditType;
+import com.cinovo.backend.DB.Model.Enum.MediaType;
 import com.cinovo.backend.DB.Model.Media;
 import com.cinovo.backend.DB.Model.Person;
 import com.cinovo.backend.DB.Repository.CreditRepository;
 import com.cinovo.backend.DB.Util.Resolver.CreditResolver;
 import com.cinovo.backend.DB.Util.Shared;
 import com.cinovo.backend.DB.Util.TMDBLogically;
-import com.cinovo.backend.Enum.CreditType;
-import com.cinovo.backend.Enum.MediaType;
 import com.cinovo.backend.TMDB.Response.Common.MediaResponse;
 import com.cinovo.backend.TMDB.Response.CreditResponse;
 import lombok.extern.jbosslog.JBossLog;
@@ -63,22 +63,22 @@ public class CreditService implements TMDBLogically<Object, List<Credit>>
         return credit;
     }
 
-    public List<Credit> findCreditByMediaIdAndType(final Integer media_id, final MediaType type) throws Exception
+    public List<Credit> findByMediaTmdbId(final Integer media_tmdb_id, final MediaType type) throws Exception
     {
-        Optional<List<Credit>> credits = this.creditRepository.findCreditByMediaIdAndType(media_id);
+        Optional<List<Credit>> credits = this.creditRepository.findByMediaTmdbId(media_tmdb_id);
         if(credits.isEmpty() || credits.get().isEmpty())
         {
-            return this.onConvertTMDB(type + Shared.REGEX + media_id);
+            return this.onConvertTMDB(type + Shared.REGEX + media_tmdb_id);
         }
         return credits.get();
     }
 
-    public List<Credit> findCreditByPersonId(final Integer person_id) throws Exception
+    public List<Credit> findByPersonTmdbId(final Integer person_tmdb_id) throws Exception
     {
-        Optional<List<Credit>> credits = this.creditRepository.findCreditByPersonId(person_id);
+        Optional<List<Credit>> credits = this.creditRepository.findByPersonTmdbId(person_tmdb_id);
         if(credits.isEmpty() || credits.get().isEmpty())
         {
-            return this.onConvertTMDB(MediaType.PERSON + Shared.REGEX + person_id);
+            return this.onConvertTMDB(MediaType.PERSON + Shared.REGEX + person_tmdb_id);
         }
         return credits.get();
     }
@@ -100,9 +100,9 @@ public class CreditService implements TMDBLogically<Object, List<Credit>>
 
         if(creditResponse.getId() != null)
         {
-            Media media = !MediaType.valueOf(parts[0]).name().equals("PERSON") ? mediaService.getMediaByIdAndType(creditResponse.getId(),
+            Media media = !MediaType.valueOf(parts[0]).name().equals("PERSON") ? mediaService.getMediaByTmdbIdAndMediaType(creditResponse.getId(),
                     MediaType.valueOf(parts[0])) : null;
-            Person person = MediaType.valueOf(parts[0]).name().equals("PERSON") ? personService.findPersonById(creditResponse.getId()) : null;
+            Person person = MediaType.valueOf(parts[0]).name().equals("PERSON") ? personService.findByTmdbId(creditResponse.getId()) : null;
 
             for(MediaResponse cast : creditResponse.getCast())
             {
@@ -129,7 +129,7 @@ public class CreditService implements TMDBLogically<Object, List<Credit>>
     private Credit onRespectCondition(final String[] parts, final Person person, final Media media, final MediaResponse mediaResponse,
             final CreditType creditType, final Integer personId) throws Exception
     {
-        Person per = !MediaType.valueOf(parts[0]).name().equals("PERSON") ? this.personService.findPersonById(personId) : person;
+        Person per = !MediaType.valueOf(parts[0]).name().equals("PERSON") ? this.personService.findByTmdbId(personId) : person;
         Media med;
         if(MediaType.valueOf(parts[0]).name().equals("PERSON"))
         {
@@ -142,7 +142,7 @@ public class CreditService implements TMDBLogically<Object, List<Credit>>
             {
                 type = this.mediaService.findFirstMediaTypeByName(mediaResponse.getTitle(), mediaResponse.getOriginal_title(), mediaResponse.getId());
             }
-            med = this.mediaService.getMediaByIdAndType(mediaResponse.getId(), type);
+            med = this.mediaService.getMediaByTmdbIdAndMediaType(mediaResponse.getId(), type);
         }
         else
         {
@@ -154,8 +154,7 @@ public class CreditService implements TMDBLogically<Object, List<Credit>>
     }
 
     @Transactional
-    private Credit generateCredit(final MediaResponse mediaResponse, final Media media, final Person person, final CreditType credit_type)
-            throws Exception
+    protected Credit generateCredit(final MediaResponse mediaResponse, final Media media, final Person person, final CreditType credit_type)
     {
         if(mediaResponse.getId() == null || media == null)
             return new Credit();

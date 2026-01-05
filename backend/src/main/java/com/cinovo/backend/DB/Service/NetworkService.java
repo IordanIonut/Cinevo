@@ -1,13 +1,12 @@
 package com.cinovo.backend.DB.Service;
 
+import com.cinovo.backend.DB.Model.Enum.FileType;
 import com.cinovo.backend.DB.Model.Network;
 import com.cinovo.backend.DB.Repository.NetworkRepository;
 import com.cinovo.backend.DB.Util.TMDBLogically;
-import com.cinovo.backend.Enum.FileType;
 import com.cinovo.backend.TMDB.Response.NetworkAlternativeNameResponse;
 import com.cinovo.backend.TMDB.Response.NetworkDetailResponse;
 import com.cinovo.backend.TMDB.Response.NetworkImageResponse;
-import org.springframework.data.repository.query.Param;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -27,12 +26,12 @@ public class NetworkService implements TMDBLogically<Integer, Network>
         this.service = service;
     }
 
-    public Network getNetworkById(@Param("id") final Integer id) throws Exception
+    public Network getNetworkByTmdbId(final Integer tmdb_id) throws Exception
     {
-        Optional<Network> network = this.networkRepository.getNetworkById(id);
+        Optional<Network> network = this.networkRepository.getNetworkByTmdbId(tmdb_id);
         if(network.isEmpty())
         {
-            return this.onConvertTMDB(id);
+            return this.onConvertTMDB(tmdb_id);
         }
         return network.get();
     }
@@ -47,8 +46,8 @@ public class NetworkService implements TMDBLogically<Integer, Network>
         List<Network.NetworkAlternativeName> networkAlternativeNames = new ArrayList<>();
         List<Network.NetworkImage> networkImages = new ArrayList<>();
 
-        Network network = this.networkRepository.getNetworkById(networkDetailResponse.getId()).orElse(new Network());
-        network.setId(networkDetailResponse.getId());
+        Network network = this.networkRepository.getNetworkByTmdbId(networkDetailResponse.getId()).orElse(new Network());
+        network.setTmdb_id(networkDetailResponse.getId());
         network.setHeadquarters(networkDetailResponse.getHeadquarters());
         network.setHomepage(networkDetailResponse.getHomepage());
         network.setLogo_path(networkDetailResponse.getLogo_path());
@@ -69,7 +68,7 @@ public class NetworkService implements TMDBLogically<Integer, Network>
         for(NetworkImageResponse.Logo logo : networkImageResponse.getLogos())
         {
             Network.NetworkImage networkImage = new Network.NetworkImage();
-            networkImage.setId(logo.getId());
+            networkImage.setTmdb_id(logo.getId());
             networkImage.setAspect_ratio(logo.getAspect_ratio());
             networkImage.setFile_path(logo.getFile_path());
             networkImage.setHeight(logo.getHeight());

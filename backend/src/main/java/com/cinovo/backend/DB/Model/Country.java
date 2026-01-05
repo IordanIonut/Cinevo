@@ -1,7 +1,7 @@
 package com.cinovo.backend.DB.Model;
 
+import com.cinovo.backend.DB.Model.Enum.MediaType;
 import com.cinovo.backend.DB.Util.BaseEntity;
-import com.cinovo.backend.Enum.MediaType;
 import com.fasterxml.jackson.annotation.JsonBackReference;
 import com.fasterxml.jackson.annotation.JsonManagedReference;
 import jakarta.persistence.*;
@@ -25,7 +25,7 @@ public class Country extends BaseEntity
     @Enumerated(EnumType.STRING)
     private MediaType type;
 
-    @OneToMany(mappedBy = "country", cascade = { CascadeType.REFRESH, CascadeType.DETACH }, fetch = FetchType.LAZY)
+    @OneToMany(mappedBy = "country", cascade = { CascadeType.REFRESH, CascadeType.DETACH, CascadeType.PERSIST }, fetch = FetchType.LAZY)
     @JsonManagedReference
     private List<Certification> certifications;
 

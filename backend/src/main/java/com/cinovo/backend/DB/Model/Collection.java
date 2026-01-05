@@ -18,8 +18,8 @@ import java.util.List;
 @Setter
 public class Collection extends BaseEntity
 {
-    @Column(name = "ID")
-    private Integer id;
+    @Column(name = "TMDB_ID", nullable = true, unique = true)
+    private Integer tmdb_id;
 
     @Column(name = "NAME")
     private String name;
@@ -49,7 +49,7 @@ public class Collection extends BaseEntity
 
     public final static String TABLE_AS = "collection";
     public final static String TABLE_NAME = "COLLECTION ";
-    public final static String ID = TABLE_AS + ".ID";
+    public final static String TMDB_ID = TABLE_AS + ".TMDB_ID";
 
     @JsonProperty("poster_path")
     public String getPoster_path()

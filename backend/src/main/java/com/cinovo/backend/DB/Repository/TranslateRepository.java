@@ -13,11 +13,12 @@ import java.util.Optional;
 public interface TranslateRepository extends JpaRepository<Translate, String>
 {
     @Query(nativeQuery = true,
-            value = "SELECT " + Translate.TABLE_AS + ".* FROM " + Translate.TABLE_NAME + Translate.TABLE_AS + " WHERE " + Translate.ID + " = :id")
-    Optional<List<Translate>> findAllTranslateById(@Param("id") final Integer id);
+            value = "SELECT " + Translate.TABLE_AS + ".* FROM " + Translate.TABLE_NAME + Translate.TABLE_AS + " WHERE " + Translate.TMDB_ID
+                    + " = :tmdb_id")
+    Optional<List<Translate>> findByTmdbId(@Param("tmdb_id") final Integer tmdb_id);
 
     @Query(nativeQuery = true,
-            value = "SELECT " + Translate.TABLE_AS + ".* FROM " + Translate.TABLE_NAME + Translate.TABLE_AS + " WHERE " + Translate.ID + " = :id AND "
-                    + Translate.ISO_UPPER + " = :iso")
-    Optional<Translate> findByIdAndIso(@Param("id") final Integer id, @Param("iso") final String iso);
+            value = "SELECT " + Translate.TABLE_AS + ".* FROM " + Translate.TABLE_NAME + Translate.TABLE_AS + " WHERE " + Translate.TMDB_ID
+                    + " = :tmdb_id AND " + Translate.ISO_UPPER + " = :iso")
+    Optional<Translate> findByTmdbIdAndIso(@Param("tmdb_id") final Integer tmdb_id, @Param("iso") final String iso);
 }

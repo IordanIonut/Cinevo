@@ -1,8 +1,9 @@
-package com.cinovo.backend.Enum;
+package com.cinovo.backend.DB.Model.Enum;
 
 public enum VideoType
 {
-    TRAILER("Trailer"), TEASER("Teaser"), BEHIND_THE_SCENES("Behind the Scenes"), FEATURETTE("Featurette"), CLIP("Clip"), BLOOPERS("Bloopers"), OPENING_CREDITS("Opening Credits"), RECAP("Recap");
+    TRAILER("Trailer"), TEASER("Teaser"), BEHIND_THE_SCENES("Behind the Scenes"), FEATURETTE("Featurette"), CLIP("Clip"), BLOOPERS("Bloopers"),
+    OPENING_CREDITS("Opening Credits"), RECAP("Recap");
 
     private final String label;
 

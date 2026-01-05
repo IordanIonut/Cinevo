@@ -13,7 +13,7 @@ import java.util.Optional;
 @Repository
 public interface NetworkRepository extends JpaRepository<Network, String>
 {
-    @Query(value = "SELECT " + Network.TABLE_AS + ".* FROM " + Network.TABLE_NAME + Network.TABLE_AS + " WHERE " + Network.ID + " = :id",
-            nativeQuery = true)
-    Optional<Network> getNetworkById(@Param("id") final Integer id);
+    @Query(nativeQuery = true,
+            value = "SELECT " + Network.TABLE_AS + ".* FROM " + Network.TABLE_NAME + Network.TABLE_AS + " WHERE " + Network.TMDB_ID + " = :tmdb_id")
+    Optional<Network> getNetworkByTmdbId(@Param("tmdb_id") final Integer tmdb_id);
 }

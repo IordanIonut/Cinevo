@@ -1,7 +1,7 @@
 package com.cinovo.backend.TMDB;
 
+import com.cinovo.backend.DB.Model.Enum.MediaType;
 import com.cinovo.backend.DB.Service.MediaService;
-import com.cinovo.backend.Enum.MediaType;
 import com.cinovo.backend.TMDB.Response.*;
 import com.cinovo.backend.TMDB.Response.Common.*;
 import lombok.extern.jbosslog.JBossLog;
@@ -1045,7 +1045,7 @@ public class Controller
                 changesResponse = this.service.getChangeResponse(MediaType.MOVIE, null, page, null);
                 for(ChangesResponse.Change change : changesResponse.getResults())
                 {
-                    this.mediaService.getMediaByIdAndType(change.getId(), type);
+                    this.mediaService.getMediaByTmdbIdAndMediaType(change.getId(), type);
                 }
             }
             while(count == 1);

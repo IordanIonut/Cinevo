@@ -14,6 +14,6 @@ import java.util.Optional;
 public interface KeywordRepository extends JpaRepository<Keyword, String>
 {
     @Query(nativeQuery = true,
-            value = "SELECT " + Keyword.TABLE_AS + ".* FROM " + Keyword.TABLE_NAME + Keyword.TABLE_AS + " WHERE " + Keyword.ID + " = :id")
-    Optional<Keyword> findKeywordById(@Param("id") final Integer id);
+            value = "SELECT " + Keyword.TABLE_AS + ".* FROM " + Keyword.TABLE_NAME + Keyword.TABLE_AS + " WHERE " + Keyword.TMDB_ID + " = :tmdb_id")
+    Optional<Keyword> findByTmdbId(@Param("tmdb_id") final Integer tmdb_id);
 }

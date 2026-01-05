@@ -1,7 +1,7 @@
 package com.cinovo.backend.DB.Model;
 
+import com.cinovo.backend.DB.Model.Enum.Gender;
 import com.cinovo.backend.DB.Util.BaseEntity;
-import com.cinovo.backend.Enum.Gender;
 import com.fasterxml.jackson.annotation.*;
 import jakarta.persistence.*;
 import lombok.*;
@@ -16,11 +16,10 @@ import java.util.List;
 @NoArgsConstructor
 @Getter
 @Setter
-@JsonIdentityInfo(generator = ObjectIdGenerators.PropertyGenerator.class, property = "id")
 public class Person extends BaseEntity
 {
-    @Column(name = "ID")
-    private Integer id;
+    @Column(name = "TMDB_ID", nullable = false, unique = true)
+    private Integer tmdb_id;
 
     @Column(name = "ADULT")
     private Boolean adult;
@@ -109,7 +108,7 @@ public class Person extends BaseEntity
 
     public final static String TABLE_AS = "person";
     public final static String TABLE_NAME = "PERSON ";
-    public final static String ID = TABLE_AS + ".ID";
+    public final static String TMDB_ID = TABLE_AS + ".TMDB_ID";
     public final static String PERSON_MEDIA_NAME = "PERSON_MEDIA ";
     public final static String PERSON_MEDIA_AS = "person_media";
     public final static String MEDIA_ID = PERSON_MEDIA_AS + ".MEDIA_ID";

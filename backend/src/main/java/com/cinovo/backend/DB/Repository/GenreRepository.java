@@ -1,8 +1,6 @@
 package com.cinovo.backend.DB.Repository;
 
 import com.cinovo.backend.DB.Model.Genre;
-import com.cinovo.backend.DB.Model.Media;
-import com.cinovo.backend.Enum.MediaType;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
@@ -16,7 +14,7 @@ public interface GenreRepository extends JpaRepository<Genre, String>
 {
     @Query(nativeQuery = true,
             value = "SELECT " + Genre.TABLE_AS + ".* FROM " + Genre.TABLE_NAME + Genre.TABLE_AS + " WHERE " + Genre.TYPE + " = :type")
-    Optional<List<Genre>> findGenresByType(@Param("type") String type);
+    Optional<List<Genre>> getGenreByMediaType(@Param("type") String type);
 
     @Query(nativeQuery = true,
             value = "SELECT " + Genre.TABLE_AS + ".* FROM " + Genre.TABLE_NAME + Genre.TABLE_AS + " WHERE " + Genre.TYPE + " = :type AND " + Genre.ID

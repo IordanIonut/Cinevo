@@ -20,16 +20,16 @@ public class CollectionController
     private CollectionService collectionService;
 
     @GetMapping("/get/by")
-    public ResponseEntity<Collection> findCollectionById(@RequestParam("id") final Integer id)
+    public ResponseEntity<Collection> findByTmdbId(@RequestParam("tmdb_id") final Integer tmdb_id)
     {
         try
         {
-            log.info("findCollectionById() - Successful.....");
-            return ResponseEntity.ok(this.collectionService.findCollectionById(id));
+            log.info("findByTmdbId() - Successful.....");
+            return ResponseEntity.ok(this.collectionService.findByTmdbId(tmdb_id));
         }
         catch(Exception e)
         {
-            log.error("Error in findCollectionById: {}", e.getMessage(), e);
+            log.error("Error in findByTmdbId: {}", e.getMessage(), e);
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).build();
         }
     }

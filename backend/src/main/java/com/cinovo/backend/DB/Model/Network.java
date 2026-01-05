@@ -1,12 +1,11 @@
 package com.cinovo.backend.DB.Model;
 
+import com.cinovo.backend.DB.Model.Enum.FileType;
 import com.cinovo.backend.DB.Util.BaseEntity;
-import com.cinovo.backend.Enum.FileType;
 import com.fasterxml.jackson.annotation.JsonBackReference;
 import com.fasterxml.jackson.annotation.JsonManagedReference;
 import jakarta.persistence.*;
 import lombok.*;
-import org.apache.logging.log4j.util.Lazy;
 
 import java.util.List;
 
@@ -19,8 +18,8 @@ import java.util.List;
 @NoArgsConstructor
 public class Network extends BaseEntity
 {
-    @Column(name = "ID")
-    private Integer id;
+    @Column(name = "TMDB_ID", nullable = false, unique = true)
+    private Integer tmdb_id;
 
     @Column(name = "HEADQUARTERS")
     private String headquarters;
@@ -47,7 +46,7 @@ public class Network extends BaseEntity
 
     public final static String TABLE_AS = "network";
     public final static String TABLE_NAME = "NETWORK ";
-    public final static String ID = TABLE_AS + ".ID";
+    public final static String TMDB_ID = TABLE_AS + ".TMDB_ID";
 
     @Data
     @Entity
@@ -79,8 +78,8 @@ public class Network extends BaseEntity
     @NoArgsConstructor
     public static class NetworkImage extends BaseEntity
     {
-        @Column(name = "ID")
-        private String id;
+        @Column(name = "TMDB_ID", nullable = false, unique = true)
+        private String tmdb_id;
 
         @Column(name = "ASPECT_RATIO")
         private Double aspect_ratio;

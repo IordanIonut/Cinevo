@@ -1,9 +1,9 @@
 package com.cinovo.backend.DB.Service;
 
+import com.cinovo.backend.DB.Model.Enum.MediaType;
 import com.cinovo.backend.DB.Model.Genre;
 import com.cinovo.backend.DB.Repository.GenreRepository;
 import com.cinovo.backend.DB.Util.TMDBLogically;
-import com.cinovo.backend.Enum.MediaType;
 import com.cinovo.backend.TMDB.Response.Common.GenresResponse;
 import lombok.extern.jbosslog.JBossLog;
 import org.springframework.stereotype.Service;
@@ -27,9 +27,9 @@ public class GenreService implements TMDBLogically<MediaType, List<Genre>>
         this.service = service;
     }
 
-    public List<Genre> findGenresByType(final MediaType type) throws Exception
+    public List<Genre> getGenreByMediaType(final MediaType type) throws Exception
     {
-        Optional<List<Genre>> genres = this.genreRepository.findGenresByType(type.name());
+        Optional<List<Genre>> genres = this.genreRepository.getGenreByMediaType(type.name());
         if(genres.isEmpty() || genres.get().isEmpty())
         {
             return onConvertTMDB(type);

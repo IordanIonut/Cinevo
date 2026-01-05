@@ -18,8 +18,8 @@ public interface CreditRepository extends JpaRepository<Credit, String>
 {
     @Query(nativeQuery = true,
             value = "SELECT " + Credit.TABLE_AS + ".* FROM " + Credit.TABLE_NAME + Credit.TABLE_AS + " JOIN " + Media.TABLE_NAME + Media.TABLE_AS
-                    + "  ON " + Credit.JOIN_MEDIA + " WHERE " + Media.ID + " = :movie_id")
-    Optional<List<Credit>> findCreditByMediaIdAndType(@Param("movie_id") final Integer movie_id);
+                    + "  ON " + Credit.JOIN_MEDIA + " WHERE " + Media.TMDB_ID + " = :media_tmdb_id")
+    Optional<List<Credit>> findByMediaTmdbId(@Param("media_tmdb_id") final Integer media_tmdb_id);
 
     @Query(nativeQuery = true, value = "SELECT " + Credit.TABLE_AS + ".* FROM " + Credit.TABLE_NAME + Credit.TABLE_AS + " WHERE " + Credit.MEDIA_ID
             + " = :movie_cinevo_id AND " + Credit.PERSON_ID + " = :person_cinevo_id")
@@ -47,6 +47,6 @@ public interface CreditRepository extends JpaRepository<Credit, String>
 
     @Query(nativeQuery = true,
             value = "SELECT " + Credit.TABLE_AS + ".* FROM " + Credit.TABLE_NAME + Credit.TABLE_AS + " JOIN " + Person.TABLE_NAME + Person.TABLE_AS
-                    + " ON " + Credit.PERSON_ID + " = " + Person.CINEVO_ID + " WHERE " + Person.ID + " = :person_id")
-    Optional<List<Credit>> findCreditByPersonId(@Param("person_id") final Integer person_id);
+                    + " ON " + Credit.PERSON_ID + " = " + Person.CINEVO_ID + " WHERE " + Person.TMDB_ID + " = :person_tmdb_id")
+    Optional<List<Credit>> findByPersonTmdbId(@Param("person_tmdb_id") final Integer person_tmdb_id);
 }

@@ -1,7 +1,8 @@
 package com.cinovo.backend.DB.Model;
 
+import com.cinovo.backend.DB.Model.Enum.SiteType;
+import com.cinovo.backend.DB.Model.Enum.VideoType;
 import com.cinovo.backend.DB.Util.BaseEntity;
-import com.cinovo.backend.Enum.SiteType;
 import com.fasterxml.jackson.annotation.JsonBackReference;
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import jakarta.persistence.*;
@@ -36,7 +37,7 @@ public class Video extends BaseEntity
 
     @Column(name = "TYPE")
     @Enumerated(EnumType.STRING)
-    private SiteType type;
+    private VideoType type;
 
     @Column(name = "OFFICIAL")
     private Boolean official;
@@ -44,8 +45,8 @@ public class Video extends BaseEntity
     @Column(name = "PUBLISHED_AT")
     private LocalDate published_at;
 
-    @Column(name = "ID")
-    private String id;
+    @Column(name = "TMDB_ID", nullable = false, unique = true)
+    private String tmdb_id;
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "MEDIA_ID")
@@ -67,7 +68,7 @@ public class Video extends BaseEntity
 
     public final static String TABLE_AS = "video";
     public final static String TABLE_NAME = "VIDEO ";
-    public final static String ID = TABLE_AS + ".ID";
+    public final static String TMDB_ID = TABLE_AS + ".TMDB_ID";
     public final static String SEASON_ID =  TABLE_AS + ".SEASON_ID";
     public final static String JOIN_MEDIA = TABLE_AS + ".MEDIA_ID";
     public final static String CINEVO_ID =  TABLE_AS + ".CINEVO_ID";

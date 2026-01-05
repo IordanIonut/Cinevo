@@ -1,9 +1,9 @@
 package com.cinovo.backend.DB.Model;
 
+import com.cinovo.backend.DB.Model.Enum.EpisodeType;
+import com.cinovo.backend.DB.Model.Enum.MediaStatus;
+import com.cinovo.backend.DB.Model.Enum.MediaType;
 import com.cinovo.backend.DB.Util.BaseEntity;
-import com.cinovo.backend.Enum.EpisodeType;
-import com.cinovo.backend.Enum.MediaStatus;
-import com.cinovo.backend.Enum.MediaType;
 import com.fasterxml.jackson.annotation.*;
 import jakarta.persistence.*;
 import lombok.*;
@@ -19,7 +19,6 @@ import java.util.List;
 @Getter
 @Setter
 @EqualsAndHashCode(callSuper = true, onlyExplicitlyIncluded = true)
-@JsonIdentityInfo(generator = ObjectIdGenerators.PropertyGenerator.class, property = "id")
 public class Media extends BaseEntity
 {
     @Column(name = "ADULT")
@@ -34,8 +33,8 @@ public class Media extends BaseEntity
     @Column(name = "HOMEPAGE")
     private String homepage;
 
-    @Column(name = "ID")
-    private Integer id;
+    @Column(name = "TMDB_ID", nullable = true, unique = true)
+    private Integer tmdb_id;
 
     @Column(name = "TYPE")
     @Enumerated(EnumType.STRING)
@@ -222,7 +221,7 @@ public class Media extends BaseEntity
 
     public final static String TABLE_AS = "media";
     public final static String TABLE_NAME = "MEDIA ";
-    public final static String ID = TABLE_AS + ".ID";
+    public final static String TMDB_ID = TABLE_AS + ".TMDB_ID";
     public final static String TYPE = TABLE_AS + ".TYPE";
     public final static String CINEVO_ID = TABLE_AS + ".CINEVO_ID";
 
@@ -236,8 +235,8 @@ public class Media extends BaseEntity
     @EqualsAndHashCode(exclude = { "episodes", "images", "videos", "watch_providers", "media" }, callSuper = false)
     public static class Season extends BaseEntity
     {
-        @Column(name = "ID")
-        private Integer id;
+        @Column(name = "TMDB_ID", nullable = false, unique = true)
+        private Integer tmdb_id;
 
         @Column(name = "AIR_DATE")
         private LocalDate air_date;
@@ -325,7 +324,7 @@ public class Media extends BaseEntity
 
         public final static String TABLE_AS = "season";
         public final static String TABLE_NAME = "SEASON ";
-        public final static String ID = TABLE_AS + ".ID";
+        public final static String TMDB_ID = TABLE_AS + ".TMDB_ID";
         public final static String SEASON_NUMBER = TABLE_AS + ".SEASON_NUMBER";
         public final static String JOIN_MEDIA = TABLE_AS + ".MEDIA_ID";
         public final static String CINEVO_ID = TABLE_AS + ".CINEVO_ID";
@@ -350,8 +349,8 @@ public class Media extends BaseEntity
             @Enumerated(EnumType.STRING)
             private EpisodeType episode_type;
 
-            @Column(name = "ID")
-            private Integer id;
+            @Column(name = "TMDB_ID", nullable = false, unique = true)
+            private Integer tmdb_id;
 
             @Lob
             @Column(name = "OVERVIEW", columnDefinition = "TEXT")
@@ -422,7 +421,7 @@ public class Media extends BaseEntity
 
             public final static String TABLE_AS = "episode";
             public final static String TABLE_NAME = "EPISODE ";
-            public final static String ID = TABLE_AS + ".ID";
+            public final static String TMDB_ID = TABLE_AS + ".TMDB_ID";
             public final static String SEASON_ID = TABLE_AS + ".SEASON_ID";
             public final static String EPISODE_NUMBER = TABLE_AS + ".EPISODE_NUMBER";
             public final static String CINEVO_ID = TABLE_AS + ".CINEVO_ID";
@@ -438,8 +437,8 @@ public class Media extends BaseEntity
     @NoArgsConstructor
     public static class EpisodeToAir extends BaseEntity
     {
-        @Column(name = "ID")
-        private Integer id;
+        @Column(name = "TMDB_ID", nullable = false, unique = true)
+        private Integer tmdb_id;
 
         @Column(name = "NAME")
         private String name;
@@ -484,6 +483,6 @@ public class Media extends BaseEntity
 
         public final static String TABLE_AS = "episode_to_air";
         public final static String TABLE_NAME = "EPISODE_TO_AIR ";
-        public final static String ID = TABLE_AS + ".ID";
+        public final static String TMDB_ID = TABLE_AS + ".TMDB_ID";
     }
 }

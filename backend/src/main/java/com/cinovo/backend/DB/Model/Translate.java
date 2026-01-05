@@ -11,16 +11,16 @@ import org.hibernate.annotations.GenericGenerator;
 @NoArgsConstructor
 @Getter
 @Setter
-@Table(name = "TRANSLATE")
+@Table(name = "TRANSLATE", uniqueConstraints = { @UniqueConstraint(columnNames = { "TMDB_ID", "ISO_LOWER", "ISO_UPPER" }) })
 public class Translate extends BaseEntity
 {
-    @Column(name = "ID")
-    private Integer id;
+    @Column(name = "TMDB_ID", nullable = false)
+    private Integer tmdb_id;
 
-    @Column(name = "ISO_UPPER")
+    @Column(name = "ISO_UPPER", nullable = false)
     private String iso_upper;
 
-    @Column(name = "ISO_LOWER")
+    @Column(name = "ISO_LOWER", nullable = false)
     private String iso_lower;
 
     @Column(name = "NAME")
@@ -40,6 +40,6 @@ public class Translate extends BaseEntity
 
     public final static String TABLE_AS = "translate";
     public final static String TABLE_NAME = "TRANSLATE ";
-    public final static String ID = TABLE_AS + ".ID";
+    public final static String TMDB_ID = TABLE_AS + ".TMDB_ID";
     public final static String ISO_UPPER = TABLE_AS + ".ISO_UPPER";
 }

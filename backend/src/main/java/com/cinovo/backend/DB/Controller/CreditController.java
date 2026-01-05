@@ -1,8 +1,8 @@
 package com.cinovo.backend.DB.Controller;
 
 import com.cinovo.backend.DB.Model.Credit;
+import com.cinovo.backend.DB.Model.Enum.MediaType;
 import com.cinovo.backend.DB.Service.CreditService;
-import com.cinovo.backend.Enum.MediaType;
 import lombok.extern.jbosslog.JBossLog;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
@@ -20,33 +20,33 @@ public class CreditController
     @Autowired
     private CreditService creditService;
 
-    @GetMapping("/get/by/media/{media_id}/{type}")
-    public ResponseEntity<List<Credit>> findCreditByMediaIdAndType(@PathVariable("media_id") final Integer media_id,
+    @GetMapping("/get/by/media/{media_tmdb_id}/{type}")
+    public ResponseEntity<List<Credit>> findByMediaTmdbId(@PathVariable("media_tmdb_id") final Integer media_tmdb_id,
             @PathVariable("type") final MediaType type)
     {
         try
         {
-            log.info("findCreditByMediaIdAndType() - Successful.....");
-            return ResponseEntity.ok(this.creditService.findCreditByMediaIdAndType(media_id, type));
+            log.info("findByMediaTmdbId() - Successful.....");
+            return ResponseEntity.ok(this.creditService.findByMediaTmdbId(media_tmdb_id, type));
         }
         catch(Exception e)
         {
-            log.error("Error in findCreditByMediaIdAndType: {}", e.getMessage(), e);
+            log.error("Error in findByMediaTmdbId: {}", e.getMessage(), e);
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).build();
         }
     }
 
-    @GetMapping("/get/by/person_id/{person_id}")
-    public ResponseEntity<List<Credit>> findCreditByPersonId(@PathVariable("person_id") final Integer person_id)
+    @GetMapping("/get/by/person/{person_tmdb_id}")
+    public ResponseEntity<List<Credit>> findByPersonTmdbId(@PathVariable("person_tmdb_id") final Integer person_tmdb_id)
     {
         try
         {
-            log.info("findCreditByPersonId() - Successful.....");
-            return ResponseEntity.ok(this.creditService.findCreditByPersonId(person_id));
+            log.info("findByPersonTmdbId() - Successful.....");
+            return ResponseEntity.ok(this.creditService.findByPersonTmdbId(person_tmdb_id));
         }
         catch(Exception e)
         {
-            log.error("Error in findCreditByPersonId: {}", e.getMessage(), e);
+            log.error("Error in findByPersonTmdbId: {}", e.getMessage(), e);
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).build();
         }
     }

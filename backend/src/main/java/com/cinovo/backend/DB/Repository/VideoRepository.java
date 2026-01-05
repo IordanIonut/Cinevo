@@ -17,27 +17,28 @@ import java.util.Optional;
 @Repository
 public interface VideoRepository extends JpaRepository<Video, String>
 {
-    @Query(value = "SELECT " + Video.TABLE_AS + ".* FROM " + Video.TABLE_NAME + Video.TABLE_AS + " JOIN " + Media.TABLE_NAME + Media.TABLE_AS + " ON "
-            + Video.JOIN_MEDIA + " = " + Media.CINEVO_ID + " WHERE " + Media.ID + " = :movie_id", nativeQuery = true)
-    Optional<List<Video>> findVideosByMovieIdAndMediaType(@Param("movie_id") final Integer movie_id);
+    @Query(nativeQuery = true,
+            value = "SELECT " + Video.TABLE_AS + ".* FROM " + Video.TABLE_NAME + Video.TABLE_AS + " JOIN " + Media.TABLE_NAME + Media.TABLE_AS
+                    + " ON " + Video.JOIN_MEDIA + " = " + Media.CINEVO_ID + " WHERE " + Media.TMDB_ID + " = :media_tmdb_id")
+    Optional<List<Video>> findByMediaTmdbId(@Param("media_tmdb_id") final Integer media_tmdb_id);
 
     @Query(nativeQuery = true,
             value = "SELECT " + Video.TABLE_AS + ".* FROM " + Media.TABLE_NAME + Media.TABLE_AS + " JOIN " + Video.TABLE_NAME + Video.TABLE_AS
                     + " ON " + Video.JOIN_MEDIA + " = " + Media.CINEVO_ID + " JOIN " + Media.Season.TABLE_NAME + Media.Season.TABLE_AS + " ON "
-                    + Media.Season.CINEVO_ID + " = " + Video.SEASON_ID + " WHERE " + Media.ID + " = :series_id AND " + Media.Season.SEASON_NUMBER
-                    + " = :season_number")
-    Optional<List<Video>> findVideosBySeriesIdAndMediaType(@Param("series_id") final Integer series_id,
+                    + Media.Season.CINEVO_ID + " = " + Video.SEASON_ID + " WHERE " + Media.TMDB_ID + " = :media_tmdb_id AND "
+                    + Media.Season.SEASON_NUMBER + " = :season_number")
+    Optional<List<Video>> findByMediaTmdbIdAndSeasonNumber(@Param("media_tmdb_id") final Integer media_tmdb_id,
             @Param("season_number") final Integer season_number);
 
     @Query(nativeQuery = true,
             value = "SELECT " + Video.TABLE_AS + ".* FROM " + Media.TABLE_NAME + Media.TABLE_AS + " JOIN " + Video.TABLE_NAME + Video.TABLE_AS
                     + " ON " + Video.JOIN_MEDIA + " = " + Media.CINEVO_ID + " JOIN " + Media.Season.TABLE_NAME + Media.Season.TABLE_AS + " ON "
                     + Media.Season.CINEVO_ID + " = " + Video.SEASON_ID + " JOIN " + Media.Season.Episode.TABLE_NAME + Media.Season.Episode.TABLE_AS
-                    + " ON " + Media.Season.CINEVO_ID + " = " + Media.Season.Episode.SEASON_ID + " WHERE " + Media.ID + " = :series_id AND "
-                    + Media.Season.SEASON_NUMBER + " = :season_number AND " + Media.Season.Episode.EPISODE_NUMBER + " = :episode")
-    Optional<List<Video>> findVideoBySeriesIdAndSeasonNumberAndEpisodeAndMediaType(@Param("series_id") final Integer series_id,
-            @Param("season_number") final Integer season_number, @Param("episode") final Integer episode);
+                    + " ON " + Media.Season.CINEVO_ID + " = " + Media.Season.Episode.SEASON_ID + " WHERE " + Media.TMDB_ID + " = :media_tmdb_id AND "
+                    + Media.Season.SEASON_NUMBER + " = :season_number AND " + Media.Season.Episode.EPISODE_NUMBER + " = :episode_number")
+    Optional<List<Video>> findByMediaTmdbIdAndSeasonNumberAndEpisodeNumber(@Param("media_tmdb_id") final Integer media_tmdb_id,
+            @Param("season_number") final Integer season_number, @Param("episode_number") final Integer episode_number);
 
-    @Query(value = "SELECT " + Video.TABLE_AS + ".* FROM " + Video.TABLE_NAME + Video.TABLE_AS + " WHERE " + Video.ID + " = :id", nativeQuery = true)
-    Optional<Video> findById(@Param("id") final String id);
+    @Query(value = "SELECT " + Video.TABLE_AS + ".* FROM " + Video.TABLE_NAME + Video.TABLE_AS + " WHERE " + Video.TMDB_ID + " = :tmdb_id", nativeQuery = true)
+    Optional<Video> findByTmdbId(@Param("tmdb_id") final String tmdb_id);
 }

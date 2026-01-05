@@ -12,6 +12,6 @@ import java.util.Optional;
 public interface CompanyRepository extends JpaRepository<Company, String>
 {
     @Query(nativeQuery = true,
-            value = "SELECT " + Company.TABLE_AS + ".* FROM " + Company.TABLE_NAME + Company.TABLE_AS + " WHERE " + Company.ID + " = :id")
-    Optional<Company> findCompanyById(@Param("id") final Integer id);
+            value = "SELECT " + Company.TABLE_AS + ".* FROM " + Company.TABLE_NAME + Company.TABLE_AS + " WHERE " + Company.TMDB_ID + " = :tmdb_id")
+    Optional<Company> findCompanyByTmdbId(@Param("tmdb_id") final Integer tmdb_id);
 }

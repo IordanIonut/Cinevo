@@ -1,13 +1,14 @@
 package com.cinovo.backend.DB.Service;
 
+import com.cinovo.backend.DB.Model.Enum.MediaType;
+import com.cinovo.backend.DB.Model.Enum.SiteType;
+import com.cinovo.backend.DB.Model.Enum.VideoType;
 import com.cinovo.backend.DB.Model.Media;
 import com.cinovo.backend.DB.Model.Video;
 import com.cinovo.backend.DB.Repository.VideoRepository;
 import com.cinovo.backend.DB.Util.Resolver.MediaResolver;
 import com.cinovo.backend.DB.Util.Shared;
 import com.cinovo.backend.DB.Util.TMDBLogically;
-import com.cinovo.backend.Enum.MediaType;
-import com.cinovo.backend.Enum.SiteType;
 import com.cinovo.backend.TMDB.Response.MediaVideoResponse;
 import lombok.extern.jbosslog.JBossLog;
 import org.springframework.context.annotation.Lazy;
@@ -35,34 +36,36 @@ public class VideoService implements TMDBLogically<Object, List<Video>>
         this.mediaService = mediaService;
     }
 
-    public List<Video> findVideosByMovieIdAndMediaType(final Integer id, final MediaType type) throws Exception
+    public List<Video> findByMediaTmdbId(final Integer media_tmdb_id, final MediaType type) throws Exception
     {
-        Optional<List<Video>> videos = this.videoRepository.findVideosByMovieIdAndMediaType(id);
+        Optional<List<Video>> videos = this.videoRepository.findByMediaTmdbId(media_tmdb_id);
         if(videos.isEmpty() || videos.get().isEmpty())
         {
-            return (List<Video>) this.onConvertTMDB(type + Shared.REGEX + id);
+            return (List<Video>) this.onConvertTMDB(type + Shared.REGEX + media_tmdb_id);
         }
         return videos.get();
     }
 
-    public List<Video> findVideosBySeriesIdAndMediaType(final Integer id, final Integer season_number, final MediaType type) throws Exception
+    public List<Video> findByMediaTmdbIdAndSeasonNumber(final Integer media_tmdb_id, final Integer season_number, final MediaType type)
+            throws Exception
     {
-        Optional<List<Video>> videos = this.videoRepository.findVideosBySeriesIdAndMediaType(id, season_number);
+        Optional<List<Video>> videos = this.videoRepository.findByMediaTmdbIdAndSeasonNumber(media_tmdb_id, season_number);
         if(videos.isEmpty() || videos.get().isEmpty())
         {
-            return (List<Video>) this.onConvertTMDB(type + Shared.REGEX + id + Shared.REGEX + season_number);
+            return (List<Video>) this.onConvertTMDB(type + Shared.REGEX + media_tmdb_id + Shared.REGEX + season_number);
         }
         return videos.get();
     }
 
-    public List<Video> findVideoBySeriesIdAndSeasonNumberAndEpisodeAndMediaType(final Integer series_id, final Integer season_number,
+    public List<Video> findByMediaTmdbIdAndSeasonNumberAndEpisodeNumber(final Integer media_tmdb_id, final Integer season_number,
             final Integer episode_number, final MediaType type) throws Exception
     {
         Optional<List<Video>> videos =
-                this.videoRepository.findVideoBySeriesIdAndSeasonNumberAndEpisodeAndMediaType(series_id, season_number, episode_number);
+                this.videoRepository.findByMediaTmdbIdAndSeasonNumberAndEpisodeNumber(media_tmdb_id, season_number, episode_number);
         if(videos.isEmpty() || videos.get().isEmpty())
         {
-            return (List<Video>) this.onConvertTMDB(type + Shared.REGEX + series_id + Shared.REGEX + season_number + Shared.REGEX + episode_number);
+            return (List<Video>) this.onConvertTMDB(
+                    type + Shared.REGEX + media_tmdb_id + Shared.REGEX + season_number + Shared.REGEX + episode_number);
         }
         return videos.get();
     }
@@ -90,18 +93,18 @@ public class VideoService implements TMDBLogically<Object, List<Video>>
         {
             for(MediaVideoResponse.Video video : movieVideoResponse.getResults())
             {
-                Video vid = this.videoRepository.findById(video.getId()).orElse(new Video());
+                Video vid = this.videoRepository.findByTmdbId(video.getId()).orElse(new Video());
                 vid.setIso_639_1(video.getIso_639_1());
                 vid.setIso_3166_1(video.getIso_3166_1());
                 vid.setName(video.getName());
                 vid.setKey(video.getKey());
                 vid.setSite(SiteType.fromLabel(video.getSite()));
-                vid.setType(SiteType.fromLabel(video.getType()));
+                vid.setType(VideoType.fromLabel(video.getType()));
                 vid.setOfficial(video.getOfficial());
                 OffsetDateTime offsetDateTime = OffsetDateTime.parse(video.getPublished_at());
                 LocalDate date = offsetDateTime.toLocalDate();
                 vid.setPublished_at(date);
-                vid.setId(video.getId());
+                vid.setTmdb_id(video.getId());
                 vid.setMedia(media);
                 vid.setSeason(season);
                 vid.setEpisode(episode);

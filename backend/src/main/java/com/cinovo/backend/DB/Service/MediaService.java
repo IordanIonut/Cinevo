@@ -1,23 +1,20 @@
 package com.cinovo.backend.DB.Service;
 
 import com.cinovo.backend.DB.Model.*;
+import com.cinovo.backend.DB.Model.Enum.EpisodeType;
+import com.cinovo.backend.DB.Model.Enum.MediaStatus;
+import com.cinovo.backend.DB.Model.Enum.MediaType;
 import com.cinovo.backend.DB.Repository.MediaRepository;
 import com.cinovo.backend.DB.Util.Resolver.MediaResolver;
 import com.cinovo.backend.DB.Util.Shared;
 import com.cinovo.backend.DB.Util.TMDBLogically;
-import com.cinovo.backend.Enum.EpisodeType;
-import com.cinovo.backend.Enum.MediaStatus;
-import com.cinovo.backend.Enum.MediaType;
 import com.cinovo.backend.TMDB.Response.*;
 import com.cinovo.backend.TMDB.Response.Common.MediaExternalIdResponse;
 import com.cinovo.backend.TMDB.Response.Common.MediaResponse;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import lombok.extern.jbosslog.JBossLog;
 import org.springframework.stereotype.Service;
-import org.springframework.transaction.annotation.Propagation;
 import org.springframework.transaction.annotation.Transactional;
-import org.springframework.transaction.event.TransactionPhase;
-import org.springframework.transaction.event.TransactionalEventListener;
 
 import java.util.*;
 import java.util.function.Function;
@@ -59,9 +56,9 @@ public class MediaService implements TMDBLogically<Object, Object>
         this.mediaResolver = mediaResolver;
     }
 
-    public Media.Season getSeasonById(final Integer season_id)
+    public Media.Season getSeasonBySeasonTmdbId(final Integer season_tmdb_id)
     {
-        Optional<Media.Season> season = this.mediaRepository.getSeasonById(season_id);
+        Optional<Media.Season> season = this.mediaRepository.getSeasonBySeasonTmdbId(season_tmdb_id);
         if(season.isEmpty())
         {
             return new Media.Season();
@@ -69,9 +66,9 @@ public class MediaService implements TMDBLogically<Object, Object>
         return season.get();
     }
 
-    public Media.Season.Episode findEpisodeById(final Integer episode_id)
+    public Media.Season.Episode findEpisodeByTmdbId(final Integer episode_id)
     {
-        Optional<Media.Season.Episode> episode = this.mediaRepository.findEpisodeById(episode_id);
+        Optional<Media.Season.Episode> episode = this.mediaRepository.findEpisodeByTmdbId(episode_id);
         if(episode.isEmpty())
         {
             return new Media.Season.Episode();
@@ -94,9 +91,9 @@ public class MediaService implements TMDBLogically<Object, Object>
         return (List<Media>) this.onConvertTMDB(MediaType.SIMILAR.name() + Shared.REGEX + id + Shared.REGEX + mediaType);
     }
 
-    public Media getMediaByIdAndType(final Integer id, final MediaType type) throws Exception
+    public Media getMediaByTmdbIdAndMediaType(final Integer id, final MediaType type) throws Exception
     {
-        Optional<Media> movie = this.mediaRepository.getMediaByIdAndType(id, type.name());
+        Optional<Media> movie = this.mediaRepository.getMediaByTmdbIdAndMediaType(id, type.name());
         if(movie.isEmpty())
         {
             return (Media) onConvertTMDB(type + Shared.REGEX + id);
@@ -111,23 +108,23 @@ public class MediaService implements TMDBLogically<Object, Object>
         return media;
     }
 
-    public Media.Season getSeasonByMediaIdAndSeasonNumber(final Integer id, final Integer season_number) throws Exception
+    public Media.Season getSeasonByMediaTmdbIdAndSeasonNumber(final Integer media_tmdb_id, final Integer season_number) throws Exception
     {
-        Optional<Media.Season> season = this.mediaRepository.getSeasonByMediaIdAndSeasonNumber(id, season_number);
+        Optional<Media.Season> season = this.mediaRepository.getSeasonByMediaTmdbIdAndSeasonNumber(media_tmdb_id, season_number);
         if(season.isEmpty())
         {
-            return (Media.Season) onConvertTMDB(MediaType.TV + Shared.REGEX + id);
+            return (Media.Season) onConvertTMDB(MediaType.TV + Shared.REGEX + media_tmdb_id);
         }
         return season.get();
     }
 
-    public Media.Season.Episode getEpisodeByMediaIdAndSeasonNumberAndEpisode(final Integer id, final Integer season_number,
+    public Media.Season.Episode getEpisodeByMediaTmdbIdAndSeasonNumberAndEpisodeNumber(final Integer media_tmdb_id, final Integer season_number,
             final Integer episode_number) throws Exception
     {
-        Optional<Media.Season.Episode> episode = this.mediaRepository.getEpisodeByMediaIdAndSeasonNumberAndEpisode(id, season_number, episode_number);
+        Optional<Media.Season.Episode> episode = this.mediaRepository.getEpisodeByMediaTmdbIdAndSeasonNumberAndEpisodeNumber(media_tmdb_id, season_number, episode_number);
         if(episode.isEmpty())
         {
-            return (Media.Season.Episode) onConvertTMDB(MediaType.TV + Shared.REGEX + id);
+            return (Media.Season.Episode) onConvertTMDB(MediaType.TV + Shared.REGEX + media_tmdb_id);
         }
         return episode.get();
     }
@@ -144,7 +141,7 @@ public class MediaService implements TMDBLogically<Object, Object>
     {
         for(MediaType type : new MediaType[] { MediaType.MOVIE, MediaType.TV })
         {
-            Media media = this.getMediaByIdAndType(id, type);
+            Media media = this.getMediaByTmdbIdAndMediaType(id, type);
             if(media != null && (title.equals(media.getTitle()) || original_title.equals(media.getOriginal_title())))
             {
                 return media.getType();
@@ -221,7 +218,7 @@ public class MediaService implements TMDBLogically<Object, Object>
     }
 
     @Transactional
-    private Media onConvertMediaById(final Integer id, final MediaType type) throws Exception
+    protected Media onConvertMediaById(final Integer id, final MediaType type) throws Exception
     {
         MediaResponse mediaResponse = type.equals(MediaType.MOVIE) ? service.getMovieDetails(id, "en-US") : service.getTvDetails(id, null, null);
 
@@ -233,8 +230,8 @@ public class MediaService implements TMDBLogically<Object, Object>
 
         MediaKeywordResponse mediaKeywordResponse = type.equals(MediaType.MOVIE) ? service.getKeywordMovie(id) : service.getTvKeyword(id);
 
-        Media media = mediaRepository.getMediaByIdAndType(id, type.name()).orElse(new Media());
-        media.setId(mediaResponse.getId());
+        Media media = mediaRepository.getMediaByTmdbIdAndMediaType(id, type.name()).orElse(new Media());
+        media.setTmdb_id(mediaResponse.getId());
         media.setType(type != null ? type : MediaType.valueOf(mediaResponse.getMedia_type().toUpperCase()));
 
         media.setAdult(mediaResponse.getAdult());
@@ -257,7 +254,7 @@ public class MediaService implements TMDBLogically<Object, Object>
             List<Keyword> keywords = mediaKeywordResponse.getKeywords().stream().map(k -> {
                 try
                 {
-                    return keywordService.findKeywordById(k.getId());
+                    return keywordService.findByTmdbId(k.getId());
                 }
                 catch(Exception e)
                 {
@@ -303,14 +300,14 @@ public class MediaService implements TMDBLogically<Object, Object>
             }
 
             Map<Integer, Media.Season> seasonById =
-                    managedSeasons.stream().filter(s -> s.getId() != null).collect(Collectors.toMap(Media.Season::getId, Function.identity()));
+                    managedSeasons.stream().filter(s -> s.getTmdb_id() != null).collect(Collectors.toMap(Media.Season::getTmdb_id, Function.identity()));
 
             for(MediaResponse.Season seasonDto : mediaResponse.getSeasons())
             {
                 Media.Season ses =
-                        seasonById.getOrDefault(seasonDto.getId(), mediaRepository.getSeasonById(seasonDto.getId()).orElse(new Media.Season()));
+                        seasonById.getOrDefault(seasonDto.getId(), mediaRepository.getSeasonBySeasonTmdbId(seasonDto.getId()).orElse(new Media.Season()));
 
-                ses.setId(seasonDto.getId());
+                ses.setTmdb_id(seasonDto.getId());
                 ses.setAir_date(Shared.onStringParseDate(seasonDto.getAir_date()));
                 ses.setEpisode_count(seasonDto.getEpisode_count());
                 ses.setName(seasonDto.getName());
@@ -320,7 +317,7 @@ public class MediaService implements TMDBLogically<Object, Object>
                 ses.setVote_average(seasonDto.getVote_average());
                 ses.setMedia(media);
 
-                MediaExternalIdResponse externalIdResponse = service.getTvSeasonExternalId(media.getId(), seasonDto.getSeason_number());
+                MediaExternalIdResponse externalIdResponse = service.getTvSeasonExternalId(media.getTmdb_id(), seasonDto.getSeason_number());
                 ses.setImdb_id(externalIdResponse.getImdb_id());
                 ses.setFreebase_mid(externalIdResponse.getFreebase_mid());
                 ses.setFreebase_id(externalIdResponse.getFreebase_id());
@@ -338,8 +335,8 @@ public class MediaService implements TMDBLogically<Object, Object>
                     ses.setEpisodes(managedEpisodes);
                 }
 
-                Map<Integer, Media.Season.Episode> epById = managedEpisodes.stream().filter(e -> e.getId() != null)
-                        .collect(Collectors.toMap(Media.Season.Episode::getId, Function.identity()));
+                Map<Integer, Media.Season.Episode> epById = managedEpisodes.stream().filter(e -> e.getTmdb_id() != null)
+                        .collect(Collectors.toMap(Media.Season.Episode::getTmdb_id, Function.identity()));
 
                 TvSeasonDetailsResponse tvSeasonDetailsResponse = service.getTvSeasonDetails(id, seasonDto.getSeason_number(), null, null);
                 Set<Integer> incomingEpIds = new HashSet<>();
@@ -348,9 +345,9 @@ public class MediaService implements TMDBLogically<Object, Object>
                 {
                     incomingEpIds.add(episodeDto.getId());
                     Media.Season.Episode epi = epById.getOrDefault(episodeDto.getId(),
-                            mediaRepository.getEpisodeById(episodeDto.getId()).orElse(new Media.Season.Episode()));
+                            mediaRepository.getEpisodeByEpisodeTmdbId(episodeDto.getId()).orElse(new Media.Season.Episode()));
 
-                    epi.setId(episodeDto.getId());
+                    epi.setTmdb_id(episodeDto.getId());
                     epi.setAir_date(Shared.onStringParseDate(episodeDto.getAir_date()));
                     epi.setEpisode_number(episodeDto.getEpisode_number());
                     epi.setEpisode_type(EpisodeType.valueOf(episodeDto.getEpisode_type().toUpperCase()));
@@ -363,7 +360,7 @@ public class MediaService implements TMDBLogically<Object, Object>
                     epi.setSeason(ses);
 
                     MediaExternalIdResponse externalId =
-                            service.getTvSeasonEpisodeExternal(media.getId(), ses.getSeason_number(), episodeDto.getEpisode_number());
+                            service.getTvSeasonEpisodeExternal(media.getTmdb_id(), ses.getSeason_number(), episodeDto.getEpisode_number());
                     epi.setImdb_id(externalId.getImdb_id());
                     epi.setFreebase_mid(externalId.getFreebase_mid());
                     epi.setFreebase_id(externalId.getFreebase_id());
@@ -380,7 +377,7 @@ public class MediaService implements TMDBLogically<Object, Object>
                     }
                 }
 
-                managedEpisodes.removeIf(e -> e.getId() != null && !incomingEpIds.contains(e.getId()));
+                managedEpisodes.removeIf(e -> e.getTmdb_id() != null && !incomingEpIds.contains(e.getTmdb_id()));
 
                 if(!managedSeasons.contains(ses))
                 {
@@ -394,13 +391,13 @@ public class MediaService implements TMDBLogically<Object, Object>
         {
             for(MediaResponse.CreatedBy createdBy : mediaResponse.getCreated_by())
             {
-                Person person = this.personService.findPersonById(createdBy.getId());
+                Person person = this.personService.findByTmdbId(createdBy.getId());
                 if(person.getMedias() == null)
                 {
                     person.setMedias(new ArrayList<>());
                 }
 
-                if(person.getMedias().stream().noneMatch(m -> m.getId().equals(media.getId())))
+                if(person.getMedias().stream().noneMatch(m -> m.getTmdb_id().equals(media.getTmdb_id())))
                 {
                     person.getMedias().add(media);
                 }

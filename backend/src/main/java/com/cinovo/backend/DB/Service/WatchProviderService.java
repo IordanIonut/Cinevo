@@ -1,13 +1,13 @@
 package com.cinovo.backend.DB.Service;
 
+import com.cinovo.backend.DB.Model.Enum.MediaType;
+import com.cinovo.backend.DB.Model.Enum.ProviderType;
 import com.cinovo.backend.DB.Model.Media;
 import com.cinovo.backend.DB.Model.WatchProvider;
 import com.cinovo.backend.DB.Repository.WatchProviderRepository;
 import com.cinovo.backend.DB.Util.Resolver.MediaResolver;
 import com.cinovo.backend.DB.Util.Shared;
 import com.cinovo.backend.DB.Util.TMDBLogically;
-import com.cinovo.backend.Enum.MediaType;
-import com.cinovo.backend.Enum.ProviderType;
 import com.cinovo.backend.TMDB.Response.MediaWatchProvidersResponse;
 import lombok.extern.jbosslog.JBossLog;
 import org.springframework.context.annotation.Lazy;
@@ -32,22 +32,23 @@ public class WatchProviderService implements TMDBLogically<Object, List<WatchPro
         this.mediaService = mediaService;
     }
 
-    public List<WatchProvider> findWatchProviderByMediaIdAndType(final Integer id, final MediaType type) throws Exception
+    public List<WatchProvider> findByMediaTmdbIdAndMediaType(final Integer media_tmdb_id, final MediaType type) throws Exception
     {
-        Optional<List<WatchProvider>> watchProviders = this.watchProviderRepository.findWatchProviderByMovieId(id);
+        Optional<List<WatchProvider>> watchProviders = this.watchProviderRepository.findByMediaTmdbId(media_tmdb_id);
         if(watchProviders.isEmpty() || watchProviders.get().isEmpty())
         {
-            return this.onConvertTMDB(type + Shared.REGEX + id);
+            return this.onConvertTMDB(type + Shared.REGEX + media_tmdb_id);
         }
         return watchProviders.get();
     }
 
-    public List<WatchProvider> findWatchProviderBySeasonIdAndType(final Integer id, final Integer season, final MediaType type) throws Exception
+    public List<WatchProvider> findByMediaTmdbIdAndSeasonNumber(final Integer media_tmdb_id, final Integer season, final MediaType type)
+            throws Exception
     {
-        Optional<List<WatchProvider>> watchProviders = this.watchProviderRepository.findWatchProviderBySeasonIdAndType(id, season);
+        Optional<List<WatchProvider>> watchProviders = this.watchProviderRepository.findByMediaTmdbIdAndSeasonNumber(media_tmdb_id, season);
         if(watchProviders.isEmpty() || watchProviders.get().isEmpty())
         {
-            return this.onConvertTMDB(type + Shared.REGEX + id + Shared.REGEX + season);
+            return this.onConvertTMDB(type + Shared.REGEX + media_tmdb_id + Shared.REGEX + season);
         }
         return watchProviders.get();
     }
@@ -78,7 +79,8 @@ public class WatchProviderService implements TMDBLogically<Object, List<WatchPro
                         if(this.conditionInsert(entry.getKey()))
                         {
                             watchProviders.add(
-                                    createWatchProvider(possibility, entry.getKey(), ProviderType.BUY, MediaType.valueOf(parts[0]), media, season));
+                                    findByMediaCinevoIdOrSeasonCinevoIdAndTypeAndProviderTypeAndLocationAndProviderId(possibility, entry.getKey(),
+                                            ProviderType.BUY, MediaType.valueOf(parts[0]), media, season));
                         }
                     }
                 }
@@ -90,8 +92,8 @@ public class WatchProviderService implements TMDBLogically<Object, List<WatchPro
                         if(this.conditionInsert(entry.getKey()))
                         {
                             watchProviders.add(
-                                    createWatchProvider(possibility, entry.getKey(), ProviderType.FLATRATE, MediaType.valueOf(parts[0]), media,
-                                            season));
+                                    findByMediaCinevoIdOrSeasonCinevoIdAndTypeAndProviderTypeAndLocationAndProviderId(possibility, entry.getKey(),
+                                            ProviderType.FLATRATE, MediaType.valueOf(parts[0]), media, season));
                         }
                     }
                 }
@@ -103,7 +105,8 @@ public class WatchProviderService implements TMDBLogically<Object, List<WatchPro
                         if(this.conditionInsert(entry.getKey()))
                         {
                             watchProviders.add(
-                                    createWatchProvider(possibility, entry.getKey(), ProviderType.RENT, MediaType.valueOf(parts[0]), media, season));
+                                    findByMediaCinevoIdOrSeasonCinevoIdAndTypeAndProviderTypeAndLocationAndProviderId(possibility, entry.getKey(),
+                                            ProviderType.RENT, MediaType.valueOf(parts[0]), media, season));
                         }
                     }
                 }
@@ -115,7 +118,8 @@ public class WatchProviderService implements TMDBLogically<Object, List<WatchPro
                         if(this.conditionInsert(entry.getKey()))
                         {
                             watchProviders.add(
-                                    createWatchProvider(possibility, entry.getKey(), ProviderType.ADS, MediaType.valueOf(parts[0]), media, season));
+                                    findByMediaCinevoIdOrSeasonCinevoIdAndTypeAndProviderTypeAndLocationAndProviderId(possibility, entry.getKey(),
+                                            ProviderType.ADS, MediaType.valueOf(parts[0]), media, season));
                         }
                     }
                 }
@@ -127,7 +131,8 @@ public class WatchProviderService implements TMDBLogically<Object, List<WatchPro
                         if(this.conditionInsert(entry.getKey()))
                         {
                             watchProviders.add(
-                                    createWatchProvider(possibility, entry.getKey(), ProviderType.FREE, MediaType.valueOf(parts[0]), media, season));
+                                    findByMediaCinevoIdOrSeasonCinevoIdAndTypeAndProviderTypeAndLocationAndProviderId(possibility, entry.getKey(),
+                                            ProviderType.FREE, MediaType.valueOf(parts[0]), media, season));
                         }
                     }
                 }
@@ -138,12 +143,13 @@ public class WatchProviderService implements TMDBLogically<Object, List<WatchPro
         return watchProviders;
     }
 
-    private WatchProvider createWatchProvider(final MediaWatchProvidersResponse.WatchProvider.Possibility possibility, final String location,
-            final ProviderType provider_type, final MediaType type, final Media media, final Media.Season season)
+    private WatchProvider findByMediaCinevoIdOrSeasonCinevoIdAndTypeAndProviderTypeAndLocationAndProviderId(
+            final MediaWatchProvidersResponse.WatchProvider.Possibility possibility, final String location, final ProviderType provider_type,
+            final MediaType type, final Media media, final Media.Season season)
     {
-        WatchProvider watchProvider = this.watchProviderRepository.findWatchProviderById(media == null ? null : media.getCinevo_id(),
-                        season == null ? null : season.getCinevo_id(), type.name(), provider_type.name(), location, possibility.getProvider_id())
-                .orElse(new WatchProvider());
+        WatchProvider watchProvider = this.watchProviderRepository.findByMediaCinevoIdOrSeasonCinevoIdAndTypeAndProviderTypeAndLocationAndProviderId(
+                media == null ? null : media.getCinevo_id(), season == null ? null : season.getCinevo_id(), type.name(), provider_type.name(),
+                location, possibility.getProvider_id()).orElse(new WatchProvider());
         watchProvider.setType(type);
         watchProvider.setProvider_type(provider_type);
         watchProvider.setLocation(location);

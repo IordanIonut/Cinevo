@@ -1,13 +1,10 @@
 package com.cinovo.backend.Schedule;
 
-import com.cinovo.backend.DB.Model.Person;
+import com.cinovo.backend.DB.Model.Enum.MediaType;
 import com.cinovo.backend.DB.Service.*;
-import com.cinovo.backend.Enum.MediaType;
-import com.cinovo.backend.TMDB.Response.Common.ChangesResponse;
 import com.cinovo.backend.TMDB.Service;
 import lombok.extern.jbosslog.JBossLog;
 import org.springframework.boot.CommandLineRunner;
-import org.springframework.scheduling.annotation.Async;
 import org.springframework.stereotype.Component;
 
 @Component
@@ -31,64 +28,66 @@ public class StartupRunner implements CommandLineRunner
         this.spokenLanguageService = spokenLanguageService;
         this.productionCountryService = productionCountryService;
         this.service = service;
-        this.job = job;
+        //        this.job = job;
     }
 
     @Override
     public void run(String... args) throws Exception
     {
-        this.job.callConfigurationDetails();
+        //        this.job.callConfigurationDetails();
 
-        this.genreService.findGenresByType(MediaType.MOVIE);
-        this.genreService.findGenresByType(MediaType.TV);
+        this.genreService.getGenreByMediaType(MediaType.MOVIE);
+        this.genreService.getGenreByMediaType(MediaType.TV);
         this.spokenLanguageService.findAllSpokenLanguages();
         this.productionCountryService.findAllProductionCountry();
 
-        this.job.callTrendingMediaAll();
+        //        this.job.callTrendingMediaAll();
 
         //        this.collectChangeData(MediaType.MOVIE);
         //        this.collectChangeData(MediaType.TV);
         //        this.collectChangeData(MediaType.PERSON);
     }
 
-    public void collectChangeData(final MediaType type) throws Exception
-    {
-        int page = 0;
-        ChangesResponse changesResponse = new ChangesResponse();
-        do
-        {
-            page++;
-            changesResponse = this.service.getChangeResponse(MediaType.MOVIE, null, page, null);
-            for(ChangesResponse.Change change : changesResponse.getResults())
-            {
-                this.processChangeAsync(change.getId(), type);
-            }
-        }
-        //        while(page <= changesResponse.getTotal_pages());
-        while(page < 1);
-    }
+    //TODO : uncomment
 
-    @Async("customExecutorStartupRunner")
-    public void processChangeAsync(Integer id, MediaType type) throws Exception
-    {
-        try
-        {
-            if(type.equals(MediaType.PERSON))
-            {
-                Person person = this.personService.findPersonByTmdbId(id);
-                if(person != null)
-                {
-                    this.personService.saveOrUpdate(person);
-                }
-            }
-            else
-            {
-                this.mediaService.getMediaByTmdbIdAndType(id, type);
-            }
-        }
-        catch(Exception e)
-        {
-            log.warn("Skipping media id=" + id + " type=" + type + " due to error: " + e.getMessage());
-        }
-    }
+    //    public void collectChangeData(final MediaType type) throws Exception
+    //    {
+    //        int page = 0;
+    //        ChangesResponse changesResponse = new ChangesResponse();
+    //        do
+    //        {
+    //            page++;
+    //            changesResponse = this.service.getChangeResponse(MediaType.MOVIE, null, page, null);
+    //            for(ChangesResponse.Change change : changesResponse.getResults())
+    //            {
+    //                this.processChangeAsync(change.getId(), type);
+    //            }
+    //        }
+    //        //        while(page <= changesResponse.getTotal_pages());
+    //        while(page < 1);
+    //    }
+    //
+    //    @Async("customExecutorStartupRunner")
+    //    public void processChangeAsync(Integer id, MediaType type) throws Exception
+    //    {
+    //        try
+    //        {
+    //            if(type.equals(MediaType.PERSON))
+    //            {
+    //                Person person = this.personService.findPersonByTmdbId(id);
+    //                if(person != null)
+    //                {
+    //                    this.personService.saveOrUpdate(person);
+    //                }
+    //            }
+    //            else
+    //            {
+    //                this.mediaService.getMediaByTmdbIdAndType(id, type);
+    //            }
+    //        }
+    //        catch(Exception e)
+    //        {
+    //            log.warn("Skipping media id=" + id + " type=" + type + " due to error: " + e.getMessage());
+    //        }
+    //    }
 }

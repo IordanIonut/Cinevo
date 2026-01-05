@@ -35,17 +35,17 @@ public class PersonController
         }
     }
 
-    @GetMapping("/get/{id}")
-    public ResponseEntity<Person> findPersonById(@PathVariable final Integer id)
+    @GetMapping("/get/{tmdb_id}")
+    public ResponseEntity<Person> findByTmdbId(@PathVariable final Integer tmdb_id)
     {
         try
         {
-            log.info("findPersonById() - Successful.....");
-            return ResponseEntity.ok(this.personService.findPersonById(id));
+            log.info("findByTmdbId() - Successful.....");
+            return ResponseEntity.ok(this.personService.findByTmdbId(tmdb_id));
         }
         catch(Exception e)
         {
-            log.error("Error in findPersonById: {}", e.getMessage(), e);
+            log.error("Error in findByTmdbId: {}", e.getMessage(), e);
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).build();
         }
     }

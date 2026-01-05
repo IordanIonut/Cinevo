@@ -14,13 +14,13 @@ import java.util.Optional;
 public interface CountryRepository extends JpaRepository<Country, String>
 {
     @Query(nativeQuery = true,
-            value = "SELECT " + Country.TABLE_AS + ".* FROM " + Country.TABLE_NAME + Country.TABLE_AS + " WHERE " + Country.TYPE + " = :type")
-    Optional<List<Country>> findCountryByType(@Param("type") String type);
+            value = "SELECT " + Country.TABLE_AS + ".* FROM " + Country.TABLE_NAME + Country.TABLE_AS + " WHERE " + Country.TYPE + " = :media_type")
+    Optional<List<Country>> findCountryByMediaType(@Param("media_type") String media_type);
 
     @Query(nativeQuery = true,
-            value = "SELECT " + Country.TABLE_AS + ".* FROM " + Country.TABLE_NAME + Country.TABLE_AS + " WHERE " + Country.TYPE + " = :type AND "
+            value = "SELECT " + Country.TABLE_AS + ".* FROM " + Country.TABLE_NAME + Country.TABLE_AS + " WHERE " + Country.TYPE + " = :media_type AND "
                     + Country.CODE + " = :code")
-    Optional<Country> findCountryByTypeAndCode(@Param("type") String type, @Param("code") String code);
+    Optional<Country> findCountryByMediaTypeAndCode(@Param("media_type") String media_type, @Param("code") String code);
 
     @Query(nativeQuery = true,
             value = "SELECT " + Country.Certification.TABLE_AS + ".* FROM " + Country.Certification.TABLE_NAME + Country.Certification.TABLE_AS

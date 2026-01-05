@@ -1,11 +1,11 @@
-package com.cinovo.backend.Enum;
+package com.cinovo.backend.DB.Model.Enum;
 
 import lombok.Getter;
 
 @Getter
 public enum SiteType
 {
-    YOUTUBE("Youtube"), mVIMEO("Vimeo");
+    YOUTUBE("Youtube"), VIMEO("Vimeo");
 
     private final String label;
 
@@ -28,6 +28,6 @@ public enum SiteType
                 return status;
             }
         }
-        throw new IllegalArgumentException("Unknown status: " + label);
+        throw new IllegalArgumentException("Unknown site type: " + label);
     }
-    }
+}

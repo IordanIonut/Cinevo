@@ -19,17 +19,17 @@ public class KeywordController
     @Autowired
     private KeywordService keywordService;
 
-    @GetMapping("/get/{id}")
-    public ResponseEntity<Keyword> findKeywordById(@PathVariable final Integer id)
+    @GetMapping("/get/{tmdb_id}")
+    public ResponseEntity<Keyword> findByTmdbId(@PathVariable final Integer tmdb_id)
     {
         try
         {
-            log.info("findKeywordById() - Successful.....");
-            return ResponseEntity.ok(this.keywordService.findKeywordById(id));
+            log.info("findByTmdbId() - Successful.....");
+            return ResponseEntity.ok(this.keywordService.findByTmdbId(tmdb_id));
         }
         catch(Exception e)
         {
-            log.error("Error in findKeywordById: {}", e.getMessage(), e);
+            log.error("Error in findByTmdbId: {}", e.getMessage(), e);
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).build();
         }
     }

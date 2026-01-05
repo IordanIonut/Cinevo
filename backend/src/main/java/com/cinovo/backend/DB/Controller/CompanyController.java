@@ -21,16 +21,16 @@ public class CompanyController
     private CompanyService companyService;
 
     @GetMapping("/get/by")
-    public ResponseEntity<Company> getCompanyDetailById(@RequestParam("id") final Integer id)
+    public ResponseEntity<Company> findCompanyByTmdbId(@RequestParam("tmdb_id") final Integer tmdb_id)
     {
         try
         {
-            log.info("getCompanyDetailById() - Successful.....");
-            return ResponseEntity.ok(this.companyService.findCompanyById(id));
+            log.info("findCompanyByTmdbId() - Successful.....");
+            return ResponseEntity.ok(this.companyService.findCompanyByTmdbId(tmdb_id));
         }
         catch(Exception e)
         {
-            log.error("Error in getCompanyDetailById: {}", e.getMessage(), e);
+            log.error("Error in findCompanyByTmdbId: {}", e.getMessage(), e);
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).build();
         }
     }

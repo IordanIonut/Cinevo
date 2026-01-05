@@ -1,17 +1,14 @@
 package com.cinovo.backend.DB.Util.Resolver;
 
+import com.cinovo.backend.DB.Model.Enum.MediaType;
 import com.cinovo.backend.DB.Model.Media;
 import com.cinovo.backend.DB.Service.*;
 import com.cinovo.backend.DB.Util.Shared;
-import com.cinovo.backend.Enum.MediaType;
 import lombok.extern.jbosslog.JBossLog;
 import org.springframework.context.annotation.Lazy;
 import org.springframework.scheduling.annotation.Async;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
-
-import java.util.ArrayList;
-import java.util.List;
 
 @JBossLog
 @Service
@@ -40,7 +37,7 @@ public class MediaResolver
         {
             return null;
         }
-        return mediaService.getMediaByIdAndType(Shared.onStringParseToInteger(parts[1]), type);
+        return mediaService.getMediaByTmdbIdAndMediaType(Shared.onStringParseToInteger(parts[1]), type);
     }
 
     public static Media.Season resolveSeason(final MediaService mediaService, final String[] parts) throws Exception
@@ -49,7 +46,7 @@ public class MediaResolver
         {
             return null;
         }
-        return mediaService.getSeasonByMediaIdAndSeasonNumber(Shared.onStringParseToInteger(parts[1]), Shared.onStringParseToInteger(parts[2]));
+        return mediaService.getSeasonByMediaTmdbIdAndSeasonNumber(Shared.onStringParseToInteger(parts[1]), Shared.onStringParseToInteger(parts[2]));
     }
 
     public static Media.Season.Episode resolveEpisode(final MediaService mediaService, final String[] parts) throws Exception
@@ -58,7 +55,7 @@ public class MediaResolver
         {
             return null;
         }
-        return mediaService.getEpisodeByMediaIdAndSeasonNumberAndEpisode(Shared.onStringParseToInteger(parts[1]),
+        return mediaService.getEpisodeByMediaTmdbIdAndSeasonNumberAndEpisodeNumber(Shared.onStringParseToInteger(parts[1]),
                 Shared.onStringParseToInteger(parts[2]), Shared.onStringParseToInteger(parts[3]));
     }
 
@@ -66,68 +63,71 @@ public class MediaResolver
     @Transactional
     public void generateDateAsync(final Integer mediaId, final MediaType type) throws Exception
     {
-        Media media = mediaService.getMediaByIdAndType(mediaId, type);
+        Media media = mediaService.getMediaByTmdbIdAndMediaType(mediaId, type);
         if(media.getImages() != null)
         {
             media.getImages().clear();
-            media.getImages().addAll(imageService.findImageByMediaIdAndMediaType(mediaId, media.getType()));
+            media.getImages().addAll(imageService.findByTmdbIdAndMediaType(mediaId, media.getType()));
         }
         if(media.getVideo() != null)
         {
             media.getVideos().clear();
-            media.getVideos().addAll(videoService.findVideosByMovieIdAndMediaType(mediaId, media.getType()));
+            media.getVideos().addAll(videoService.findByMediaTmdbId(mediaId, media.getType()));
         }
         if(media.getWatch_providers() != null)
         {
             media.getWatch_providers().clear();
-            media.getWatch_providers().addAll(watchProviderService.findWatchProviderByMediaIdAndType(mediaId, media.getType()));
+            media.getWatch_providers().addAll(this.watchProviderService.findByMediaTmdbIdAndMediaType(mediaId, media.getType()));
         }
 
         if(media.getSeasons() != null)
         {
             for(Media.Season season : media.getSeasons())
             {
-                Media.Season ses = mediaService.getSeasonById(season.getId());
+                Media.Season ses = mediaService.getSeasonBySeasonTmdbId(season.getTmdb_id());
 
                 if(ses.getWatch_providers() != null)
                 {
                     ses.getWatch_providers().clear();
-                    ses.getWatch_providers().addAll(watchProviderService.findWatchProviderBySeasonIdAndType(media.getId(), season.getSeason_number(),
-                            MediaType.TV_SEASON));
+                    ses.getWatch_providers()
+                            .addAll(watchProviderService.findByMediaTmdbIdAndSeasonNumber(media.getTmdb_id(), season.getSeason_number(),
+                                    MediaType.TV_SEASON));
                 }
 
                 if(ses.getVideos() != null)
                 {
                     ses.getVideos().clear();
-                    ses.getVideos()
-                            .addAll(videoService.findVideosBySeriesIdAndMediaType(media.getId(), season.getSeason_number(), MediaType.TV_SEASON));
+                    ses.getVideos().addAll(videoService.findByMediaTmdbIdAndSeasonNumber(media.getTmdb_id(), season.getSeason_number(),
+                            MediaType.TV_SEASON));
                 }
 
                 if(ses.getImages() != null)
                 {
                     ses.getImages().clear();
-                    ses.getImages()
-                            .addAll(imageService.findImageBySeasonIdAndSeasonNumber(media.getId(), season.getSeason_number(), MediaType.TV_SEASON));
+                    ses.getImages().addAll(imageService.findImageBySeasonIdAndSeasonNumber(media.getTmdb_id(), season.getSeason_number(),
+                            MediaType.TV_SEASON));
                 }
 
                 if(ses.getEpisodes() != null)
                 {
                     for(Media.Season.Episode episode : ses.getEpisodes())
                     {
-                        Media.Season.Episode epi = mediaService.findEpisodeById(episode.getId());
+                        Media.Season.Episode epi = mediaService.findEpisodeByTmdbId(episode.getTmdb_id());
 
                         if(epi.getVideos() != null)
                         {
                             epi.getVideos().clear();
-                            epi.getVideos().addAll(videoService.findVideoBySeriesIdAndSeasonNumberAndEpisodeAndMediaType(media.getId(),
-                                    ses.getSeason_number(), episode.getEpisode_number(), MediaType.TV_EPISODE));
+                            epi.getVideos()
+                                    .addAll(videoService.findByMediaTmdbIdAndSeasonNumberAndEpisodeNumber(media.getTmdb_id(), ses.getSeason_number(),
+                                            episode.getEpisode_number(), MediaType.TV_EPISODE));
                         }
 
                         if(epi.getImages() != null)
                         {
                             epi.getImages().clear();
-                            epi.getImages().addAll(imageService.findImageBySeasonIdAndSeasonNumberAndEpisodeAndMediaType(media.getId(),
-                                    ses.getSeason_number(), episode.getEpisode_number(), MediaType.TV_EPISODE));
+                            epi.getImages()
+                                    .addAll(imageService.findByMediaTmdbIdAndSeasonNumberAndEpisodeNumber(media.getTmdb_id(), ses.getSeason_number(),
+                                            episode.getEpisode_number(), MediaType.TV_EPISODE));
                         }
                         epi.setSeason(ses);
                     }

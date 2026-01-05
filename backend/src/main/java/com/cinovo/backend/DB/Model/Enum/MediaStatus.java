@@ -1,4 +1,4 @@
-package com.cinovo.backend.Enum;
+package com.cinovo.backend.DB.Model.Enum;
 
 import lombok.Getter;
 
@@ -6,7 +6,7 @@ import lombok.Getter;
 public enum MediaStatus
 {
     RELEASED("RELEASED"), IN_PRODUCTION("IN PRODUCTION"), PLANNED("PLANNED"), RETURNING_SERIES("Returning Series"), ENDED("Ended"),
-    CANCELED("Canceled"), POST_PRODUCTION("Post Production"), RUMORED("Rumored");
+    CANCELED("Canceled"), POST_PRODUCTION("Post Production"), RUMORED("Rumored"), TEASER("Teaser");
 
     private final String label;
 
@@ -29,6 +29,6 @@ public enum MediaStatus
                 return status;
             }
         }
-        throw new IllegalArgumentException("Unknown status: " + label);
+        throw new IllegalArgumentException("Unknown media status: " + label);
     }
 }
