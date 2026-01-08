@@ -22,8 +22,13 @@ public class Shared
         return Shared.onStringEqualsWithNull(str) == null ? null : Integer.parseInt(str);
     }
 
-    public static LocalDate onStringParseDate(String date) {
+    public static LocalDate onStringParseDate(String date)
+    {
         return (date != null && !date.isBlank()) ? LocalDate.parse(date) : null;
+    }
+
+    public static String idOf(BaseEntity entity) {
+        return entity == null ? null : entity.getCinevo_id();
     }
 
 }

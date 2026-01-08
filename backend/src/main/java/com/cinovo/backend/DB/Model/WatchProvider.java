@@ -56,6 +56,7 @@ public class WatchProvider extends BaseEntity
     public final static String TABLE_AS = "provider";
     public final static String TABLE_NAME = "WATCH_PROVIDER ";
     public final static String JOIN_MEDIA = TABLE_AS + ".MEDIA_ID";
+    public final static String JOIN_MEDIA_SEASON = TABLE_AS + ".SEASON_ID";
     public final static String CINEVO_ID = TABLE_AS + ".CINEVO_ID";
     public final static String TYPE = TABLE_AS + ".TYPE";
     public final static String SEASON_ID = TABLE_AS + ".SEASON_ID";

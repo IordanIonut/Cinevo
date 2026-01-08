@@ -58,7 +58,7 @@ public class Video extends BaseEntity
     @JoinColumn(name = "SEASON_ID")
     @JsonIgnoreProperties("hibernateLazyInitializer")
     @JsonBackReference
-    private Media.Season season;
+        private Media.Season season;
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "EPISODE_ID")

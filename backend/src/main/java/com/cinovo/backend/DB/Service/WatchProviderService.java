@@ -138,29 +138,38 @@ public class WatchProviderService implements TMDBLogically<Object, List<WatchPro
                 }
             }
 
-            this.watchProviderRepository.saveAll(watchProviders);
+            //            this.watchProviderRepository.saveAll(watchProviders);
         }
         return watchProviders;
     }
 
     private WatchProvider findByMediaCinevoIdOrSeasonCinevoIdAndTypeAndProviderTypeAndLocationAndProviderId(
             final MediaWatchProvidersResponse.WatchProvider.Possibility possibility, final String location, final ProviderType provider_type,
-            final MediaType type, final Media media, final Media.Season season)
+            final MediaType type, final Media media, final Media.Season season) throws InterruptedException
     {
-        WatchProvider watchProvider = this.watchProviderRepository.findByMediaCinevoIdOrSeasonCinevoIdAndTypeAndProviderTypeAndLocationAndProviderId(
-                media == null ? null : media.getCinevo_id(), season == null ? null : season.getCinevo_id(), type.name(), provider_type.name(),
-                location, possibility.getProvider_id()).orElse(new WatchProvider());
-        watchProvider.setType(type);
-        watchProvider.setProvider_type(provider_type);
-        watchProvider.setLocation(location);
-        watchProvider.setProvider_id(possibility.getProvider_id());
-        watchProvider.setLogo_path(possibility.getLogo_path());
-        watchProvider.setProvider_name(possibility.getProvider_name());
-        watchProvider.setDisplay_priority(possibility.getDisplay_priority());
-        watchProvider.setMedia(media);
-        watchProvider.setSeason(season);
+        //        WatchProvider watchProvider = this.watchProviderRepository.findByMediaCinevoIdOrSeasonCinevoIdAndTypeAndProviderTypeAndLocationAndProviderId(
+        //                media == null ? null : media.getCinevo_id(), season == null ? null : season.getCinevo_id(), type.name(), provider_type.name(),
+        //                location, possibility.getProvider_id()).orElse(new WatchProvider());
+        //        watchProvider.setType(type);
+        //        watchProvider.setProvider_type(provider_type);
+        //        watchProvider.setLocation(location);
+        //        watchProvider.setProvider_id(possibility.getProvider_id());
+        //        watchProvider.setLogo_path(possibility.getLogo_path());
+        //        watchProvider.setProvider_name(possibility.getProvider_name());
+        //        watchProvider.setDisplay_priority(possibility.getDisplay_priority());
+        //        watchProvider.setMedia(media);
+        //        watchProvider.setSeason(season);
 
-        return watchProvider;
+        log.error(possibility);
+
+        this.watchProviderRepository.updateOrInsert(UUID.randomUUID().toString(), type.name(), provider_type.name(), location,
+                possibility.getLogo_path(), possibility.getProvider_id(), possibility.getProvider_name(), possibility.getDisplay_priority(),
+                Shared.idOf(media), Shared.idOf(season));
+
+        //        return this.watchProviderRepository.save(watchProvider);
+        return this.watchProviderRepository.findByMediaCinevoIdOrSeasonCinevoIdAndTypeAndProviderTypeAndLocationAndProviderId(Shared.idOf(media),
+                Shared.idOf(season), type.name(), provider_type.name(), location, possibility.getProvider_id()).get();
+        //                return null;
     }
 
     private Boolean conditionInsert(final String key)

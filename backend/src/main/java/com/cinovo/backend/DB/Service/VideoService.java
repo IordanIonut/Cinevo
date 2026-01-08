@@ -20,6 +20,7 @@ import java.time.OffsetDateTime;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
+import java.util.UUID;
 
 @Service
 @JBossLog
@@ -93,25 +94,30 @@ public class VideoService implements TMDBLogically<Object, List<Video>>
         {
             for(MediaVideoResponse.Video video : movieVideoResponse.getResults())
             {
-                Video vid = this.videoRepository.findByTmdbId(video.getId()).orElse(new Video());
-                vid.setIso_639_1(video.getIso_639_1());
-                vid.setIso_3166_1(video.getIso_3166_1());
-                vid.setName(video.getName());
-                vid.setKey(video.getKey());
-                vid.setSite(SiteType.fromLabel(video.getSite()));
-                vid.setType(VideoType.fromLabel(video.getType()));
-                vid.setOfficial(video.getOfficial());
-                OffsetDateTime offsetDateTime = OffsetDateTime.parse(video.getPublished_at());
-                LocalDate date = offsetDateTime.toLocalDate();
-                vid.setPublished_at(date);
-                vid.setTmdb_id(video.getId());
-                vid.setMedia(media);
-                vid.setSeason(season);
-                vid.setEpisode(episode);
+                //                Video vid = this.videoRepository.findByTmdbId(video.getId()).orElse(new Video());
+                //                vid.setIso_639_1(video.getIso_639_1());
+                //                vid.setIso_3166_1(video.getIso_3166_1());
+                //                vid.setName(video.getName());
+                //                vid.setKey(video.getKey());
+                //                vid.setSite(SiteType.fromLabel(video.getSite()));
+                //                vid.setType(VideoType.fromLabel(video.getType()));
+                //                vid.setOfficial(video.getOfficial());
+                //                OffsetDateTime offsetDateTime = OffsetDateTime.parse(video.getPublished_at());
+                //                LocalDate date = offsetDateTime.toLocalDate();
+                //                vid.setPublished_at(date);
+                //                vid.setTmdb_id(video.getId());
+                //                vid.setMedia(media);
+                //                vid.setSeason(season);
+                //                vid.setEpisode(episode);
 
-                videos.add(vid);
+                this.videoRepository.upsertOrInsert(UUID.randomUUID().toString(), video.getIso_639_1(), video.getIso_3166_1(), video.getName(),
+                        video.getKey(), SiteType.fromLabel(video.getSite()).name(), VideoType.fromLabel(video.getType()).name(), video.getOfficial(),
+                        OffsetDateTime.parse(video.getPublished_at()).toLocalDate(), video.getId(), Shared.idOf(media), Shared.idOf(season),
+                        Shared.idOf(episode));
+
+                this.videoRepository.findByTmdbId(video.getId()).ifPresent(videos::add);
             }
-            videoRepository.saveAll(videos);
+            //            videoRepository.saveAll(videos);
         }
 
         return videos;

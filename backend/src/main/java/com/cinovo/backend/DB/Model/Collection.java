@@ -1,6 +1,7 @@
 package com.cinovo.backend.DB.Model;
 
 import com.cinovo.backend.DB.Util.BaseEntity;
+import com.cinovo.backend.Schedule.Job;
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.fasterxml.jackson.annotation.JsonManagedReference;
 import com.fasterxml.jackson.annotation.JsonProperty;
@@ -18,7 +19,7 @@ import java.util.List;
 @Setter
 public class Collection extends BaseEntity
 {
-    @Column(name = "TMDB_ID", nullable = true, unique = true)
+    @Column(name = "TMDB_ID", nullable = false, unique = true)
     private Integer tmdb_id;
 
     @Column(name = "NAME")
@@ -54,12 +55,12 @@ public class Collection extends BaseEntity
     @JsonProperty("poster_path")
     public String getPoster_path()
     {
-        return poster_path;
+        return Job.configurationUrlImages + poster_path;
     }
 
     @JsonProperty("backdrop_path")
     public String getBackdrop_path()
     {
-        return backdrop_path;
+        return Job.configurationUrlImages + backdrop_path;
     }
 }

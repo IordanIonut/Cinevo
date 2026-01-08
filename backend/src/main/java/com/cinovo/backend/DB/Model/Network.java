@@ -69,6 +69,7 @@ public class Network extends BaseEntity
         private Network network;
     }
 
+    //TODO: move to image if real need this table
     @Data
     @Entity
     @Table(name = "NETWORK_IMAGE")

@@ -2,6 +2,7 @@ package com.cinovo.backend.DB.Model;
 
 import com.cinovo.backend.DB.Model.Enum.Gender;
 import com.cinovo.backend.DB.Util.BaseEntity;
+import com.cinovo.backend.Schedule.Job;
 import com.fasterxml.jackson.annotation.*;
 import jakarta.persistence.*;
 import lombok.*;
@@ -44,9 +45,9 @@ public class Person extends BaseEntity
     private Double popularity;
 
     @ElementCollection
-    @CollectionTable(name = "MEDIA_ALSO_KNOW_AS", joinColumns = @JoinColumn(name = "KNOW_AS"))
+    @CollectionTable(name = "PERSON_ALSO_KNOW_AS", joinColumns = @JoinColumn(name = "PERSON_CINEVO_ID"))
     @Column(name = "ALSO_KNOW_AS")
-    private List<String> also_known_as;
+    private List<String> also_know_as;
 
     @Lob
     @Column(name = "BIOGRAPHY", columnDefinition = "TEXT")
@@ -114,4 +115,10 @@ public class Person extends BaseEntity
     public final static String MEDIA_ID = PERSON_MEDIA_AS + ".MEDIA_ID";
     public final static String PERSON_ID = PERSON_MEDIA_AS + ".PERSON_ID";
     public final static String CINEVO_ID = TABLE_AS + ".CINEVO_ID";
+
+    @JsonProperty("profile_file")
+    public String getProfile_file()
+    {
+        return Job.configurationUrlImages + profile_file;
+    }
 }

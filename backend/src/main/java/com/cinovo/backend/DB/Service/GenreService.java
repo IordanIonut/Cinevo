@@ -13,6 +13,7 @@ import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
+import java.util.UUID;
 
 @Service
 @JBossLog
@@ -42,17 +43,12 @@ public class GenreService implements TMDBLogically<MediaType, List<Genre>>
         return genres.get();
     }
 
-    public String findMediaTypeByIDs(List<Integer> ids)
-    {
-        return this.genreRepository.findMediaTypeByIDs(ids).orElse(MediaType.MOVIE.name());
-    }
-
     public List<Genre> parsLongToObjects(final List<Integer> genre_ids, final MediaType type)
     {
         List<Genre> genres = new ArrayList<>();
         for(Integer genre : genre_ids)
         {
-            genres.add(this.genreRepository.findGenresByIdAndType(genre, type.name()).get());
+            genres.add(this.genreRepository.findGenresByTmdbIdAndType(genre, type.name()).get());
         }
         return genres;
     }
@@ -62,7 +58,7 @@ public class GenreService implements TMDBLogically<MediaType, List<Genre>>
         List<Genre> list = new ArrayList<>();
         for(GenresResponse.Genre genre : genres)
         {
-            list.add(this.genreRepository.findGenresByIdAndType(genre.getId(), type.name()).get());
+            list.add(this.genreRepository.findGenresByTmdbIdAndType(genre.getId(), type.name()).get());
         }
         return list;
     }
@@ -71,18 +67,18 @@ public class GenreService implements TMDBLogically<MediaType, List<Genre>>
     @Transactional
     public List<Genre> onConvertTMDB(MediaType type) throws Exception
     {
-        List<Genre> convertedGenres = new ArrayList<>();
+        //        List<Genre> convertedGenres = new ArrayList<>();
         for(GenresResponse.Genre g : this.service.getGenres(type).getGenres())
         {
-            Genre genre = this.genreRepository.findGenresByIdAndType(g.getId(), type.name()).orElse(new Genre());
-            genre.setType(type);
-            genre.setId(g.getId());
-            genre.setName(g.getName());
-            genre.setLastUpdate(LocalDate.now());
-            convertedGenres.add(genre);
+            //            Genre genre = this.genreRepository.findGenresByTmdbIdAndType(g.getId(), type.name()).orElse(new Genre());
+            //            genre.setType(type);
+            //            genre.setTmdb_id(g.getId());
+            //            genre.setName(g.getName());
+            //            genre.setLastUpdate(LocalDate.now());
+            //            convertedGenres.add(genre);
+            this.genreRepository.updateOrInsert(UUID.randomUUID().toString(), g.getId(), g.getName(), type.name());
         }
 
-        this.genreRepository.saveAll(convertedGenres);
-        return convertedGenres;
+        return this.genreRepository.findByMediaType(type.name()).get();
     }
 }

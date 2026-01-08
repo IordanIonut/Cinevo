@@ -3,6 +3,7 @@ package com.cinovo.backend.DB.Model;
 import com.cinovo.backend.DB.Model.Enum.ImageType;
 import com.cinovo.backend.DB.Model.Enum.MediaType;
 import com.cinovo.backend.DB.Util.BaseEntity;
+import com.cinovo.backend.Schedule.Job;
 import com.fasterxml.jackson.annotation.*;
 import jakarta.persistence.*;
 import lombok.*;
@@ -21,7 +22,7 @@ public class Image extends BaseEntity
     private MediaType type;
 
     @Column(name = "ASPECT_RADIO")
-    private Double aspect_ratio;
+    private Double aspect_radio;
 
     @Column(name = "HEIGHT")
     private Integer height;
@@ -78,7 +79,6 @@ public class Image extends BaseEntity
 
     public final static String TABLE_AS = "image";
     public final static String TABLE_NAME = "IMAGE ";
-    public final static String ID = TABLE_AS + ".ID";
     public final static String IMAGE_TYPE = TABLE_AS + ".IMAGE_TYPE";
     public final static String MEDIA_ID = TABLE_AS + ".MEDIA_ID";
     public final static String SEASON_ID = TABLE_AS + ".SEASON_ID";
@@ -87,4 +87,10 @@ public class Image extends BaseEntity
     public final static String TYPE = TABLE_AS + ".TYPE";
     public final static String PERSON_ID = TABLE_AS + ".PERSON_ID";
     public final static String FILE_PATH = TABLE_AS + ".FILE_PATH";
+
+    @JsonProperty("file_path")
+    public String gerFile_path()
+    {
+        return Job.configurationUrlImages + file_path;
+    }
 }

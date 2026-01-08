@@ -1,6 +1,7 @@
 package com.cinovo.backend.DB.Model;
 
 import com.cinovo.backend.DB.Util.BaseEntity;
+import com.cinovo.backend.Schedule.Job;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import jakarta.persistence.*;
 import lombok.*;
@@ -12,8 +13,9 @@ import lombok.*;
 @NoArgsConstructor
 @Getter
 @Setter
-public class Company extends BaseEntity {
-    @Column(name = "TMDB_ID", nullable = true, unique = true)
+public class Company extends BaseEntity
+{
+    @Column(name = "TMDB_ID", nullable = false, unique = true)
     private Integer tmdb_id;
 
     @Lob
@@ -43,7 +45,8 @@ public class Company extends BaseEntity {
     public final static String TMDB_ID = TABLE_AS + ".TMDB_ID";
 
     @JsonProperty("logo_path")
-    public String getLogo_path() {
-        return logo_path; ///to add master data provider with configuration data
+    public String getLogo_path()
+    {
+        return Job.configurationUrlImages + logo_path;
     }
 }

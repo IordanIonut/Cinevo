@@ -4,6 +4,7 @@ import com.cinovo.backend.DB.Model.Enum.MediaType;
 import com.cinovo.backend.DB.Model.Media;
 import com.cinovo.backend.DB.Service.*;
 import com.cinovo.backend.DB.Util.Shared;
+import com.cinovo.backend.TMDB.Response.Common.MediaExternalIdResponse;
 import lombok.extern.jbosslog.JBossLog;
 import org.springframework.context.annotation.Lazy;
 import org.springframework.scheduling.annotation.Async;
@@ -19,15 +20,17 @@ public class MediaResolver
     private final VideoService videoService;
     private final WatchProviderService watchProviderService;
     private final ImageService imageService;
+    private final com.cinovo.backend.TMDB.Service service;
 
     public MediaResolver(@Lazy MediaService mediaService, CreditService creditService, VideoService videoService,
-            WatchProviderService watchProviderService, ImageService imageService)
+            WatchProviderService watchProviderService, ImageService imageService, com.cinovo.backend.TMDB.Service service)
     {
         this.mediaService = mediaService;
         this.creditService = creditService;
         this.videoService = videoService;
         this.imageService = imageService;
         this.watchProviderService = watchProviderService;
+        this.service = service;
     }
 
     public static Media resolveMedia(final MediaService mediaService, final String[] parts) throws Exception
@@ -64,6 +67,19 @@ public class MediaResolver
     public void generateDateAsync(final Integer mediaId, final MediaType type) throws Exception
     {
         Media media = mediaService.getMediaByTmdbIdAndMediaType(mediaId, type);
+        MediaExternalIdResponse mediaExternalIdsResponse =
+                type.equals(MediaType.MOVIE) ? service.getMovieExternalIds(mediaId) : service.getTvExternalIds(mediaId);
+
+        media.setImdb_id(mediaExternalIdsResponse.getImdb_id());
+        media.setFreebase_mid(mediaExternalIdsResponse.getFreebase_mid());
+        media.setFreebase_id(mediaExternalIdsResponse.getFreebase_id());
+        media.setTvdb_id(mediaExternalIdsResponse.getTvdb_id());
+        media.setTvrage_id(mediaExternalIdsResponse.getTvrage_id());
+        media.setWikidata_id(mediaExternalIdsResponse.getWikidata_id());
+        media.setFacebook_id(mediaExternalIdsResponse.getFacebook_id());
+        media.setInstagram_id(mediaExternalIdsResponse.getInstagram_id());
+        media.setTwitter_id(mediaExternalIdsResponse.getTwitter_id());
+
         if(media.getImages() != null)
         {
             media.getImages().clear();
@@ -85,6 +101,17 @@ public class MediaResolver
             for(Media.Season season : media.getSeasons())
             {
                 Media.Season ses = mediaService.getSeasonBySeasonTmdbId(season.getTmdb_id());
+
+                mediaExternalIdsResponse = service.getTvSeasonExternalId(media.getTmdb_id(), ses.getSeason_number());
+                ses.setImdb_id(mediaExternalIdsResponse.getImdb_id());
+                ses.setFreebase_mid(mediaExternalIdsResponse.getFreebase_mid());
+                ses.setFreebase_id(mediaExternalIdsResponse.getFreebase_id());
+                ses.setTvdb_id(mediaExternalIdsResponse.getTvdb_id());
+                ses.setTvrage_id(mediaExternalIdsResponse.getTvrage_id());
+                ses.setWikidata_id(mediaExternalIdsResponse.getWikidata_id());
+                ses.setFacebook_id(mediaExternalIdsResponse.getFacebook_id());
+                ses.setInstagram_id(mediaExternalIdsResponse.getInstagram_id());
+                ses.setTwitter_id(mediaExternalIdsResponse.getTwitter_id());
 
                 if(ses.getWatch_providers() != null)
                 {
@@ -114,6 +141,18 @@ public class MediaResolver
                     {
                         Media.Season.Episode epi = mediaService.findEpisodeByTmdbId(episode.getTmdb_id());
 
+                        mediaExternalIdsResponse =
+                                service.getTvSeasonEpisodeExternal(media.getTmdb_id(), ses.getSeason_number(), epi.getEpisode_number());
+                        epi.setImdb_id(mediaExternalIdsResponse.getImdb_id());
+                        epi.setFreebase_mid(mediaExternalIdsResponse.getFreebase_mid());
+                        epi.setFreebase_id(mediaExternalIdsResponse.getFreebase_id());
+                        epi.setTvdb_id(mediaExternalIdsResponse.getTvdb_id());
+                        epi.setTvrage_id(mediaExternalIdsResponse.getTvrage_id());
+                        epi.setWikidata_id(mediaExternalIdsResponse.getWikidata_id());
+                        epi.setFacebook_id(mediaExternalIdsResponse.getFacebook_id());
+                        epi.setInstagram_id(mediaExternalIdsResponse.getInstagram_id());
+                        epi.setTwitter_id(mediaExternalIdsResponse.getTwitter_id());
+
                         if(epi.getVideos() != null)
                         {
                             epi.getVideos().clear();
@@ -135,64 +174,6 @@ public class MediaResolver
                 ses.setMedia(media);
             }
         }
-
         mediaService.saveAndUpdate(media);
     }
-
-    //    @Async("customExecutorMedia")
-    //    @Transactional
-    //    public void generateDateAsync(final Integer media_id, final MediaType type) throws Exception
-    //    {
-    //        Media media = mediaService.getMediaByIdAndType(media_id, type);
-    //        media.setImages(imageService.findImageByMediaIdAndMediaType(media_id, media.getType()));
-    //        mediaService.saveAndUpdate(media);
-    //
-    //        media.setVideos(videoService.findVideosByMovieIdAndMediaType(media_id, media.getType()));
-    //        mediaService.saveAndUpdate(media);
-    //
-    //        media.setWatch_providers(watchProviderService.findWatchProviderByMediaIdAndType(media_id, media.getType()));
-    //        mediaService.saveAndUpdate(media);
-    //
-    //        if(media.getSeasons() != null)
-    //        {
-    //            List<Media.Season> seasons = new ArrayList<>();
-    //            for(Media.Season season : media.getSeasons())
-    //            {
-    //                Media.Season ses = mediaService.getSeasonById(season.getId());
-    //                ses.setWatch_providers(
-    //                        watchProviderService.findWatchProviderBySeasonIdAndType(media.getId(), season.getSeason_number(), MediaType.TV_SEASON));
-    //                ses.setVideos(videoService.findVideosBySeriesIdAndMediaType(media.getId(), season.getSeason_number(), MediaType.TV_SEASON));
-    //                ses.setImages(imageService.findImageBySeasonIdAndSeasonNumber(media.getId(), season.getSeason_number(), MediaType.TV_SEASON));
-    //
-    //                List<Media.Season.Episode> episodes = new ArrayList<>();
-    //                for(Media.Season.Episode episode : ses.getEpisodes())
-    //                {
-    //                    Media.Season.Episode epi = mediaService.findEpisodeById(episode.getId());
-    //                    epi.setVideos(videoService.findVideoBySeriesIdAndSeasonNumberAndEpisodeAndMediaType(media.getId(), ses.getSeason_number(),
-    //                            episode.getEpisode_number(), MediaType.TV_EPISODE));
-    //                    epi.setImages(imageService.findImageBySeasonIdAndSeasonNumberAndEpisodeAndMediaType(media.getId(), ses.getSeason_number(),
-    //                            episode.getEpisode_number(), MediaType.TV_EPISODE));
-    //
-    //                    episodes.add(epi);
-    //                }
-
-    //
-    //                ses.setEpisodes(episodes);
-    //                seasons.add(ses);
-    //            }
-    //            media.setSeasons(seasons);
-    //        }
-    //        mediaService.saveAndUpdate(media);
-
-    ////INFO: have some errors on db when call this maybe can fixed
-    //    //            collectCreditsAsync(media_id, type);
-    //    }
-
-    //    @Async("customExecutorMedia")
-    //    public void collectCreditsAsync(final Integer media_id, final MediaType type) throws Exception
-    //    {
-    //        Media media = mediaService.getMediaByIdAndType(media_id, type);
-    //        media.setCredits(creditService.findCreditByMediaIdAndType(media_id, type));
-    //        mediaService.saveAndUpdate(media);
-    //    }
 }

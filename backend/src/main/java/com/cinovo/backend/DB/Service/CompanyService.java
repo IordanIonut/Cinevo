@@ -12,6 +12,7 @@ import org.springframework.transaction.annotation.Transactional;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
+import java.util.UUID;
 
 @Service
 public class CompanyService implements TMDBLogically<Object, Object>
@@ -68,18 +69,20 @@ public class CompanyService implements TMDBLogically<Object, Object>
     @Transactional
     public Company generateCompany(CompanyResponse company) throws Exception
     {
-        Company companyDetail = this.companyRepository.findCompanyByTmdbId(company.getId()).orElse(new Company());
-        companyDetail.setTmdb_id(company.getId());
-        companyDetail.setDescription(company.getDescription());
-        companyDetail.setHeadquarters(company.getHeadquarters());
-        companyDetail.setHomepage(company.getHomepage());
-        companyDetail.setLogo_path(company.getLogo_path());
-        companyDetail.setName(company.getName());
-        companyDetail.setOrigin_country(company.getOrigin_country());
-        companyDetail.setParent_company(null);
-
-        this.companyRepository.save(companyDetail);
-        return companyDetail;
+        //        Company companyDetail = this.companyRepository.findCompanyByTmdbId(company.getId()).orElse(new Company());
+        //        companyDetail.setTmdb_id(company.getId());
+        //        companyDetail.setDescription(company.getDescription());
+        //        companyDetail.setHeadquarters(company.getHeadquarters());
+        //        companyDetail.setHomepage(company.getHomepage());
+        //        companyDetail.setLogo_path(company.getLogo_path());
+        //        companyDetail.setName(company.getName());
+        //        companyDetail.setOrigin_country(company.getOrigin_country());
+        //        companyDetail.setParent_company(null);
+        //
+        //        return this.companyRepository.save(companyDetail);
+        this.companyRepository.upsertOrInsert(UUID.randomUUID().toString(), company.getId(), company.getDescription(), company.getHeadquarters(),
+                company.getHomepage(), company.getLogo_path(), company.getName(), company.getOrigin_country(), null);
+        return this.companyRepository.findCompanyByTmdbId(company.getId()).get();
     }
 
 }

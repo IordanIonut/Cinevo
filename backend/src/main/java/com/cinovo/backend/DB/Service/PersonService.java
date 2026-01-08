@@ -14,13 +14,16 @@ import com.cinovo.backend.TMDB.Response.PersonExternalIdsResponse;
 import com.cinovo.backend.TMDB.Response.SearchResponse;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import lombok.extern.jbosslog.JBossLog;
+import org.hibernate.annotations.Struct;
 import org.springframework.context.annotation.Lazy;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
+import java.util.UUID;
 import java.util.concurrent.ConcurrentHashMap;
 
 @Service
@@ -118,7 +121,6 @@ public class PersonService implements TMDBLogically<Object, Object>
     @Transactional
     protected Person generatePerson(final Integer id, List<MediaResponse> knownForMedias) throws Exception
     {
-        //fixed the connection to not give errors
         PeopleResponse peopleResponse = this.service.getPeopleDetail(id, "en-US");
         PersonExternalIdsResponse personExternalIdsResponse = this.service.getPersonExternalIds(id);
         if(peopleResponse.getId() == null)
@@ -126,104 +128,67 @@ public class PersonService implements TMDBLogically<Object, Object>
             return null;
         }
 
-        Person per = personRepository.findByTmdbId(id).orElse(new Person());
-        per.setTmdb_id(peopleResponse.getId());
-        per.setAdult(peopleResponse.getAdult());
-        per.setGender(Gender.fromCode(peopleResponse.getGender()));
-        per.setKnown_for_department(peopleResponse.getKnown_for_department());
-        per.setName(peopleResponse.getName());
-        per.setPopularity(peopleResponse.getPopularity());
-        per.setProfile_file(peopleResponse.getProfile_path());
-        per.setOriginal_name(peopleResponse.getOriginal_name());
-        per.setAlso_known_as(peopleResponse.getAlso_known_as());
-        per.setBiography(peopleResponse.getBiography());
-        per.setBirthday(Shared.onStringParseDate(peopleResponse.getBirthday()));
-        per.setDeathday(Shared.onStringParseDate(peopleResponse.getDeathday()));
-        per.setHomepage(peopleResponse.getHomepage());
-        per.setPlace_of_birth(peopleResponse.getPlace_of_birth());
+        //        Person per = personRepository.findByTmdbId(id).orElse(new Person());
+        //        per.setTmdb_id(peopleResponse.getId());
+        //        per.setAdult(peopleResponse.getAdult());
+        //        per.setGender(Gender.fromCode(peopleResponse.getGender()));
+        //        per.setKnown_for_department(peopleResponse.getKnown_for_department());
+        //        per.setName(peopleResponse.getName());
+        //        per.setPopularity(peopleResponse.getPopularity());
+        //        per.setProfile_file(peopleResponse.getProfile_path());
+        //        per.setOriginal_name(peopleResponse.getOriginal_name());
+        //        per.setAlso_known_as(peopleResponse.getAlso_known_as());
+        //        per.setBiography(peopleResponse.getBiography());
+        //        per.setBirthday(Shared.onStringParseDate(peopleResponse.getBirthday()));
+        //        per.setDeathday(Shared.onStringParseDate(peopleResponse.getDeathday()));
+        //        per.setHomepage(peopleResponse.getHomepage());
+        //        per.setPlace_of_birth(peopleResponse.getPlace_of_birth());
+        //
+        //        per.setFreebase_mid(personExternalIdsResponse.getFreebase_mid());
+        //        per.setImdb_id(personExternalIdsResponse.getImdb_id());
+        //        per.setFreebase_id(personExternalIdsResponse.getFreebase_id());
+        //        per.setTvrage_id(personExternalIdsResponse.getTvrage_id());
+        //        per.setWikidata_id(personExternalIdsResponse.getWikidata_id());
+        //        per.setFacebook_id(personExternalIdsResponse.getFacebook_id());
+        //        per.setTwitter_id(personExternalIdsResponse.getTwitter_id());
+        //        per.setYoutube_id(personExternalIdsResponse.getYoutube_id());
+        //        per.setInstagram_id(personExternalIdsResponse.getInstagram_id());
+        //        per.setTiktok_id(personExternalIdsResponse.getTiktok_id());
 
-        per.setFreebase_mid(personExternalIdsResponse.getFreebase_mid());
-        per.setImdb_id(personExternalIdsResponse.getImdb_id());
-        per.setFreebase_id(personExternalIdsResponse.getFreebase_id());
-        per.setTvrage_id(personExternalIdsResponse.getTvrage_id());
-        per.setWikidata_id(personExternalIdsResponse.getWikidata_id());
-        per.setFacebook_id(personExternalIdsResponse.getFacebook_id());
-        per.setTwitter_id(personExternalIdsResponse.getTwitter_id());
-        per.setYoutube_id(personExternalIdsResponse.getYoutube_id());
-        per.setInstagram_id(personExternalIdsResponse.getInstagram_id());
-        per.setTiktok_id(personExternalIdsResponse.getTiktok_id());
+        String person_cinevo_id = UUID.randomUUID().toString();
+        this.personRepository.updateOrInsertPerson(person_cinevo_id, peopleResponse.getId(), peopleResponse.getAdult(),
+                Gender.fromCode(peopleResponse.getGender()).name(), peopleResponse.getKnown_for_department(), peopleResponse.getOriginal_name(),
+                peopleResponse.getName(), peopleResponse.getProfile_path(), peopleResponse.getPopularity(), peopleResponse.getBiography(),
+                Shared.onStringParseDate(peopleResponse.getBirthday()), Shared.onStringParseDate(peopleResponse.getDeathday()),
+                peopleResponse.getHomepage(), personExternalIdsResponse.getFreebase_mid(), personExternalIdsResponse.getFreebase_id(),
+                personExternalIdsResponse.getImdb_id(), personExternalIdsResponse.getTvrage_id(), personExternalIdsResponse.getWikidata_id(),
+                personExternalIdsResponse.getFacebook_id(), personExternalIdsResponse.getTwitter_id(), personExternalIdsResponse.getYoutube_id(),
+                personExternalIdsResponse.getInstagram_id(), personExternalIdsResponse.getTiktok_id(), peopleResponse.getPlace_of_birth());
 
-        List<Image> images = imageService.findByTmdbIdAndMediaType(id, MediaType.PERSON);
-        if(per.getImages() == null)
+        for(String also_know_as : peopleResponse.getAlso_known_as())
         {
-            per.setImages(new ArrayList<>());
+            this.personRepository.updateOrUpdatePersonAlsoKnowAs(also_know_as, person_cinevo_id);
         }
-        per.getImages().clear();
+        imageService.findByTmdbIdAndMediaType(id, MediaType.PERSON);
 
-        for(Image img : images)
-        {
-            img.setPerson(per);
-            per.getImages().add(img);
-        }
+        //        List<Image> images = imageService.findByTmdbIdAndMediaType(id, MediaType.PERSON);
+        //        if(per.getImages() == null)
+        //        {
+        //            per.setImages(new ArrayList<>());
+        //        }
+        //        per.getImages().clear();
+        //
+        //        for(Image img : images)
+        //        {
+        //            img.setPerson(per);
+        //            per.getImages().add(img);
+        //        }
+        //
+        //        return this.personRepository.save(per);
 
-        return this.personRepository.save(per);
+        return this.personRepository.findByTmdbId(peopleResponse.getId()).get();
     }
 
-    //    @Transactional
-    //    private Person generatePerson(final Integer id, List<MediaResponse> know_for) throws Exception
-    //    {
-    //        PeopleResponse peopleResponse = this.service.getPeopleDetail(id, "en-US");
-    //        PersonExternalIdsResponse personExternalIdsResponse = this.service.getPersonExternalIds(id);
-    //        if(peopleResponse.getId() == null)
-    //            return null;
-    //
-    //        Person per = this.personRepository.findPersonById(id).orElse(new Person());
-    //        per.setAdult(peopleResponse.getAdult());
-    //        per.setGender(Gender.fromCode(peopleResponse.getGender()));
-    //        per.setId(peopleResponse.getId());
-    //        per.setKnown_for_department(peopleResponse.getKnown_for_department());
-    //        per.setName(peopleResponse.getName());
-    //        per.setPopularity(peopleResponse.getPopularity());
-    //        per.setProfile_file(peopleResponse.getProfile_path());
-    //        per.setOriginal_name(peopleResponse.getOriginal_name());
-    //        per.setAlso_known_as(peopleResponse.getAlso_known_as());
-    //        per.setBiography(peopleResponse.getBiography());
-    //        this.personRepository.save(per);
-    //
-    //        per.setBirthday(peopleResponse.getBirthday() != null && !peopleResponse.getBirthday().isEmpty()
-    //                ? LocalDate.parse(peopleResponse.getBirthday())
-    //                : null);
-    //        per.setDeathday(peopleResponse.getDeathday() != null && !peopleResponse.getDeathday().isEmpty()
-    //                ? LocalDate.parse(peopleResponse.getDeathday())
-    //                : null);
-    //        per.setHomepage(peopleResponse.getHomepage());
-    //        per.setPlace_of_birth(peopleResponse.getPlace_of_birth());
-    //        per.setFreebase_mid(personExternalIdsResponse.getFreebase_mid());
-    //        per.setImdb_id(personExternalIdsResponse.getImdb_id());
-    //        per.setFreebase_id(personExternalIdsResponse.getFreebase_id());
-    //        per.setTvrage_id(personExternalIdsResponse.getTvrage_id());
-    //        per.setWikidata_id(personExternalIdsResponse.getWikidata_id());
-    //        per.setFacebook_id(personExternalIdsResponse.getFacebook_id());
-    //        per.setTwitter_id(personExternalIdsResponse.getTwitter_id());
-    //        per.setYoutube_id(personExternalIdsResponse.getYoutube_id());
-    //        per.setInstagram_id(personExternalIdsResponse.getInstagram_id());
-    //        per.setTiktok_id(personExternalIdsResponse.getTiktok_id());
-    //
-    //        per.setImages(this.imageService.findImageByMediaIdAndMediaType(id, MediaType.PERSON));
-
-    /// /        if(know_for != null) /        { /            List<Media> updatedMedias = new ArrayList<>(); /            for(MediaResponse
-    /// mediaResponse : know_for) /            { /                Media media = / this.mediaService.getMediaByIdAndType(mediaResponse.getId(),
-    /// MediaType.valueOf(mediaResponse.getMedia_type().toUpperCase())); / updatedMedias.add(media); /            } /            List<Media>
-    /// currentMedias = per.getMedias(); /            if(currentMedias == null) / { /                per.setMedias(updatedMedias); /            } /
-    /// else /            { /                List<Media> toRemove = new ArrayList<>(); /                for(Media oldMedia : currentMedias) / { /
-    /// if(!updatedMedias.contains(oldMedia)) /                    { /                        toRemove.add(oldMedia); / } / } /
-    /// currentMedias.removeAll(toRemove); / /                for(Media newMedia : updatedMedias) /                { /
-    /// if(!currentMedias.contains(newMedia)) /                    { /                        currentMedias.add(newMedia); / } /                } /
-    /// per.setMedias(currentMedias); /            } /        }
-    //
-    //        this.personRepository.save(per);
-    //        return per;
-    //    }
     private List<Person> onParseSearchResponseToPeopleResponse(final SearchResponse<?> rawResponse) throws Exception
     {
         ObjectMapper mapper = new ObjectMapper();

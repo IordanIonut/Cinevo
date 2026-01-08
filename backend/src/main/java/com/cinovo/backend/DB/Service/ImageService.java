@@ -16,9 +16,11 @@ import com.cinovo.backend.TMDB.Response.PeopleImagesResponse;
 import lombok.extern.jbosslog.JBossLog;
 import org.springframework.context.annotation.Lazy;
 import org.springframework.stereotype.Service;
+
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
+import java.util.UUID;
 
 @Service
 @JBossLog
@@ -94,8 +96,7 @@ public class ImageService implements TMDBLogically<Object, Object>
             case MediaType.PERSON ->
             {
                 PeopleImagesResponse response = service.getPeopleImages(id);
-                Person person = null;
-                //                        this.personService.findByTmdbId(id);
+                Person person = this.personService.findByTmdbId(id);
                 yield convertImageResponseToImages(null, null, null, response.getProfiles(), null, null, null, null, person, null, MediaType.PERSON);
             }
             case MediaType.COLLECTION ->
@@ -211,25 +212,32 @@ public class ImageService implements TMDBLogically<Object, Object>
     private Image createImageObject(final ImageResponse image, final Media media, final Media.Season season, final Media.Season.Episode episode,
             final Person person, final Integer collection, final ImageType imageType, final MediaType type)
     {
-        Image img = this.imageRepository.findByMediaIdAndCollectionIdAndImageTypeAndTypeAndFilePath(media != null ? media.getCinevo_id() : null,
-                imageType.name(), collection, type.name(), image.getFile_path()).orElse(new Image());
-        img.setAspect_ratio(image.getAspect_ratio());
-        img.setHeight(image.getHeight());
-        img.setWidth(image.getWidth());
-        img.setIso_3166_1(image.getIso_3166_1());
-        img.setFile_path(image.getFile_path());
-        img.setIso_639_1(image.getIso_639_1());
-        img.setVote_average(image.getVote_average());
-        img.setVote_count(image.getVote_count());
-        img.setMedia(media);
-        img.setCollection_id(collection);
-        img.setImage_type(imageType);
-        img.setType(type);
-        img.setSeason(season);
-        img.setPerson(person);
-        img.setEpisode(episode);
+        //        Image img = this.imageRepository.findByMediaIdAndCollectionIdAndImageTypeAndTypeAndFilePath(media != null ? media.getCinevo_id() : null,
+        //                imageType.name(), collection, type.name(), image.getFile_path()).orElse(new Image());
+        //        img.setAspect_ratio(image.getAspect_ratio());
+        //        img.setHeight(image.getHeight());
+        //        img.setWidth(image.getWidth());
+        //        img.setIso_3166_1(image.getIso_3166_1());
+        //        img.setFile_path(image.getFile_path());
+        //        img.setIso_639_1(image.getIso_639_1());
+        //        img.setVote_average(image.getVote_average());
+        //        img.setVote_count(image.getVote_count());
+        //        img.setMedia(media);
+        //        img.setCollection_id(collection);
+        //        img.setImage_type(imageType);
+        //        img.setType(type);
+        //        img.setSeason(season);
+        //        img.setPerson(person);
+        //        img.setEpisode(episode);
+        //
+        //        return this.imageRepository.save(img);
 
-        return this.imageRepository.save(img);
+        String cinevo_id = UUID.randomUUID().toString();
+        this.imageRepository.updateOrInsert(cinevo_id, type.name(), image.getAspect_ratio(), image.getHeight(), image.getIso_3166_1(),
+                image.getIso_639_1(), image.getFile_path(), image.getVote_average(), image.getVote_count(), image.getWidth(), imageType.name(),
+                collection, Shared.idOf(media), Shared.idOf(season), Shared.idOf(episode), Shared.idOf(person));
+
+        return this.imageRepository.findByCinevoId(cinevo_id).get();
     }
 
     private Boolean conditionInsert(final MediaType type, final ImageResponse imageResponse)

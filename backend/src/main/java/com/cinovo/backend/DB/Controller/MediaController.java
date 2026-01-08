@@ -1,6 +1,7 @@
 package com.cinovo.backend.DB.Controller;
 
 import com.cinovo.backend.DB.Model.Enum.MediaType;
+import com.cinovo.backend.DB.Model.Enum.TimeWindow;
 import com.cinovo.backend.DB.Model.Media;
 import com.cinovo.backend.DB.Service.MediaService;
 import lombok.extern.jbosslog.JBossLog;
@@ -106,7 +107,7 @@ public class MediaController
 
     @GetMapping("/get/trending")
     public ResponseEntity<List<Media>> getMediaUsingTrending(@RequestParam(value = "type", required = false) final MediaType type,
-            @RequestParam(value = "time_window", required = true) final String time_window,
+            @RequestParam(value = "time_window", required = true) final TimeWindow time_window,
             @RequestParam(value = "language", defaultValue = "en-US") final String language)
     {
         try
@@ -120,5 +121,4 @@ public class MediaController
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).build();
         }
     }
-
 }

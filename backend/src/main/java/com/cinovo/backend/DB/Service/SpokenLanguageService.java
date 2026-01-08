@@ -11,6 +11,7 @@ import org.springframework.transaction.annotation.Transactional;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
+import java.util.UUID;
 
 @Service
 public class SpokenLanguageService implements TMDBLogically<Null, List<SpokenLanguage>>
@@ -24,9 +25,9 @@ public class SpokenLanguageService implements TMDBLogically<Null, List<SpokenLan
         this.service = service;
     }
 
-    public SpokenLanguage getSpokenLanguageById(final String iso)
+    public SpokenLanguage getByIso(final String iso)
     {
-        return this.spokenLanguageRepository.getSpokenLanguageById(iso).orElse(new SpokenLanguage());
+        return this.spokenLanguageRepository.getByIso(iso).orElse(new SpokenLanguage());
     }
 
     public List<SpokenLanguage> findAllSpokenLanguages() throws Exception
@@ -47,15 +48,17 @@ public class SpokenLanguageService implements TMDBLogically<Null, List<SpokenLan
         List<SpokenLanguage> spokenLanguages = new ArrayList<>();
         for(ConfigurationLanguageResponse c : spokenLanguage)
         {
-            SpokenLanguage spoken = this.spokenLanguageRepository.getSpokenLanguageById(c.getIso_639_1()).orElse(new SpokenLanguage());
-            spoken.setEnglish_name(c.getEnglish_name());
-            spoken.setIso_639_1(c.getIso_639_1());
-            spoken.setName(c.getName());
+            //            SpokenLanguage spoken = this.spokenLanguageRepository.getSpokenLanguageById(c.getIso_639_1()).orElse(new SpokenLanguage());
+            //            spoken.setEnglish_name(c.getEnglish_name());
+            //            spoken.setIso_639_1(c.getIso_639_1());
+            //            spoken.setName(c.getName());
 
-            spokenLanguages.add(spoken);
+            this.spokenLanguageRepository.updateOrInsert(UUID.randomUUID().toString(), c.getEnglish_name(), c.getIso_639_1(), c.getName());
+
+            spokenLanguages.add(this.spokenLanguageRepository.getByIso(c.getIso_639_1()).get());
         }
 
-        this.spokenLanguageRepository.saveAll(spokenLanguages);
+        //        return  this.spokenLanguageRepository.saveAll(spokenLanguages);
         return spokenLanguages;
     }
 }

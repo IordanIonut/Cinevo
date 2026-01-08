@@ -13,6 +13,7 @@ import org.springframework.transaction.annotation.Transactional;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
+import java.util.UUID;
 
 @Service
 public class KeywordService implements TMDBLogically<Object, Object>
@@ -68,13 +69,15 @@ public class KeywordService implements TMDBLogically<Object, Object>
     }
 
     @Transactional
-    private Keyword genereateKeyword(KeywordsResponse response)
+    protected Keyword genereateKeyword(KeywordsResponse response)
     {
-        Keyword keyword = this.keywordRepository.findByTmdbId(response.getId()).orElse(new Keyword());
-        keyword.setTmdb_id(response.getId());
-        keyword.setName(response.getName());
+        //        Keyword keyword = this.keywordRepository.findByTmdbId(response.getId()).orElse(new Keyword());
+        //        keyword.setTmdb_id(response.getId());
+        //        keyword.setName(response.getName());
+        //
+        //        return keywordRepository.save(keyword);
+        this.keywordRepository.updateOrInsert(UUID.randomUUID().toString(), response.getId(), response.getName());
 
-        keywordRepository.save(keyword);
-        return keyword;
+        return this.keywordRepository.findByTmdbId(response.getId()).get();
     }
 }

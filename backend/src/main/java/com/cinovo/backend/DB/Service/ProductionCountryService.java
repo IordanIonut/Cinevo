@@ -5,14 +5,17 @@ import com.cinovo.backend.DB.Repository.ProductionCountryRepository;
 import com.cinovo.backend.DB.Util.TMDBLogically;
 import com.cinovo.backend.TMDB.Response.ConfigurationCountryResponse;
 import jakarta.validation.constraints.Null;
+import lombok.extern.jbosslog.JBossLog;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
+import java.util.UUID;
 
 @Service
+@JBossLog
 public class ProductionCountryService implements TMDBLogically<Null, List<ProductionCountry>>
 {
     private final ProductionCountryRepository productionCountryRepository;
@@ -24,9 +27,9 @@ public class ProductionCountryService implements TMDBLogically<Null, List<Produc
         this.service = service;
     }
 
-    public ProductionCountry getProductionCountryById(final String iso)
+    public ProductionCountry getByIso(final String iso)
     {
-        return this.productionCountryRepository.getProductionCountryById(iso).orElse(new ProductionCountry());
+        return this.productionCountryRepository.getByIso(iso).orElse(new ProductionCountry());
     }
 
     public List<ProductionCountry> findAllProductionCountry() throws Exception
@@ -45,16 +48,18 @@ public class ProductionCountryService implements TMDBLogically<Null, List<Produc
     {
         ConfigurationCountryResponse[] countryResponses = this.service.getConfigurationCountries("en-US");
         List<ProductionCountry> productionCountries = new ArrayList<>();
+
         for(ConfigurationCountryResponse c : countryResponses)
         {
-            ProductionCountry country = this.productionCountryRepository.getProductionCountryById(c.getIso_3166_1()).orElse(new ProductionCountry());
-            country.setIso_3166_1(c.getIso_3166_1());
-            country.setName(c.getNative_name());
+            //            ProductionCountry country = this.productionCountryRepository.getByIso(c.getIso_3166_1()).orElse(new ProductionCountry());
+            //            country.setIso_3166_1(c.getIso_3166_1());
+            //            country.setName(c.getNative_name());
 
-            productionCountries.add(country);
+            this.productionCountryRepository.updateOrInsert(UUID.randomUUID().toString(), c.getIso_3166_1(), c.getEnglish_name());
+            productionCountries.add(this.productionCountryRepository.getByIso(c.getIso_3166_1()).get());
         }
 
-        this.productionCountryRepository.saveAll(productionCountries);
+        //        return this.productionCountryRepository.saveAll(productionCountries);
         return productionCountries;
     }
 }

@@ -11,6 +11,7 @@ import org.springframework.transaction.annotation.Transactional;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
+import java.util.UUID;
 
 @Service
 @JBossLog
@@ -44,21 +45,27 @@ public class TranslateService implements TMDBLogically<Integer, List<Translate>>
 
         for(TranslationResponse.Translate translate : translationResponse.getTranslations())
         {
-            Translate trans =
-                    this.translateRepository.findByTmdbIdAndIso(translationResponse.getId(), translate.getIso_639_1()).orElse(new Translate());
-            trans.setTmdb_id(translationResponse.getId());
-            trans.setIso_upper(translate.getIso_3166_1());
-            trans.setIso_lower(translate.getIso_639_1());
-            trans.setName(translate.getName());
-            trans.setEnglish_name(translate.getEnglish_name());
-            trans.setTitle(translate.getData().getTitle());
-            trans.setOverview(translate.getData().getOverview());
-            trans.setHome_page(translate.getData().getHomepage());
-            translates.add(trans);
+            //            Translate trans =
+            //                    this.translateRepository.findByTmdbIdAndIso(translationResponse.getId(), translate.getIso_639_1()).orElse(new Translate());
+            //            trans.setTmdb_id(translationResponse.getId());
+            //            trans.setIso_upper(translate.getIso_3166_1());
+            //            trans.setIso_lower(translate.getIso_639_1());
+            //            trans.setName(translate.getName());
+            //            trans.setEnglish_name(translate.getEnglish_name());
+            //            trans.setTitle(translate.getData().getTitle());
+            //            trans.setOverview(translate.getData().getOverview());
+            //            trans.setHome_page(translate.getData().getHomepage());
+
+            this.translateRepository.updateOrInsert(UUID.randomUUID().toString(), translationResponse.getId(), translate.getIso_3166_1(),
+                    translate.getIso_639_1(), translate.getName(), translate.getEnglish_name(), translate.getData().getTitle(),
+                    translate.getData().getOverview(), translate.getData().getHomepage());
+
+            translates.add(this.translateRepository.findByTmdbIdAndIso(translationResponse.getId(), translate.getIso_3166_1()).get());
         }
-        log.error(translates);
-        this.translateRepository.saveAll(translates);
-        return translates;
+
+        //        return   this.translateRepository.saveAll(translates);
+
+        return this.translateRepository.findAll();
     }
 
 }

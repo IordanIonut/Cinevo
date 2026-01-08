@@ -12,9 +12,10 @@ import lombok.*;
 @NoArgsConstructor
 @Getter
 @Setter
-public class Genre extends BaseEntity {
-    @Column(name = "ID")
-    private Integer id;
+public class Genre extends BaseEntity
+{
+    @Column(name = "TMDB_ID", nullable = false)
+    private Integer tmdb_id;
 
     @Column(name = "NAME")
     private String name;
@@ -26,5 +27,5 @@ public class Genre extends BaseEntity {
     public final static String TABLE_AS = "gen";
     public final static String TABLE_NAME = "GENRE ";
     public final static String TYPE = TABLE_AS + ".TYPE";
-    public final static String ID = TABLE_AS + ".ID";
+    public final static String TMDB_ID = TABLE_AS + ".TMDB_ID";
 }

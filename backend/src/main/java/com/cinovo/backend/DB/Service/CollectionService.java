@@ -17,25 +17,26 @@ import org.springframework.transaction.annotation.Transactional;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
+import java.util.UUID;
 
 @Service
 @JBossLog
 public class CollectionService implements TMDBLogically<Object, Object>
 {
-    private final CollectionRepository detailRepository;
+    private final CollectionRepository collectionRepository;
     private final com.cinovo.backend.TMDB.Service service;
     private final MediaService movieService;
 
     public CollectionService(CollectionRepository collectionRepository, @Lazy MediaService movieService, com.cinovo.backend.TMDB.Service service)
     {
-        this.detailRepository = collectionRepository;
+        this.collectionRepository = collectionRepository;
         this.movieService = movieService;
         this.service = service;
     }
 
     public Collection findByTmdbId(final Integer tmdb_id) throws Exception
     {
-        Optional<Collection> detail = this.detailRepository.findByTmdbId(tmdb_id);
+        Optional<Collection> detail = this.collectionRepository.findByTmdbId(tmdb_id);
         if(detail.isEmpty())
         {
             return (Collection) this.onConvertTMDB(tmdb_id);
@@ -77,30 +78,33 @@ public class CollectionService implements TMDBLogically<Object, Object>
     @Transactional
     public Collection generateCollection(CollectionResponse collection) throws Exception
     {
-        Collection detail = this.detailRepository.findByTmdbId(collection.getId()).orElse(new Collection());
-        detail.setTmdb_id(collection.getId());
-        detail.setName(collection.getName());
-        detail.setOverview(collection.getOverview());
-        detail.setPoster_path(collection.getPoster_path());
-        detail.setBackdrop_path(collection.getBackdrop_path());
-        detail.setOriginal_language(collection.getOriginal_language());
-        detail.setOriginal_name(collection.getOriginal_name());
-        detail.setAdult(collection.getAdult());
-        this.detailRepository.save(detail);
+        //        Collection detail = this.detailRepository.findByTmdbId(collection.getId()).orElse(new Collection());
+        //        detail.setTmdb_id(collection.getId());
+        //        detail.setName(collection.getName());
+        //        detail.setOverview(collection.getOverview());
+        //        detail.setPoster_path(collection.getPoster_path());
+        //        detail.setBackdrop_path(collection.getBackdrop_path());
+        //        detail.setOriginal_language(collection.getOriginal_language());
+        //        detail.setOriginal_name(collection.getOriginal_name());
+        //        detail.setAdult(collection.getAdult());
+        //        this.detailRepository.save(detail);
+        //
+        //        if(collection.getParts() != null)
+        //        {
+        //            List<Media> medias = new ArrayList<>();
+        //            for(MediaResponse movieResponse : collection.getParts())
+        //            {
+        //                Media movie = this.movieService.getMediaByTmdbIdAndMediaType(movieResponse.getId(),
+        //                        MediaType.valueOf(movieResponse.getMedia_type().toUpperCase()));
+        //                medias.add(movie);
+        //            }
+        //            detail.setMedias(medias);
+        //        }
+        //        return this.detailRepository.save(detail);
 
-        if(collection.getParts() != null)
-        {
-            List<Media> medias = new ArrayList<>();
-            for(MediaResponse movieResponse : collection.getParts())
-            {
-                Media movie =
-                        this.movieService.getMediaByTmdbIdAndMediaType(movieResponse.getId(), MediaType.valueOf(movieResponse.getMedia_type().toUpperCase()));
-                medias.add(movie);
-            }
-            detail.setMedias(medias);
-        }
-
-        this.detailRepository.save(detail);
-        return detail;
+        this.collectionRepository.updateOrInsert(UUID.randomUUID().toString(), collection.getId(), collection.getName(), collection.getOverview(),
+                collection.getPoster_path(), collection.getBackdrop_path(), collection.getOriginal_language(), collection.getOriginal_name(),
+                collection.getAdult());
+        return this.findByTmdbId(collection.getId());
     }
 }

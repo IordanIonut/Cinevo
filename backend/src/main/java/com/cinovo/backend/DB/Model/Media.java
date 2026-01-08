@@ -4,6 +4,7 @@ import com.cinovo.backend.DB.Model.Enum.EpisodeType;
 import com.cinovo.backend.DB.Model.Enum.MediaStatus;
 import com.cinovo.backend.DB.Model.Enum.MediaType;
 import com.cinovo.backend.DB.Util.BaseEntity;
+import com.cinovo.backend.Schedule.Job;
 import com.fasterxml.jackson.annotation.*;
 import jakarta.persistence.*;
 import lombok.*;
@@ -13,7 +14,7 @@ import java.util.List;
 
 @Data
 @Entity
-@Table(name = "MEDIA")
+@Table(name = "MEDIA", uniqueConstraints = { @UniqueConstraint(columnNames = { "TMDB_ID", "TYPE" }) })
 @AllArgsConstructor
 @NoArgsConstructor
 @Getter
@@ -33,7 +34,7 @@ public class Media extends BaseEntity
     @Column(name = "HOMEPAGE")
     private String homepage;
 
-    @Column(name = "TMDB_ID", nullable = true, unique = true)
+    @Column(name = "TMDB_ID", nullable = false)
     private Integer tmdb_id;
 
     @Column(name = "TYPE")
@@ -146,12 +147,12 @@ public class Media extends BaseEntity
             inverseJoinColumns = @JoinColumn(name = "PRODUCTION_COMPANY_ID", referencedColumnName = "CINEVO_ID"))
     private List<Company> production_companies;
 
-    @ManyToMany(fetch = FetchType.LAZY, cascade = { CascadeType.REFRESH, CascadeType.DETACH })
+    @ManyToMany(fetch = FetchType.LAZY, cascade = { CascadeType.REFRESH, CascadeType.DETACH, CascadeType.PERSIST })
     @JoinTable(name = "MEDIA_PRODUCTION_COUNTRY", joinColumns = @JoinColumn(name = "MEDIA_ID", referencedColumnName = "CINEVO_ID"),
             inverseJoinColumns = @JoinColumn(name = "PRODUCTION_COUNTRY_ID", referencedColumnName = "CINEVO_ID"))
     private List<ProductionCountry> production_countries;
 
-    @ManyToMany(fetch = FetchType.LAZY, cascade = { CascadeType.REFRESH, CascadeType.DETACH })
+    @ManyToMany(fetch = FetchType.LAZY, cascade = CascadeType.ALL)
     @JoinTable(name = "MEDIA_SPOKEN_LANGUAGE", joinColumns = @JoinColumn(name = "MEDIA_ID", referencedColumnName = "CINEVO_ID"),
             inverseJoinColumns = @JoinColumn(name = "SPOKEN_LANGUAGE_ID", referencedColumnName = "CINEVO_ID"))
     private List<SpokenLanguage> spoken_languages;
@@ -176,11 +177,6 @@ public class Media extends BaseEntity
     @JsonManagedReference
     private List<WatchProvider> watch_providers;
 
-    @ManyToOne
-    @JoinColumn(name = "DETAIL_CINEVO_ID", referencedColumnName = "CINEVO_ID")
-    @JsonBackReference
-    private Collection detail;
-
     @ManyToMany(mappedBy = "medias", fetch = FetchType.LAZY, cascade = CascadeType.ALL)
     @JsonIgnoreProperties("hibernateLazyInitializer")
     @JsonManagedReference
@@ -191,23 +187,17 @@ public class Media extends BaseEntity
             inverseJoinColumns = @JoinColumn(name = "NETWORK_ID", referencedColumnName = "CINEVO_ID"))
     private List<Network> networks;
 
-    //    @ManyToMany(fetch = FetchType.EAGER, cascade = { CascadeType.REFRESH, CascadeType.DETACH })
-    //    @JoinTable(name = "MEDIA_SEASON", joinColumns = @JoinColumn(name = "MEDIA_ID", referencedColumnName = "CINEVO_ID"),
-    //            inverseJoinColumns = @JoinColumn(name = "SEASON_ID", referencedColumnName = "CINEVO_ID"))
-    //    @JsonIgnoreProperties({ "hibernateLazyInitializer" })
-    //    private List<Season> seasons;
-
     @OneToMany(mappedBy = "media", fetch = FetchType.LAZY, cascade = { CascadeType.PERSIST, CascadeType.MERGE }, orphanRemoval = true)
     @JsonManagedReference
     private List<Season> seasons;
 
-    @ManyToOne(fetch = FetchType.LAZY, cascade = { CascadeType.REFRESH, CascadeType.DETACH })
+    @ManyToOne(fetch = FetchType.LAZY, cascade = { CascadeType.REFRESH, CascadeType.DETACH, CascadeType.PERSIST })
     @JoinColumn(name = "LAST_EPISODE_TO_AIR_CINEVO_ID", referencedColumnName = "CINEVO_ID")
     @JsonIgnoreProperties("hibernateLazyInitializer")
     @JsonManagedReference
     private EpisodeToAir last_episode_to_air;
 
-    @ManyToOne(fetch = FetchType.LAZY, cascade = { CascadeType.REFRESH, CascadeType.DETACH })
+    @ManyToOne(fetch = FetchType.LAZY, cascade = { CascadeType.REFRESH, CascadeType.DETACH, CascadeType.PERSIST })
     @JoinColumn(name = "NEXT_EPISODE_TO_AIR_CINEVO_ID", referencedColumnName = "CINEVO_ID")
     @JsonIgnoreProperties("hibernateLazyInitializer")
     @JsonManagedReference
@@ -224,6 +214,18 @@ public class Media extends BaseEntity
     public final static String TMDB_ID = TABLE_AS + ".TMDB_ID";
     public final static String TYPE = TABLE_AS + ".TYPE";
     public final static String CINEVO_ID = TABLE_AS + ".CINEVO_ID";
+
+    @JsonProperty("poster_path")
+    public String getPoster_path()
+    {
+        return Job.configurationUrlImages + poster_path;
+    }
+
+    @JsonProperty("backdrop_path")
+    public String getBackdrop_path()
+    {
+        return Job.configurationUrlImages + backdrop_path;
+    }
 
     @Data
     @Entity
@@ -287,11 +289,6 @@ public class Media extends BaseEntity
         @Column(name = "TWITTER_ID")
         private String twitter_id;
 
-        //        @OneToMany(mappedBy = "season", fetch = FetchType.EAGER, cascade = { CascadeType.REFRESH, CascadeType.DETACH })
-        //        @JsonIgnoreProperties("hibernateLazyInitializer")
-        //        @JsonManagedReference
-        //        private List<Episode> episodes;
-
         @OneToMany(mappedBy = "season", fetch = FetchType.LAZY, cascade = { CascadeType.PERSIST, CascadeType.MERGE }, orphanRemoval = true)
         @JsonManagedReference
         private List<Episode> episodes;
@@ -311,12 +308,6 @@ public class Media extends BaseEntity
         @JsonManagedReference
         private List<WatchProvider> watch_providers;
 
-        //        @ManyToOne(fetch = FetchType.LAZY)
-        //        @JoinColumn(name = "MEDIA_ID")
-        //        @JsonIgnoreProperties("hibernateLazyInitializer")
-        //        @JsonBackReference
-        //        private Media media;
-
         @ManyToOne(fetch = FetchType.LAZY)
         @JoinColumn(name = "MEDIA_ID", nullable = false)
         @JsonBackReference
@@ -328,6 +319,12 @@ public class Media extends BaseEntity
         public final static String SEASON_NUMBER = TABLE_AS + ".SEASON_NUMBER";
         public final static String JOIN_MEDIA = TABLE_AS + ".MEDIA_ID";
         public final static String CINEVO_ID = TABLE_AS + ".CINEVO_ID";
+
+        @JsonProperty("poster_path")
+        public String getPoster_Path()
+        {
+            return Job.configurationUrlImages + poster_path;
+        }
 
         @Data
         @Entity
@@ -398,12 +395,6 @@ public class Media extends BaseEntity
             @Column(name = "TWITTER_ID")
             private String twitter_id;
 
-            //            @ManyToOne(fetch = FetchType.LAZY, cascade = { CascadeType.REFRESH, CascadeType.DETACH })
-            //            @JoinColumn(name = "SEASON_ID")
-            //            @JsonIgnoreProperties("hibernateLazyInitializer")
-            //            @JsonBackReference
-            //            private Season season;
-
             @ManyToOne(fetch = FetchType.LAZY)
             @JoinColumn(name = "SEASON_ID", nullable = false)
             @JsonBackReference
@@ -425,6 +416,12 @@ public class Media extends BaseEntity
             public final static String SEASON_ID = TABLE_AS + ".SEASON_ID";
             public final static String EPISODE_NUMBER = TABLE_AS + ".EPISODE_NUMBER";
             public final static String CINEVO_ID = TABLE_AS + ".CINEVO_ID";
+
+            @JsonProperty("still_path")
+            public String getStill_path()
+            {
+                return Job.configurationUrlImages + still_path;
+            }
         }
     }
 
@@ -484,5 +481,11 @@ public class Media extends BaseEntity
         public final static String TABLE_AS = "episode_to_air";
         public final static String TABLE_NAME = "EPISODE_TO_AIR ";
         public final static String TMDB_ID = TABLE_AS + ".TMDB_ID";
+
+        @JsonProperty("still_path")
+        public String getStill_path()
+        {
+            return Job.configurationUrlImages + still_path;
+        }
     }
 }

@@ -4,9 +4,11 @@ import com.cinovo.backend.DB.Model.Image;
 import com.cinovo.backend.DB.Model.Media;
 import com.cinovo.backend.DB.Model.Person;
 import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.data.jpa.repository.Modifying;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 import org.springframework.stereotype.Repository;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
 import java.util.Optional;
@@ -67,4 +69,39 @@ public interface ImageRepository extends JpaRepository<Image, String>
     Optional<Image> findByMediaIdAndCollectionIdAndImageTypeAndTypeAndFilePath(@Param("media_id") final String media_id,
             @Param("image_type") final String image_type, @Param("collection_id") final Integer collection_id, @Param("type") final String type,
             @Param("file_path") final String file_path);
+
+    @Query(nativeQuery = true, value = "SELECT i.* FROM IMAGE i WHERE i.cinevo_id = :cinevo_id")
+    Optional<Image> findByCinevoId(@Param("cinevo_id") String cinevo_id);
+
+    @Modifying
+    @Transactional
+    @Query(nativeQuery = true, value = """
+            INSERT INTO image(cinevo_id, last_update, `type`, aspect_radio, height, iso_3166_1, iso_639_1, file_path, 
+                        vote_average, vote_count, width, image_type, collection_id, media_id, season_id, episode_id, person_id)
+            VALUES(:cinevo_id, NOW(), :type, :aspect_radio, :height, :iso_3166_1, :iso_639_1, :file_path, 
+                        :vote_average, :vote_count, :width, :image_type, :collection_id, :media_id, :season_id, :episode_id, :person_id )
+            ON DUPLICATE KEY UPDATE 
+                    last_update = NOW(),
+                    `type` = VALUES(`type`),
+                    aspect_radio = VALUES(aspect_radio),
+                    height = VALUES(height),
+                    iso_3166_1 = VALUES(iso_3166_1),
+                    iso_639_1 = VALUES(iso_639_1),
+                    file_path = VALUES(file_path),
+                    vote_average = VALUES(vote_average),
+                    vote_count = VALUES(vote_count),
+                    width = VALUES(width),
+                    image_type = VALUES(image_type),
+                    collection_id = VALUES(collection_id),
+                    media_id = VALUES(media_id),
+                    season_id = VALUES(season_id),
+                    episode_id = VALUES(episode_id),
+                    person_id = VALUES(person_id)
+            """)
+    void updateOrInsert(@Param("cinevo_id") String cinevo_id, @Param("type") String type, @Param("aspect_radio") Double aspect_radio,
+            @Param("height") Integer height, @Param("iso_3166_1") String iso_3166_1, @Param("iso_639_1") String iso_639_1,
+            @Param("file_path") String file_path, @Param("vote_average") Double vote_average, @Param("vote_count") Integer vote_count,
+            @Param("width") Integer width, @Param("image_type") String image_type, @Param("collection_id") Integer collection_id,
+            @Param("media_id") String media_id, @Param("season_id") String season_id, @Param("episode_id") String episode_id,
+            @Param("person_id") String person_id);
 }

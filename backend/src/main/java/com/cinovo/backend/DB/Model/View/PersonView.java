@@ -1,4 +1,8 @@
 package com.cinovo.backend.DB.Model.View;
 
-public class PersonView {
+public interface PersonView
+{
+    String getProfileFile();
+    String getCinevoId();
+    String getName();
 }

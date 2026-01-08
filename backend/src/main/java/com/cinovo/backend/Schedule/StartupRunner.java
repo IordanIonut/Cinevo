@@ -28,20 +28,20 @@ public class StartupRunner implements CommandLineRunner
         this.spokenLanguageService = spokenLanguageService;
         this.productionCountryService = productionCountryService;
         this.service = service;
-        //        this.job = job;
+        this.job = job;
     }
 
     @Override
     public void run(String... args) throws Exception
     {
-        //        this.job.callConfigurationDetails();
+        this.job.callConfigurationDetails();
 
         this.genreService.getGenreByMediaType(MediaType.MOVIE);
         this.genreService.getGenreByMediaType(MediaType.TV);
         this.spokenLanguageService.findAllSpokenLanguages();
         this.productionCountryService.findAllProductionCountry();
 
-        //        this.job.callTrendingMediaAll();
+        this.job.callTrendingAll();
 
         //        this.collectChangeData(MediaType.MOVIE);
         //        this.collectChangeData(MediaType.TV);

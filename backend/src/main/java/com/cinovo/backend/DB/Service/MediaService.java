@@ -4,10 +4,13 @@ import com.cinovo.backend.DB.Model.*;
 import com.cinovo.backend.DB.Model.Enum.EpisodeType;
 import com.cinovo.backend.DB.Model.Enum.MediaStatus;
 import com.cinovo.backend.DB.Model.Enum.MediaType;
+import com.cinovo.backend.DB.Model.Enum.TimeWindow;
 import com.cinovo.backend.DB.Repository.MediaRepository;
+import com.cinovo.backend.DB.Util.Helper.JobHelper;
 import com.cinovo.backend.DB.Util.Resolver.MediaResolver;
 import com.cinovo.backend.DB.Util.Shared;
 import com.cinovo.backend.DB.Util.TMDBLogically;
+import com.cinovo.backend.Schedule.Job;
 import com.cinovo.backend.TMDB.Response.*;
 import com.cinovo.backend.TMDB.Response.Common.MediaExternalIdResponse;
 import com.cinovo.backend.TMDB.Response.Common.MediaResponse;
@@ -16,6 +19,7 @@ import lombok.extern.jbosslog.JBossLog;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.time.LocalDate;
 import java.util.*;
 import java.util.function.Function;
 import java.util.stream.Collectors;
@@ -36,11 +40,12 @@ public class MediaService implements TMDBLogically<Object, Object>
     private final CollectionService collectionService;
     private final CreditService creditService;
     private final MediaResolver mediaResolver;
+    private final JobHelper jobHelper;
 
     public MediaService(MediaRepository mediaRepository, com.cinovo.backend.TMDB.Service service, GenreService genreService,
             PersonService personService, KeywordService keywordService, SpokenLanguageService spokenLanguageService,
             ProductionCountryService productionCountryService, CompanyService companyService, NetworkService networkService,
-            CollectionService collectionService, CreditService creditService, MediaResolver mediaResolver)
+            CollectionService collectionService, CreditService creditService, MediaResolver mediaResolver, JobHelper jobHelper)
     {
         this.mediaRepository = mediaRepository;
         this.service = service;
@@ -54,6 +59,7 @@ public class MediaService implements TMDBLogically<Object, Object>
         this.collectionService = collectionService;
         this.creditService = creditService;
         this.mediaResolver = mediaResolver;
+        this.jobHelper = jobHelper;
     }
 
     public Media.Season getSeasonBySeasonTmdbId(final Integer season_tmdb_id)
@@ -121,7 +127,8 @@ public class MediaService implements TMDBLogically<Object, Object>
     public Media.Season.Episode getEpisodeByMediaTmdbIdAndSeasonNumberAndEpisodeNumber(final Integer media_tmdb_id, final Integer season_number,
             final Integer episode_number) throws Exception
     {
-        Optional<Media.Season.Episode> episode = this.mediaRepository.getEpisodeByMediaTmdbIdAndSeasonNumberAndEpisodeNumber(media_tmdb_id, season_number, episode_number);
+        Optional<Media.Season.Episode> episode =
+                this.mediaRepository.getEpisodeByMediaTmdbIdAndSeasonNumberAndEpisodeNumber(media_tmdb_id, season_number, episode_number);
         if(episode.isEmpty())
         {
             return (Media.Season.Episode) onConvertTMDB(MediaType.TV + Shared.REGEX + media_tmdb_id);
@@ -150,9 +157,10 @@ public class MediaService implements TMDBLogically<Object, Object>
         return null;
     }
 
-    public List<Media> getMediaUsingTrending(final MediaType type, final String time_window, final String language) throws Exception
+    public List<Media> getMediaUsingTrending(final MediaType type, final TimeWindow time_window, final String language) throws Exception
     {
-        return (List<Media>) this.onConvertTMDB(MediaType.TRENDING + Shared.REGEX + type + Shared.REGEX + time_window + Shared.REGEX + language);
+        return (List<Media>) this.onConvertTMDB(
+                MediaType.TRENDING + Shared.REGEX + type + Shared.REGEX + time_window.getLabel() + Shared.REGEX + language);
     }
 
     @Override
@@ -197,8 +205,10 @@ public class MediaService implements TMDBLogically<Object, Object>
                     this.service.getTrendingMediaResponse(parts[1].equals("null") ? null : MediaType.valueOf(parts[1].toUpperCase()),
                             Shared.onStringEqualsWithNull(parts[2]), Shared.onStringEqualsWithNull(parts[3]));
 
-            return this.onConvertMedia(this.onParseSearchResponseToMediaResponse(rawResponse),
-                    parts[1].equals("null") ? null : MediaType.valueOf(parts[1].toUpperCase()));
+            List<MediaResponse> responses = this.onParseSearchResponseToMediaResponse(rawResponse);
+            this.callJobHelper(responses, Shared.onStringEqualsWithNull(parts[1]), Shared.onStringEqualsWithNull(parts[2]));
+
+            return this.onConvertMedia(responses, parts[1].equals("null") ? null : MediaType.valueOf(parts[1].toUpperCase()));
         }
 
         throw new IllegalArgumentException("Unsupported input type");
@@ -225,28 +235,15 @@ public class MediaService implements TMDBLogically<Object, Object>
         if(mediaResponse.getId() == null)
             return null;
 
-        MediaExternalIdResponse mediaExternalIdsResponse =
-                type.equals(MediaType.MOVIE) ? service.getMovieExternalIds(id) : service.getTvExternalIds(id);
-
         MediaKeywordResponse mediaKeywordResponse = type.equals(MediaType.MOVIE) ? service.getKeywordMovie(id) : service.getTvKeyword(id);
 
         Media media = mediaRepository.getMediaByTmdbIdAndMediaType(id, type.name()).orElse(new Media());
         media.setTmdb_id(mediaResponse.getId());
         media.setType(type != null ? type : MediaType.valueOf(mediaResponse.getMedia_type().toUpperCase()));
-
         media.setAdult(mediaResponse.getAdult());
         media.setBackdrop_path(mediaResponse.getBackdrop_path());
         media.setBudget(mediaResponse.getBudget());
         media.setHomepage(mediaResponse.getHomepage());
-        media.setImdb_id(mediaExternalIdsResponse.getImdb_id());
-        media.setFreebase_mid(mediaExternalIdsResponse.getFreebase_mid());
-        media.setFreebase_id(mediaExternalIdsResponse.getFreebase_id());
-        media.setTvdb_id(mediaExternalIdsResponse.getTvdb_id());
-        media.setTvrage_id(mediaExternalIdsResponse.getTvrage_id());
-        media.setWikidata_id(mediaExternalIdsResponse.getWikidata_id());
-        media.setFacebook_id(mediaExternalIdsResponse.getFacebook_id());
-        media.setInstagram_id(mediaExternalIdsResponse.getInstagram_id());
-        media.setTwitter_id(mediaExternalIdsResponse.getTwitter_id());
         saveAndUpdate(media);
 
         if(mediaKeywordResponse.getKeywords() != null)
@@ -267,6 +264,8 @@ public class MediaService implements TMDBLogically<Object, Object>
         media.setOrigin_country(mediaResponse.getOrigin_country());
         media.setOriginal_language(mediaResponse.getOriginal_language());
         media.setOriginal_title(mediaResponse.getOriginal_title());
+        media.setLanguages(mediaResponse.getLanguages());
+        media.setEpisode_run_time(mediaResponse.getEpisode_run_time());
         media.setOverview(mediaResponse.getOverview());
         media.setPopularity(mediaResponse.getPopularity());
         media.setPoster_path(mediaResponse.getPoster_path());
@@ -280,6 +279,59 @@ public class MediaService implements TMDBLogically<Object, Object>
         media.setVideo(mediaResponse.getVideo());
         media.setVote_average(mediaResponse.getVote_average());
         media.setVote_count(mediaResponse.getVote_count());
+        this.saveAndUpdate(media);
+
+        if(mediaResponse.getBelongs_to_collection() != null)
+        {
+            media.setBelong_to_collection(this.collectionService.findByTmdbId(mediaResponse.getBelongs_to_collection().getId()));
+        }
+
+        if(mediaResponse.getProduction_countries() != null)
+        {
+            List<ProductionCountry> productionCountries = new ArrayList<>();
+            for(MediaResponse.ProductionCountry country : mediaResponse.getProduction_countries())
+            {
+                ProductionCountry productionCountry = this.productionCountryService.getByIso(country.getIso_3166_1());
+                productionCountry.setIso_3166_1(country.getIso_3166_1());
+                productionCountry.setName(country.getName());
+                productionCountries.add(productionCountry);
+            }
+            media.setProduction_countries(productionCountries);
+        }
+
+        if(mediaResponse.getProduction_companies() != null)
+        {
+            List<Company> productionCompanies = new ArrayList<>();
+            for(MediaResponse.ProductionCompany company : mediaResponse.getProduction_companies())
+            {
+                productionCompanies.add(this.companyService.findCompanyByTmdbId(company.getId()));
+            }
+            media.setProduction_companies(productionCompanies);
+        }
+
+        if(mediaResponse.getSpoken_languages() != null)
+        {
+            List<SpokenLanguage> spokenLanguages = new ArrayList<>();
+            for(MediaResponse.SpokenLanguage language : mediaResponse.getSpoken_languages())
+            {
+                SpokenLanguage spokenLanguage = this.spokenLanguageService.getByIso(language.getIso_639_1());
+                spokenLanguage.setEnglish_name(language.getEnglish_name());
+                spokenLanguage.setIso_639_1(language.getIso_639_1());
+                spokenLanguage.setName(language.getName());
+                spokenLanguages.add(spokenLanguage);
+            }
+            media.setSpoken_languages(spokenLanguages);
+        }
+
+        if(mediaResponse.getNetworks() != null)
+        {
+            List<Network> networks = new ArrayList<>();
+            for(MediaResponse.Network network : mediaResponse.getNetworks())
+            {
+                networks.add(this.networkService.getNetworkByTmdbId(network.getId()));
+            }
+            media.setNetworks(networks);
+        }
 
         if(mediaResponse.getGenre_ids() != null)
         {
@@ -289,23 +341,14 @@ public class MediaService implements TMDBLogically<Object, Object>
         {
             media.setGenres(genreService.parsGenreToObjects(mediaResponse.getGenres(), media.getType()));
         }
+        this.saveAndUpdate(media);
 
         if(mediaResponse.getSeasons() != null)
         {
-            List<Media.Season> managedSeasons = media.getSeasons();
-            if(managedSeasons == null)
-            {
-                managedSeasons = new ArrayList<>();
-                media.setSeasons(managedSeasons);
-            }
-
-            Map<Integer, Media.Season> seasonById =
-                    managedSeasons.stream().filter(s -> s.getTmdb_id() != null).collect(Collectors.toMap(Media.Season::getTmdb_id, Function.identity()));
-
+            List<Media.Season> seasons = new ArrayList<>();
             for(MediaResponse.Season seasonDto : mediaResponse.getSeasons())
             {
-                Media.Season ses =
-                        seasonById.getOrDefault(seasonDto.getId(), mediaRepository.getSeasonBySeasonTmdbId(seasonDto.getId()).orElse(new Media.Season()));
+                Media.Season ses = this.mediaRepository.getSeasonBySeasonTmdbId(seasonDto.getId()).orElse(new Media.Season());
 
                 ses.setTmdb_id(seasonDto.getId());
                 ses.setAir_date(Shared.onStringParseDate(seasonDto.getAir_date()));
@@ -315,75 +358,77 @@ public class MediaService implements TMDBLogically<Object, Object>
                 ses.setPoster_path(seasonDto.getPoster_path());
                 ses.setSeason_number(seasonDto.getSeason_number());
                 ses.setVote_average(seasonDto.getVote_average());
-                ses.setMedia(media);
 
-                MediaExternalIdResponse externalIdResponse = service.getTvSeasonExternalId(media.getTmdb_id(), seasonDto.getSeason_number());
-                ses.setImdb_id(externalIdResponse.getImdb_id());
-                ses.setFreebase_mid(externalIdResponse.getFreebase_mid());
-                ses.setFreebase_id(externalIdResponse.getFreebase_id());
-                ses.setTvdb_id(externalIdResponse.getTvdb_id());
-                ses.setTvrage_id(externalIdResponse.getTvrage_id());
-                ses.setWikidata_id(externalIdResponse.getWikidata_id());
-                ses.setFacebook_id(externalIdResponse.getFacebook_id());
-                ses.setInstagram_id(externalIdResponse.getInstagram_id());
-                ses.setTwitter_id(externalIdResponse.getTwitter_id());
-
-                List<Media.Season.Episode> managedEpisodes = ses.getEpisodes();
-                if(managedEpisodes == null)
+                List<Media.Season.Episode> episodes = new ArrayList<>();
+                TvSeasonDetailsResponse tvSeasonDetailsResponse = this.service.getTvSeasonDetails(id, ses.getSeason_number(), null, null);
+                for(TvSeasonDetailsResponse.Episode episode : tvSeasonDetailsResponse.getEpisodes())
                 {
-                    managedEpisodes = new ArrayList<>();
-                    ses.setEpisodes(managedEpisodes);
-                }
+                    Media.Season.Episode epi = this.mediaRepository.getEpisodeByEpisodeTmdbId(episode.getId()).orElse(new Media.Season.Episode());
 
-                Map<Integer, Media.Season.Episode> epById = managedEpisodes.stream().filter(e -> e.getTmdb_id() != null)
-                        .collect(Collectors.toMap(Media.Season.Episode::getTmdb_id, Function.identity()));
-
-                TvSeasonDetailsResponse tvSeasonDetailsResponse = service.getTvSeasonDetails(id, seasonDto.getSeason_number(), null, null);
-                Set<Integer> incomingEpIds = new HashSet<>();
-
-                for(TvSeasonDetailsResponse.Episode episodeDto : tvSeasonDetailsResponse.getEpisodes())
-                {
-                    incomingEpIds.add(episodeDto.getId());
-                    Media.Season.Episode epi = epById.getOrDefault(episodeDto.getId(),
-                            mediaRepository.getEpisodeByEpisodeTmdbId(episodeDto.getId()).orElse(new Media.Season.Episode()));
-
-                    epi.setTmdb_id(episodeDto.getId());
-                    epi.setAir_date(Shared.onStringParseDate(episodeDto.getAir_date()));
-                    epi.setEpisode_number(episodeDto.getEpisode_number());
-                    epi.setEpisode_type(EpisodeType.valueOf(episodeDto.getEpisode_type().toUpperCase()));
-                    epi.setOverview(episodeDto.getOverview());
-                    epi.setProduction_code(episodeDto.getProduction_code());
-                    epi.setRuntime(episodeDto.getRuntime());
-                    epi.setStill_path(episodeDto.getStill_path());
-                    epi.setVote_average(episodeDto.getVote_average());
-                    epi.setVote_count(episodeDto.getVote_count());
+                    epi.setTmdb_id(episode.getId());
+                    epi.setAir_date(Shared.onStringParseDate(episode.getAir_date()));
+                    epi.setEpisode_number(episode.getEpisode_number());
+                    epi.setEpisode_type(EpisodeType.valueOf(episode.getEpisode_type().toUpperCase()));
+                    epi.setOverview(episode.getOverview());
+                    epi.setProduction_code(episode.getProduction_code());
+                    epi.setRuntime(episode.getRuntime());
+                    epi.setStill_path(episode.getStill_path());
+                    epi.setVote_average(episode.getVote_average());
+                    epi.setVote_count(episode.getVote_count());
                     epi.setSeason(ses);
 
-                    MediaExternalIdResponse externalId =
-                            service.getTvSeasonEpisodeExternal(media.getTmdb_id(), ses.getSeason_number(), episodeDto.getEpisode_number());
-                    epi.setImdb_id(externalId.getImdb_id());
-                    epi.setFreebase_mid(externalId.getFreebase_mid());
-                    epi.setFreebase_id(externalId.getFreebase_id());
-                    epi.setTvdb_id(externalId.getTvdb_id());
-                    epi.setTvrage_id(externalId.getTvrage_id());
-                    epi.setWikidata_id(externalId.getWikidata_id());
-                    epi.setFacebook_id(externalId.getFacebook_id());
-                    epi.setInstagram_id(externalId.getInstagram_id());
-                    epi.setTwitter_id(externalId.getTwitter_id());
-
-                    if(!managedEpisodes.contains(epi))
-                    {
-                        managedEpisodes.add(epi);
-                    }
+                    episodes.add(epi);
                 }
-
-                managedEpisodes.removeIf(e -> e.getTmdb_id() != null && !incomingEpIds.contains(e.getTmdb_id()));
-
-                if(!managedSeasons.contains(ses))
-                {
-                    managedSeasons.add(ses);
-                }
+                ses.setEpisodes(episodes);
+                ses.setMedia(media);
+                seasons.add(ses);
             }
+            media.setSeasons(seasons);
+        }
+        this.saveAndUpdate(media);
+
+        if(mediaResponse.getLast_episode_to_air() != null)
+        {
+            Media.EpisodeToAir episodeToAir =
+                    this.mediaRepository.getEpisodeToAirByTmdbId(mediaResponse.getLast_episode_to_air().getId()).orElse(new Media.EpisodeToAir());
+            episodeToAir.setTmdb_id(mediaResponse.getLast_episode_to_air().getId());
+            episodeToAir.setName(mediaResponse.getLast_episode_to_air().getName());
+            episodeToAir.setOverview(mediaResponse.getLast_episode_to_air().getOverview());
+            episodeToAir.setVote_average(mediaResponse.getLast_episode_to_air().getVote_average());
+            episodeToAir.setVote_count(mediaResponse.getLast_episode_to_air().getVote_count());
+            episodeToAir.setAir_date(mediaResponse.getLast_episode_to_air().getAir_date() != null ? LocalDate.parse(
+                    mediaResponse.getLast_episode_to_air().getAir_date()) : null);
+            episodeToAir.setEpisode_number(mediaResponse.getLast_episode_to_air().getEpisode_number());
+            episodeToAir.setEpisode_type(EpisodeType.valueOf(mediaResponse.getLast_episode_to_air().getEpisode_type().toUpperCase()));
+            episodeToAir.setProduction_code(mediaResponse.getLast_episode_to_air().getProduction_code());
+            episodeToAir.setRuntime(mediaResponse.getLast_episode_to_air().getRuntime());
+            episodeToAir.setSeason_number(mediaResponse.getLast_episode_to_air().getSeason_number());
+            episodeToAir.setStill_path(mediaResponse.getLast_episode_to_air().getStill_path());
+            episodeToAir.setMedia(media);
+
+            media.setLast_episode_to_air(episodeToAir);
+        }
+
+        if(mediaResponse.getNext_episode_to_air() != null)
+        {
+            Media.EpisodeToAir episodeToAir =
+                    this.mediaRepository.getEpisodeToAirByTmdbId(mediaResponse.getNext_episode_to_air().getId()).orElse(new Media.EpisodeToAir());
+            episodeToAir.setTmdb_id(mediaResponse.getNext_episode_to_air().getId());
+            episodeToAir.setName(mediaResponse.getNext_episode_to_air().getName());
+            episodeToAir.setOverview(mediaResponse.getNext_episode_to_air().getOverview());
+            episodeToAir.setVote_average(mediaResponse.getNext_episode_to_air().getVote_average());
+            episodeToAir.setVote_count(mediaResponse.getNext_episode_to_air().getVote_count());
+            episodeToAir.setAir_date(mediaResponse.getNext_episode_to_air().getAir_date() != null ? LocalDate.parse(
+                    mediaResponse.getNext_episode_to_air().getAir_date()) : null);
+            episodeToAir.setEpisode_number(mediaResponse.getNext_episode_to_air().getEpisode_number());
+            episodeToAir.setEpisode_type(EpisodeType.valueOf(mediaResponse.getNext_episode_to_air().getEpisode_type().toUpperCase()));
+            episodeToAir.setProduction_code(mediaResponse.getNext_episode_to_air().getProduction_code());
+            episodeToAir.setRuntime(mediaResponse.getNext_episode_to_air().getRuntime());
+            episodeToAir.setSeason_number(mediaResponse.getNext_episode_to_air().getSeason_number());
+            episodeToAir.setStill_path(mediaResponse.getNext_episode_to_air().getStill_path());
+            episodeToAir.setMedia(media);
+
+            media.setNext_episode_to_air(episodeToAir);
         }
 
         List<Person> persons = new ArrayList<>();
@@ -405,275 +450,13 @@ public class MediaService implements TMDBLogically<Object, Object>
                 persons.add(person);
             }
         }
+        this.saveAndUpdate(media);
 
         media.setCreated_by(persons);
         this.mediaResolver.generateDateAsync(id, type);
 
         return saveAndUpdate(media);
     }
-
-    //    @Transactional
-    //    private Media onConvertMediaById(final Integer id, final MediaType type) throws Exception
-    //    {
-    //        MediaResponse mediaResponse = new MediaResponse();
-    //        MediaExternalIdResponse mediaExternalIdsResponse = new MediaExternalIdResponse();
-    //        MediaKeywordResponse mediaKeywordResponse = new MediaKeywordResponse();
-    //        if(type.equals(MediaType.MOVIE))
-    //        {
-    //            mediaResponse = this.service.getMovieDetails(id, "en-US");
-    //            mediaExternalIdsResponse = this.service.getMovieExternalIds(id);
-    //            mediaKeywordResponse = this.service.getKeywordMovie(id);
-    //        }
-    //        else if(type.equals(MediaType.TV))
-    //        {
-    //            mediaResponse = this.service.getTvDetails(id, null, null);
-    //            mediaExternalIdsResponse = this.service.getTvExternalIds(id);
-    //            mediaKeywordResponse = this.service.getTvKeyword(id);
-    //        }
-    //
-    //        if(mediaResponse.getId() == null)
-    //            return null;
-    //
-    //        Media media = this.mediaRepository.getMediaByIdAndType(id, type.name()).orElse(new Media());
-    //
-    //        media.setAdult(mediaResponse.getAdult());
-    //        media.setBackdrop_path(mediaResponse.getBackdrop_path());
-    //        media.setBudget(mediaResponse.getBudget());
-    //        media.setHomepage(mediaResponse.getHomepage());
-    //        media.setId(mediaResponse.getId());
-    //        media.setType(type == null ? MediaType.valueOf(mediaResponse.getMedia_type().toUpperCase()) : type);
-    //        this.mediaRepository.save(media);
-    //
-    //        media.setImdb_id(mediaExternalIdsResponse.getImdb_id());
-    //        media.setFreebase_mid(mediaExternalIdsResponse.getFreebase_mid());
-    //        media.setFreebase_id(mediaExternalIdsResponse.getFreebase_id());
-    //        media.setTvdb_id(mediaExternalIdsResponse.getTvdb_id());
-    //        media.setTvrage_id(mediaExternalIdsResponse.getTvrage_id());
-    //        media.setWikidata_id(mediaExternalIdsResponse.getWikidata_id());
-    //        media.setFacebook_id(mediaExternalIdsResponse.getFacebook_id());
-    //        media.setInstagram_id(mediaExternalIdsResponse.getInstagram_id());
-    //        media.setTwitter_id(mediaExternalIdsResponse.getTwitter_id());
-    //
-    //        if(mediaKeywordResponse.getKeywords() != null)
-    //        {
-    //            List<Keyword> keywords = new ArrayList<>();
-    //            for(KeywordsResponse keyword : mediaKeywordResponse.getKeywords())
-    //            {
-    //                keywords.add(this.keywordService.findKeywordById(keyword.getId()));
-    //            }
-    //            media.setKeywords(keywords);
-    //        }
-    //        this.saveAndUpdate(media);
-    //
-    //        media.setOrigin_country(mediaResponse.getOrigin_country());
-    //        media.setOriginal_language(mediaResponse.getOriginal_language());
-    //        media.setOriginal_title(mediaResponse.getOriginal_title());
-    //        media.setOverview(mediaResponse.getOverview());
-    //        media.setPopularity(mediaResponse.getPopularity());
-    //        media.setPoster_path(mediaResponse.getPoster_path());
-    //        media.setRelease_date(mediaResponse.getRelease_date() != null && !mediaResponse.getRelease_date().isBlank() ? LocalDate.parse(
-    //                mediaResponse.getRelease_date()) : null);
-    //        media.setFirst_air_date(mediaResponse.getFirst_air_date() != null && !mediaResponse.getFirst_air_date().isBlank() ? LocalDate.parse(
-    //                mediaResponse.getFirst_air_date()) : null);
-    //        media.setRevenue(mediaResponse.getRevenue());
-    //        media.setRuntime(mediaResponse.getRuntime());
-    //        media.setStatus(MediaStatus.fromLabel(mediaResponse.getStatus()));
-    //        media.setTagline(mediaResponse.getTagline());
-    //        media.setTitle(mediaResponse.getTitle());
-    //        media.setVideo(mediaResponse.getVideo());
-    //        media.setVote_average(mediaResponse.getVote_average());
-    //        media.setVote_count(mediaResponse.getVote_count());
-    //        media.setGenres(mediaResponse.getGenre_ids() != null
-    //                ? genreService.parsLongToObjects(mediaResponse.getGenre_ids(), media.getType())
-    //                : (mediaResponse.getGenres() != null ? genreService.parsGenreToObjects(mediaResponse.getGenres(), media.getType()) : null));
-    //        this.saveAndUpdate(media);
-    //
-    //        if(mediaResponse.getBelongs_to_collection() != null)
-    //        {
-    //            media.setBelong_to_collection(this.collectionService.findCollectionById(mediaResponse.getBelongs_to_collection().getId()));
-    //        }
-    //
-    //        if(mediaResponse.getProduction_companies() != null)
-    //        {
-    //            List<Company> productionCompanies = new ArrayList<>();
-    //            for(MediaResponse.ProductionCompany company : mediaResponse.getProduction_companies())
-    //            {
-    //                productionCompanies.add(this.companyService.findCompanyById(company.getId()));
-    //            }
-    //            media.setProduction_companies(productionCompanies);
-    //        }
-    //
-    //        if(mediaResponse.getProduction_countries() != null)
-    //        {
-    //            List<ProductionCountry> productionCountries = new ArrayList<>();
-    //            for(MediaResponse.ProductionCountry country : mediaResponse.getProduction_countries())
-    //            {
-    //                ProductionCountry productionCountry = this.productionCountryService.getProductionCountryById(country.getIso_3166_1());
-    //                productionCountry.setIso_3166_1(country.getIso_3166_1());
-    //                productionCountry.setName(country.getName());
-    //                productionCountries.add(productionCountry);
-    //            }
-    //            media.setProduction_countries(productionCountries);
-    //        }
-    //
-    //        if(mediaResponse.getSpoken_languages() != null)
-    //        {
-    //            List<SpokenLanguage> spokenLanguages = new ArrayList<>();
-    //            for(MediaResponse.SpokenLanguage language : mediaResponse.getSpoken_languages())
-    //            {
-    //                SpokenLanguage spokenLanguage = this.spokenLanguageService.getSpokenLanguageById(language.getIso_639_1());
-    //                spokenLanguage.setEnglish_name(language.getEnglish_name());
-    //                spokenLanguage.setIso_639_1(language.getIso_639_1());
-    //                spokenLanguage.setName(language.getName());
-    //                spokenLanguages.add(spokenLanguage);
-    //            }
-    //            media.setSpoken_languages(spokenLanguages);
-    //        }
-    //
-    //        if(mediaResponse.getNetworks() != null)
-    //        {
-    //            List<Network> networks = new ArrayList<>();
-    //            for(MediaResponse.Network network : mediaResponse.getNetworks())
-    //            {
-    //                networks.add(this.networkService.getNetworkById(network.getId()));
-    //            }
-    //            media.setNetworks(networks);
-    //        }
-    //
-    //        if(mediaResponse.getSeasons() != null)
-    //        {
-    //            List<Media.Season> seasons = new ArrayList<>();
-    //            for(MediaResponse.Season season : mediaResponse.getSeasons())
-    //            {
-    //                Media.Season ses = this.mediaRepository.getSeasonById(season.getId()).orElse(new Media.Season());
-    //                MediaExternalIdResponse externalIdResponse = this.service.getTvSeasonExternalId(media.getId(), season.getSeason_number());
-    //                ses.setId(season.getId());
-    //                ses.setAir_date(season.getAir_date() != null ? LocalDate.parse(season.getAir_date()) : null);
-    //                ses.setEpisode_count(season.getEpisode_count());
-    //                ses.setName(season.getName());
-    //                ses.setOverview(season.getOverview());
-    //                ses.setPoster_path(season.getPoster_path());
-    //                ses.setSeason_number(season.getSeason_number());
-    //                ses.setVote_average(season.getVote_average());
-    //
-    //                ses.setImdb_id(externalIdResponse.getImdb_id());
-    //                ses.setFreebase_mid(externalIdResponse.getFreebase_mid());
-    //                ses.setFreebase_id(externalIdResponse.getFreebase_id());
-    //                ses.setTvdb_id(externalIdResponse.getTvdb_id());
-    //                ses.setTvrage_id(externalIdResponse.getTvrage_id());
-    //                ses.setWikidata_id(externalIdResponse.getWikidata_id());
-    //                ses.setFacebook_id(externalIdResponse.getFacebook_id());
-    //                ses.setInstagram_id(externalIdResponse.getInstagram_id());
-    //                ses.setTwitter_id(externalIdResponse.getTwitter_id());
-    //
-    //                List<Media.Season.Episode> episodes = new ArrayList<>();
-    //                TvSeasonDetailsResponse tvSeasonDetailsResponse = this.service.getTvSeasonDetails(id, season.getSeason_number(), null, null);
-    //                for(TvSeasonDetailsResponse.Episode episode : tvSeasonDetailsResponse.getEpisodes())
-    //                {
-    //                    MediaExternalIdResponse externalId =
-    //                            this.service.getTvSeasonEpisodeExternal(media.getId(), ses.getSeason_number(), episode.getEpisode_number());
-    //                    Media.Season.Episode epi = this.mediaRepository.getEpisodeById(episode.getId()).orElse(new Media.Season.Episode());
-    //                    epi.setAir_date(
-    //                            (episode.getAir_date() != null && !episode.getAir_date().isBlank()) ? LocalDate.parse(episode.getAir_date()) : null);
-    //                    epi.setEpisode_number(episode.getEpisode_number());
-    //                    epi.setEpisode_type(EpisodeType.valueOf(episode.getEpisode_type().toUpperCase()));
-    //                    epi.setId(episode.getId());
-    //                    epi.setOverview(episode.getOverview());
-    //                    epi.setProduction_code(episode.getProduction_code());
-    //                    epi.setRuntime(episode.getRuntime());
-    //                    epi.setStill_path(episode.getStill_path());
-    //                    epi.setVote_average(episode.getVote_average());
-    //                    epi.setVote_count(episode.getVote_count());
-    //                    epi.setSeason(ses);
-    //
-    //                    epi.setImdb_id(externalId.getImdb_id());
-    //                    epi.setFreebase_mid(externalId.getFreebase_mid());
-    //                    epi.setFreebase_id(externalId.getFreebase_id());
-    //                    epi.setTvdb_id(externalId.getTvdb_id());
-    //                    epi.setTvrage_id(externalId.getTvrage_id());
-    //                    epi.setWikidata_id(externalId.getWikidata_id());
-    //                    epi.setFacebook_id(externalId.getFacebook_id());
-    //                    epi.setInstagram_id(externalId.getInstagram_id());
-    //                    epi.setTwitter_id(externalId.getTwitter_id());
-    //
-    //                    episodes.add(epi);
-    //                }
-    //                ses.setEpisodes(episodes);
-    //                ses.setMedia(media);
-    //                seasons.add(ses);
-    //            }
-    //            media.setSeasons(seasons);
-    //        }
-    //        this.saveAndUpdate(media);
-    //
-    //        if(mediaResponse.getLast_episode_to_air() != null)
-    //        {
-    //            Media.EpisodeToAir episodeToAir =
-    //                    this.mediaRepository.getEpisodeToAirById(mediaResponse.getLast_episode_to_air().getId()).orElse(new Media.EpisodeToAir());
-    //            episodeToAir.setId(mediaResponse.getLast_episode_to_air().getId());
-    //            episodeToAir.setName(mediaResponse.getLast_episode_to_air().getName());
-    //            episodeToAir.setOverview(mediaResponse.getLast_episode_to_air().getOverview());
-    //            episodeToAir.setVote_average(mediaResponse.getLast_episode_to_air().getVote_average());
-    //            episodeToAir.setVote_count(mediaResponse.getLast_episode_to_air().getVote_count());
-    //            episodeToAir.setAir_date(mediaResponse.getLast_episode_to_air().getAir_date() != null ? LocalDate.parse(
-    //                    mediaResponse.getLast_episode_to_air().getAir_date()) : null);
-    //            episodeToAir.setEpisode_number(mediaResponse.getLast_episode_to_air().getEpisode_number());
-    //            episodeToAir.setEpisode_type(EpisodeType.valueOf(mediaResponse.getLast_episode_to_air().getEpisode_type().toUpperCase()));
-    //            episodeToAir.setProduction_code(mediaResponse.getLast_episode_to_air().getProduction_code());
-    //            episodeToAir.setRuntime(mediaResponse.getLast_episode_to_air().getRuntime());
-    //            episodeToAir.setSeason_number(mediaResponse.getLast_episode_to_air().getSeason_number());
-    //            episodeToAir.setStill_path(mediaResponse.getLast_episode_to_air().getStill_path());
-    //            episodeToAir.setMedia(media);
-    //
-    //            media.setLast_episode_to_air(episodeToAir);
-    //        }
-    //
-    //        if(mediaResponse.getNext_episode_to_air() != null)
-    //        {
-    //            Media.EpisodeToAir episodeToAir =
-    //                    this.mediaRepository.getEpisodeToAirById(mediaResponse.getNext_episode_to_air().getId()).orElse(new Media.EpisodeToAir());
-    //            episodeToAir.setId(mediaResponse.getNext_episode_to_air().getId());
-    //            episodeToAir.setName(mediaResponse.getNext_episode_to_air().getName());
-    //            episodeToAir.setOverview(mediaResponse.getNext_episode_to_air().getOverview());
-    //            episodeToAir.setVote_average(mediaResponse.getNext_episode_to_air().getVote_average());
-    //            episodeToAir.setVote_count(mediaResponse.getNext_episode_to_air().getVote_count());
-    //            episodeToAir.setAir_date(mediaResponse.getNext_episode_to_air().getAir_date() != null ? LocalDate.parse(
-    //                    mediaResponse.getNext_episode_to_air().getAir_date()) : null);
-    //            episodeToAir.setEpisode_number(mediaResponse.getNext_episode_to_air().getEpisode_number());
-    //            episodeToAir.setEpisode_type(EpisodeType.valueOf(mediaResponse.getNext_episode_to_air().getEpisode_type().toUpperCase()));
-    //            episodeToAir.setProduction_code(mediaResponse.getNext_episode_to_air().getProduction_code());
-    //            episodeToAir.setRuntime(mediaResponse.getNext_episode_to_air().getRuntime());
-    //            episodeToAir.setSeason_number(mediaResponse.getNext_episode_to_air().getSeason_number());
-    //            episodeToAir.setStill_path(mediaResponse.getNext_episode_to_air().getStill_path());
-    //            episodeToAir.setMedia(media);
-    //
-    //            media.setNext_episode_to_air(episodeToAir);
-    //        }
-    //        List<Person> persons = new ArrayList<>();
-    //        if(type.equals(MediaType.TV))
-    //        {
-    //            for(MediaResponse.CreatedBy createdBy : mediaResponse.getCreated_by())
-    //            {
-    //                Person person = this.personService.findPersonById(createdBy.getId());
-    //                if(person.getMedias() == null)
-    //                {
-    //                    person.setMedias(new ArrayList<>());
-    //                }
-    //
-    //                if(person.getMedias().stream().noneMatch(m -> m.getId().equals(media.getId())))
-    //                {
-    //                    person.getMedias().add(media);
-    //                }
-    //
-    //                persons.add(person);
-    //            }
-    //        }
-    //        media.setCreated_by(persons);
-    //        this.saveAndUpdate(media);
-    //
-    //        this.mediaResolver.generateDateAsync(id, type);
-    //        return media;
-    //    }
 
     private List<MediaResponse> onParseSearchResponseToMediaResponse(final SearchResponse<?> rawResponse)
     {
@@ -686,5 +469,13 @@ public class MediaService implements TMDBLogically<Object, Object>
         }
 
         return mediaResponses;
+    }
+
+    private void callJobHelper(List<MediaResponse> responses, String media_type, String window)
+    {
+        List<Integer> ids = responses.stream().map(MediaResponse::getId).toList();
+        MediaType type = MediaType.valueOf(media_type.toUpperCase());
+        TimeWindow time_window = TimeWindow.valueOf(window.toUpperCase());
+        this.jobHelper.updateTrendingList(type, time_window, ids);
     }
 }

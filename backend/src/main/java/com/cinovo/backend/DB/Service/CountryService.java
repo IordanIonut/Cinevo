@@ -46,27 +46,32 @@ public class CountryService implements TMDBLogically<MediaType, List<Country>>
     {
         for(Map.Entry<String, List<CertificationResponse.Certification>> country : this.service.getCertification(type).getCertifications().entrySet())
         {
-            Country de = this.countryRepository.findCountryByMediaTypeAndCode(type.name(), country.getKey()).orElse(new Country());
-            de.setCode(country.getKey());
-            de.setType(type);
-            de.setLastUpdate(LocalDate.now());
-            List<Country.Certification> deCerts = new ArrayList<>();
+            //            Country de = this.countryRepository.findCountryByMediaTypeAndCode(type.name(), country.getKey()).orElse(new Country());
+            //            de.setCode(country.getKey());
+            //            de.setType(type);
+            //            de.setLastUpdate(LocalDate.now());
+            //            List<Country.Certification> deCerts = new ArrayList<>();
+
+            String countryId = UUID.randomUUID().toString();
+            this.countryRepository.updateOrInsertCountry(countryId, country.getKey(), type.name());
 
             for(CertificationResponse.Certification certification : country.getValue())
             {
-                Country.Certification cert =
-                        this.countryRepository.findCountryCertificationByCountryCinevoId(de.getCinevo_id()).orElse(new Country.Certification());
-                cert.setCertification(certification.getCertification());
-                cert.setMeaning(certification.getMeaning());
-                cert.setOrder(certification.getOrder());
-                cert.setCountry(de);
-
-                deCerts.add(cert);
+                //                Country.Certification cert =
+                //                        this.countryRepository.findCountryCertificationByCountryCinevoId(de.getCinevo_id()).orElse(new Country.Certification());
+                //                cert.setCertification(certification.getCertification());
+                //                cert.setMeaning(certification.getMeaning());
+                //                cert.setOrder(certification.getOrder());
+                //                cert.setCountry(de);
+                //
+                //                deCerts.add(cert);
+                this.countryRepository.updateOrInsertCertification(UUID.randomUUID().toString(), certification.getCertification(),
+                        certification.getMeaning(), certification.getOrder(), countryId);
             }
 
-            de.setCertifications(deCerts);
-            countryRepository.save(de);
+            //            de.setCertifications(deCerts);
+            //            countryRepository.save(de);
         }
-        return this.countryRepository.findCountryByMediaType(type.name()).get();
+        return this.findCountryByMediaType(type);
     }
 }
