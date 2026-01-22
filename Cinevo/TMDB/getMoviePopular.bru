@@ -1,0 +1,15 @@
+meta {
+  name: getMoviePopular
+  type: http
+  seq: 19
+}
+
+get {
+  url: http://localhost:8080/api/TMDB/get/movie/popular
+  body: none
+  auth: inherit
+}
+
+settings {
+  encodeUrl: true
+}

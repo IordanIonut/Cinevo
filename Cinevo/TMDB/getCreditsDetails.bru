@@ -1,0 +1,16 @@
+meta {
+  name: getCreditsDetails
+  type: http
+  seq: 13
+}
+
+get {
+  url: http://localhost:8080/api/TMDB/get/credits/details/5fd4b57fd48cee003d724f40
+  body: none
+  auth: inherit
+}
+
+settings {
+  encodeUrl: true
+  timeout: 0
+}

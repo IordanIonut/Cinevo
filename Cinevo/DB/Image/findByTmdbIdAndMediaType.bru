@@ -1,0 +1,21 @@
+meta {
+  name: findByTmdbIdAndMediaType
+  type: http
+  seq: 1
+}
+
+get {
+  url: http://localhost:8080/api/image/get/by?tmdb_id=1007734&media_type=MOVIE
+  body: none
+  auth: inherit
+}
+
+params:query {
+  tmdb_id: 1007734
+  media_type: MOVIE
+}
+
+settings {
+  encodeUrl: true
+  timeout: 0
+}

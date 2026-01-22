@@ -1,0 +1,15 @@
+meta {
+  name: getConfigurationTimezones
+  type: http
+  seq: 7
+}
+
+get {
+  url: http://localhost:8080/api/TMDB/get/configuration/timezones
+  body: none
+  auth: inherit
+}
+
+settings {
+  encodeUrl: true
+}

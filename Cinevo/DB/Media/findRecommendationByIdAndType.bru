@@ -1,0 +1,20 @@
+meta {
+  name: findRecommendationByIdAndType
+  type: http
+  seq: 3
+}
+
+get {
+  url: http://localhost:8080/api/media/get/recommendation/71912?type=TV
+  body: none
+  auth: inherit
+}
+
+params:query {
+  type: TV
+}
+
+settings {
+  encodeUrl: true
+  timeout: 0
+}

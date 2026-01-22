@@ -1,0 +1,16 @@
+meta {
+  name: getChangeResponse
+  type: http
+  seq: 62
+}
+
+get {
+  url: http://localhost:8080/api/TMDB/get/change/MOVIE
+  body: none
+  auth: inherit
+}
+
+settings {
+  encodeUrl: true
+  timeout: 0
+}

@@ -1,0 +1,20 @@
+meta {
+  name: getMediaUsingSearch
+  type: http
+  seq: 5
+}
+
+get {
+  url: http://localhost:8080/api/media/get/search?query=Star Wars
+  body: none
+  auth: inherit
+}
+
+params:query {
+  query: Star Wars
+}
+
+settings {
+  encodeUrl: true
+  timeout: 0
+}

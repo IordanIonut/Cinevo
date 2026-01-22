@@ -1,0 +1,20 @@
+meta {
+  name: getSearchKeywordsResponse
+  type: http
+  seq: 43
+}
+
+get {
+  url: http://localhost:8080/api/TMDB/get/search/keyword?query=h
+  body: none
+  auth: inherit
+}
+
+params:query {
+  query: h
+}
+
+settings {
+  encodeUrl: true
+  timeout: 0
+}

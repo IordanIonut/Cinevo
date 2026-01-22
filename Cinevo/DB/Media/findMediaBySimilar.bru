@@ -1,0 +1,20 @@
+meta {
+  name: findMediaBySimilar
+  type: http
+  seq: 4
+}
+
+get {
+  url: http://localhost:8080/api/media/get/similar/71912?type=TV
+  body: none
+  auth: inherit
+}
+
+params:query {
+  type: TV
+}
+
+settings {
+  encodeUrl: true
+  timeout: 0
+}

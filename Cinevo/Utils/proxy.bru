@@ -1,0 +1,20 @@
+meta {
+  name: proxy
+  type: http
+  seq: 1
+}
+
+get {
+  url: http://localhost:8080/api/proxy-image?url=http://image.tmdb.org/t/p/original/lOfjeJMKS7cOaaTn6q3J0y2ypiA.jpg
+  body: none
+  auth: inherit
+}
+
+params:query {
+  url: http://image.tmdb.org/t/p/original/lOfjeJMKS7cOaaTn6q3J0y2ypiA.jpg
+}
+
+settings {
+  encodeUrl: true
+  timeout: 0
+}

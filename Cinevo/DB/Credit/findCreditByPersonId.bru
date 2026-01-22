@@ -1,0 +1,16 @@
+meta {
+  name: findCreditByPersonId
+  type: http
+  seq: 2
+}
+
+get {
+  url: http://localhost:8080/api/credit/get/by/person/1959472
+  body: none
+  auth: inherit
+}
+
+settings {
+  encodeUrl: true
+  timeout: 0
+}

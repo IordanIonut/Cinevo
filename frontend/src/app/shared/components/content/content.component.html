@@ -1,0 +1,27 @@
+<section class="flex flex-col gap-4 my-4">
+  <app-column-header
+    [columnHeader$]="content$()!.column_header"
+    (toggleChange$)="onToggleChange($event)"
+  ></app-column-header>
+  <div
+    class="page-style flex flex-row gap-3 overflow-x-auto scroll-progress px-2 pb-3"
+  >
+    <!-- @if (!!data$() && data$().length > 0) { -->
+      @for (item of data$().slice(0, 1); track trackByCinevoId($index, item)) {
+        @if (_typeGuardsService.isPersonView(item)) {
+          <app-person [data$]="item"></app-person>
+        } @else if (_typeGuardsService.isMediaView(item)) {
+          <app-media [data$]="item"></app-media>
+        }
+      }
+    <!-- } @else { -->
+      @for (i of skeletons.slice(0, 1); track $index) {
+        @if (onFindSkeleton() === "media") {
+          <app-media></app-media>
+        } @else if (onFindSkeleton() === "person") {
+          <app-person></app-person>
+        }
+      }
+    <!-- } -->
+  </div>
+</section>

@@ -1,0 +1,20 @@
+meta {
+  name: getSearchPeopleResponse
+  type: http
+  seq: 45
+}
+
+get {
+  url: http://localhost:8080/api/TMDB/get/search/people?query=bob
+  body: none
+  auth: inherit
+}
+
+params:query {
+  query: bob
+}
+
+settings {
+  encodeUrl: true
+  timeout: 0
+}

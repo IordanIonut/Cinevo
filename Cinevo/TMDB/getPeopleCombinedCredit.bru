@@ -1,0 +1,16 @@
+meta {
+  name: getPeopleCombinedCredit
+  type: http
+  seq: 37
+}
+
+get {
+  url: http://localhost:8080/api/TMDB/get/people/combined/credit/1959472
+  body: none
+  auth: inherit
+}
+
+settings {
+  encodeUrl: true
+  timeout: 0
+}

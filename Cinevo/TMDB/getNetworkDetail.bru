@@ -1,0 +1,16 @@
+meta {
+  name: getNetworkDetail
+  type: http
+  seq: 32
+}
+
+get {
+  url: http://localhost:8080/api/TMDB/get/network/detail/49
+  body: none
+  auth: inherit
+}
+
+settings {
+  encodeUrl: true
+  timeout: 0
+}

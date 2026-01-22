@@ -1,0 +1,16 @@
+meta {
+  name: findByMediaTmdbIdAndMediaType
+  type: http
+  seq: 1
+}
+
+get {
+  url: http://localhost:8080/api/watch/provider/get/by/106379/TV
+  body: none
+  auth: inherit
+}
+
+settings {
+  encodeUrl: true
+  timeout: 0
+}

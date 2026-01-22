@@ -1,0 +1,15 @@
+meta {
+  name: getTopRated
+  type: http
+  seq: 20
+}
+
+get {
+  url: http://localhost:8080/api/TMDB/get/movie/top_rated
+  body: none
+  auth: inherit
+}
+
+settings {
+  encodeUrl: true
+}

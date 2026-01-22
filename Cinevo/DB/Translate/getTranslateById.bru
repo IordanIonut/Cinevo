@@ -1,0 +1,20 @@
+meta {
+  name: getTranslateById
+  type: http
+  seq: 1
+}
+
+get {
+  url: http://localhost:8080/api/translate/get/by?tmdb_id=1129084
+  body: none
+  auth: inherit
+}
+
+params:query {
+  tmdb_id: 1129084
+}
+
+settings {
+  encodeUrl: true
+  timeout: 0
+}

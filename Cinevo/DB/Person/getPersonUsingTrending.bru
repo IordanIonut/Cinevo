@@ -1,0 +1,20 @@
+meta {
+  name: getPersonUsingTrending
+  type: http
+  seq: 5
+}
+
+get {
+  url: http://localhost:8080/api/person/get/trending?time_window=DAY
+  body: none
+  auth: inherit
+}
+
+params:query {
+  time_window: DAY
+}
+
+settings {
+  encodeUrl: true
+  timeout: 0
+}

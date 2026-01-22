@@ -1,0 +1,16 @@
+meta {
+  name: getTvAggregateCredits
+  type: http
+  seq: 49
+}
+
+get {
+  url: http://localhost:8080/api/TMDB/get/tv/aggregate/credit/71912
+  body: none
+  auth: inherit
+}
+
+settings {
+  encodeUrl: true
+  timeout: 0
+}

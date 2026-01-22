@@ -1,0 +1,16 @@
+meta {
+  name: findImageViewByMediaTypeAndCinevoId
+  type: http
+  seq: 2
+}
+
+get {
+  url: http://localhost:8080/api/image/get/by/image-view/PERSON/c0766348-1e42-49fd-82ee-17a45ee24e86
+  body: none
+  auth: inherit
+}
+
+settings {
+  encodeUrl: true
+  timeout: 0
+}

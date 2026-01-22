@@ -1,0 +1,16 @@
+meta {
+  name: findCountryByMediaTypeAndCode
+  type: http
+  seq: 2
+}
+
+get {
+  url: http://localhost:8080/api/country/get/by/media-type/MOVIE/code/BR
+  body: none
+  auth: inherit
+}
+
+settings {
+  encodeUrl: true
+  timeout: 0
+}

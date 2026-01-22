@@ -1,0 +1,16 @@
+meta {
+  name: getTvKeyword
+  type: http
+  seq: 52
+}
+
+get {
+  url: http://localhost:8080/api/TMDB/get/tv/keyword/71912
+  body: none
+  auth: inherit
+}
+
+settings {
+  encodeUrl: true
+  timeout: 0
+}

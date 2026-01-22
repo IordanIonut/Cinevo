@@ -1,0 +1,16 @@
+meta {
+  name: getFreeToWatchByMediaType
+  type: http
+  seq: 7
+}
+
+get {
+  url: http://localhost:8080/api/media/get/free_to_watch/TV
+  body: none
+  auth: inherit
+}
+
+settings {
+  encodeUrl: true
+  timeout: 0
+}

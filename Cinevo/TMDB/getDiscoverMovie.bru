@@ -1,0 +1,15 @@
+meta {
+  name: getDiscoverMovie
+  type: http
+  seq: 14
+}
+
+get {
+  url: http://localhost:8080/api/TMDB/get/discover/movie
+  body: none
+  auth: inherit
+}
+
+settings {
+  encodeUrl: true
+}

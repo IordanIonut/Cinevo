@@ -1,0 +1,15 @@
+meta {
+  name: getUnComing
+  type: http
+  seq: 21
+}
+
+get {
+  url: http://localhost:8080/api/TMDB/get/movie/upcoming
+  body: none
+  auth: inherit
+}
+
+settings {
+  encodeUrl: true
+}

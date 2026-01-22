@@ -1,0 +1,15 @@
+meta {
+  name: getConfigurationPrimaryTranslations
+  type: http
+  seq: 8
+}
+
+get {
+  url: http://localhost:8080/api/TMDB/get/configuration/primary_translations
+  body: none
+  auth: inherit
+}
+
+settings {
+  encodeUrl: true
+}
