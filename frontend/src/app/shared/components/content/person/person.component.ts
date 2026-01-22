@@ -1,13 +1,13 @@
 import { CommonModule } from '@angular/common';
 import { HttpClientModule } from '@angular/common/http';
 import {
-  Component,
-  computed,
-  input,
-  InputSignal,
-  OnInit,
-  signal,
-  WritableSignal,
+    Component,
+    computed,
+    input,
+    InputSignal,
+    OnInit,
+    signal,
+    WritableSignal,
 } from '@angular/core';
 import { MatButtonModule } from '@angular/material/button';
 import { MatDialogModule } from '@angular/material/dialog';
@@ -15,7 +15,7 @@ import { ImageProxyService } from '../../../../core/services/image-proxy.service
 import { ImageService } from '../../../../core/services/model/image.service';
 import { DialogService } from '../../../dialogs/dialog.service';
 import { ImageType } from '../../../models/enums/image-type.enum';
-import { MediaType } from '../../../models/enums/media-type';
+import { MediaType } from '../../../models/enums/media-type.enum';
 import { ImageView } from '../../../models/views/image-views';
 import { PersonView } from '../../../models/views/person-view';
 import { PercentComponent } from '../percent/percent.component';

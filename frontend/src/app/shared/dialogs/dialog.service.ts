@@ -1,10 +1,10 @@
 import { Injectable } from '@angular/core';
 import { MatDialog } from '@angular/material/dialog';
-import { MediaType } from '../models/enums/media-type';
-import { SiteType } from '../models/enums/site-type';
-import { WatchTrailerComponent } from './watch-trailer/watch-trailer.component';
-import { UiToggleService } from '../../core/services/ui/ui-toggle.service';
 import { take } from 'rxjs';
+import { UiToggleService } from '../../core/services/ui/ui-toggle.service';
+import { MediaType } from '../models/enums/media-type.enum';
+import { SiteType } from '../models/enums/site-type.enum';
+import { WatchTrailerComponent } from './watch-trailer/watch-trailer.component';
 
 @Injectable({
   providedIn: 'root',

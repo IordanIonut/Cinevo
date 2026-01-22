@@ -1,5 +1,5 @@
-import { MediaType } from '../enums/media-type';
-import { SiteType } from '../enums/site-type';
+import { MediaType } from '../enums/media-type.enum';
+import { SiteType } from '../enums/site-type.enum';
 
 export interface MediaView {
   id: number;

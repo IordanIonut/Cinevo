@@ -3,8 +3,8 @@ import { Component, Inject, OnInit } from '@angular/core';
 import { MAT_DIALOG_DATA, MatDialogModule } from '@angular/material/dialog';
 import { DomSanitizer, SafeResourceUrl } from '@angular/platform-browser';
 import { VidFastService } from '../../../core/services/vidfast.service';
-import { MediaType } from '../../models/enums/media-type';
-import { SiteType } from '../../models/enums/site-type';
+import { MediaType } from '../../models/enums/media-type.enum';
+import { SiteType } from '../../models/enums/site-type.enum';
 
 @Component({
   selector: 'app-watch-trailer',

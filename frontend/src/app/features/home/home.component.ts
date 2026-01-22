@@ -13,8 +13,8 @@ import {
   ToggleGroup,
 } from '../../shared/components/content/content';
 import { ContentComponent } from '../../shared/components/content/content.component';
-import { MediaType } from '../../shared/models/enums/media-type';
-import { TimeWindow } from '../../shared/models/enums/time-window';
+import { MediaType } from '../../shared/models/enums/media-type.enum';
+import { TimeWindow } from '../../shared/models/enums/time-window.enum';
 import { MediaView } from '../../shared/models/views/media-views';
 import { PersonView } from '../../shared/models/views/person-view';
 
