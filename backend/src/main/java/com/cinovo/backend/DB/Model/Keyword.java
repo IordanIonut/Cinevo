@@ -1,6 +1,6 @@
 package com.cinovo.backend.DB.Model;
 
-import com.cinovo.backend.DB.Util.BaseEntity;
+import com.cinovo.backend.DB.Model.Embedded.BaseEntity;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.Table;

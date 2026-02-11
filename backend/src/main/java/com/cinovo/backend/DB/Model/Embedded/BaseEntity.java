@@ -1,4 +1,4 @@
-package com.cinovo.backend.DB.Util;
+package com.cinovo.backend.DB.Model.Embedded;
 
 import jakarta.persistence.*;
 import lombok.AllArgsConstructor;

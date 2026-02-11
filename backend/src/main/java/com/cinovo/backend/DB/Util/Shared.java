@@ -1,6 +1,6 @@
 package com.cinovo.backend.DB.Util;
 
-import com.cinovo.backend.DB.Model.Media;
+import com.cinovo.backend.DB.Model.Embedded.BaseEntity;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 

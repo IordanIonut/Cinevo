@@ -2,6 +2,7 @@ package com.cinovo.backend.DB.Service;
 
 import aj.org.objectweb.asm.TypeReference;
 import com.cinovo.backend.DB.Model.Keyword;
+import com.cinovo.backend.DB.Model.View.KeywordView;
 import com.cinovo.backend.DB.Repository.KeywordRepository;
 import com.cinovo.backend.DB.Util.Shared;
 import com.cinovo.backend.DB.Util.TMDBLogically;
@@ -36,6 +37,14 @@ public class KeywordService implements TMDBLogically<Object, Object>
             return (Keyword) this.onConvertTMDB(tmdb_id);
         }
         return keyword.get();
+    }
+
+    public List<KeywordView> findKeywordViewByName(final String name){
+        Optional<List<KeywordView>> keywords = this.keywordRepository.findKeywordViewByName("%"+name+"%");
+        if(keywords.isEmpty() || keywords.get().isEmpty()){
+            return new ArrayList<>();
+        }
+        return keywords.get();
     }
 
     public List<Keyword> getKeywordUsingSearch(final String query, final Integer page) throws Exception

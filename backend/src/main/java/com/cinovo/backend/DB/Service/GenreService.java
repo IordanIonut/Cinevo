@@ -2,6 +2,8 @@ package com.cinovo.backend.DB.Service;
 
 import com.cinovo.backend.DB.Model.Enum.MediaType;
 import com.cinovo.backend.DB.Model.Genre;
+import com.cinovo.backend.DB.Model.View.CountryView;
+import com.cinovo.backend.DB.Model.View.GenreView;
 import com.cinovo.backend.DB.Repository.GenreRepository;
 import com.cinovo.backend.DB.Util.Shared;
 import com.cinovo.backend.DB.Util.TMDBLogically;
@@ -41,6 +43,15 @@ public class GenreService implements TMDBLogically<MediaType, List<Genre>>
         //            this.deleteAllGenresByType(genres.get());
         //            return  onConvertTMDB(this.controller.getGenres(type), type);
         //        }
+        return genres.get();
+    }
+
+    public List<GenreView> getGenreViewByMediaType(final MediaType media_type) {
+          Optional<List<GenreView>> genres = this.genreRepository.getGenreViewByMediaType(media_type.name());
+        if(genres.isEmpty() || genres.get().isEmpty())
+        {
+            return new ArrayList<>();
+        }
         return genres.get();
     }
 

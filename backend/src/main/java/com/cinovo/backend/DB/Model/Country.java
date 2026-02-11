@@ -1,7 +1,7 @@
 package com.cinovo.backend.DB.Model;
 
 import com.cinovo.backend.DB.Model.Enum.MediaType;
-import com.cinovo.backend.DB.Util.BaseEntity;
+import com.cinovo.backend.DB.Model.Embedded.BaseEntity;
 import com.fasterxml.jackson.annotation.JsonBackReference;
 import com.fasterxml.jackson.annotation.JsonManagedReference;
 import jakarta.persistence.*;
@@ -20,6 +20,9 @@ public class Country extends BaseEntity
 {
     @Column(name = "CODE")
     private String code;
+
+    @Column(name = "NAME")
+    private String name;
 
     @Column(name = "Type")
     @Enumerated(EnumType.STRING)

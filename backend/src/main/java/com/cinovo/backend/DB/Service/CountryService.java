@@ -2,6 +2,7 @@ package com.cinovo.backend.DB.Service;
 
 import com.cinovo.backend.DB.Model.Country;
 import com.cinovo.backend.DB.Model.Enum.MediaType;
+import com.cinovo.backend.DB.Model.View.CountryView;
 import com.cinovo.backend.DB.Repository.CountryRepository;
 import com.cinovo.backend.DB.Util.Shared;
 import com.cinovo.backend.DB.Util.TMDBLogically;
@@ -25,6 +26,16 @@ public class CountryService implements TMDBLogically<MediaType, List<Country>>
         this.service = service;
     }
 
+    public List<CountryView> findCountryViewByMediaType(final MediaType media_type)
+    {
+        Optional<List<CountryView>> countries = this.countryRepository.findCountryViewByMediaType(media_type.name());
+        if(countries.isEmpty() || countries.get().isEmpty())
+        {
+            return new ArrayList<>();
+        }
+        return countries.get();
+    }
+
     public List<Country> findCountryByMediaType(final MediaType type) throws Exception
     {
         Optional<List<Country>> countries = this.countryRepository.findCountryByMediaType(type.name());
@@ -40,7 +51,7 @@ public class CountryService implements TMDBLogically<MediaType, List<Country>>
         Optional<Country> country = this.countryRepository.findCountryByMediaTypeAndCode(type.name(), code);
         if(country.isEmpty())
         {
-            this.countryRepository.updateOrInsertCountry(UUID.randomUUID().toString(), code, type.name());
+            this.countryRepository.updateOrInsertCountry(UUID.randomUUID().toString(), code, this.getNameByCode(code), type.name());
             return this.countryRepository.findCountryByMediaTypeAndCode(type.name(), code).get();
         }
         return country.get();
@@ -53,7 +64,7 @@ public class CountryService implements TMDBLogically<MediaType, List<Country>>
         for(Map.Entry<String, List<CertificationResponse.Certification>> country : this.service.getCertification(type).getCertifications().entrySet())
         {
             String country_cinevo_id = Shared.generateCinevoId(this.countryRepository.findCountryByMediaTypeAndCode(type.name(), country.getKey()));
-            this.countryRepository.updateOrInsertCountry(country_cinevo_id, country.getKey(), type.name());
+            this.countryRepository.updateOrInsertCountry(country_cinevo_id, country.getKey(), this.getNameByCode(country.getKey()), type.name());
 
             for(CertificationResponse.Certification certification : country.getValue())
             {
@@ -63,5 +74,11 @@ public class CountryService implements TMDBLogically<MediaType, List<Country>>
             }
         }
         return this.findCountryByMediaType(type);
+    }
+
+    private String getNameByCode(final String code)
+    {
+        return new Locale("", code).getDisplayCountry();
+
     }
 }

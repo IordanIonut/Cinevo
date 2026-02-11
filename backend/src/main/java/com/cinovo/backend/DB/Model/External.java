@@ -1,8 +1,7 @@
 package com.cinovo.backend.DB.Model;
 
-import com.cinovo.backend.DB.Util.BaseEntity;
+import com.cinovo.backend.DB.Model.Embedded.BaseEntity;
 import com.fasterxml.jackson.annotation.JsonBackReference;
-import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import jakarta.persistence.*;
 import lombok.*;
 

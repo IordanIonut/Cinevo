@@ -12,17 +12,13 @@
       <div
         class="mx-auto rounded-md px-3 py-2 bg-black/30 backdrop-blur-md text-white text-sm font-medium shadow-md opacity-100 transition-opacity duration-200"
       >
-        <app-percent [percent$]="data$()!.popularity"></app-percent>
+        <app-percent></app-percent>
 
         <div class="p-4 space-y-2 w-full">
-          <p class="h-5 bg-gray-200 rounded w-3/3" [title]="data$()!.name">
-            {{ data$()!.name }}
-          </p>
+          <p class="h-5 bg-gray-200 rounded w-3/3"></p>
 
           <div class="flex flex-row justify-between">
-            <p class="h-5 bg-gray-200 rounded w-2/3">
-              {{ data$()?.known_for_department }}
-            </p>
+            <p class="h-5 bg-gray-200 rounded w-2/3"></p>
           </div>
 
           <div class="h-10 bg-gray-600 rounded-3xl mt-2"></div>

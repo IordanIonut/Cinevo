@@ -20,6 +20,7 @@ import { PersonView } from '../../shared/models/views/person-view';
 
 @Component({
   selector: 'app-home',
+  standalone: true,
   templateUrl: './home.component.html',
   styleUrls: ['./home.component.css'],
   imports: [ContentComponent],
@@ -33,7 +34,7 @@ export class HomeComponent implements OnInit {
         {
           aria_label: 'Type',
           name: 'Type',
-          selected_value: MediaType.PERSON.toString(),
+          selected_value: MediaType.MOVIE.toString(),
           possibility: [
             {
               value: MediaType.MOVIE.toString(),

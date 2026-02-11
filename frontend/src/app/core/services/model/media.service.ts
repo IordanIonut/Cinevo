@@ -4,7 +4,14 @@ import {
   HttpParams,
 } from '@angular/common/http';
 import { Injectable } from '@angular/core';
-import { catchError, Observable, of, shareReplay, take } from 'rxjs';
+import {
+  catchError,
+  Observable,
+  of,
+  shareReplay,
+  take,
+  throwError,
+} from 'rxjs';
 import { Environment } from '../../../../environments/environment.local';
 import { MediaView } from '../../../shared/models/views/media-views';
 
@@ -36,7 +43,7 @@ export class MediaService {
           if (error instanceof HttpErrorResponse) {
             console.error(`${error.status} ${error.message}`);
           }
-          return of([]);
+          return throwError(() => error);
         }),
       );
   }
@@ -55,7 +62,7 @@ export class MediaService {
           if (error instanceof HttpErrorResponse) {
             console.error(`${error.status} ${error.message}`);
           }
-          return of([]);
+          return throwError(() => error);
         }),
       );
   }

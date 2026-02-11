@@ -1,6 +1,6 @@
 import { HttpClient, HttpErrorResponse } from '@angular/common/http';
 import { Injectable } from '@angular/core';
-import { catchError, Observable, shareReplay, take } from 'rxjs';
+import { catchError, Observable, shareReplay, take, throwError } from 'rxjs';
 import { Environment } from '../../../../environments/environment.local';
 import { MediaType } from '../../../shared/models/enums/media-type.enum';
 import { ImageView } from '../../../shared/models/views/image-views';
@@ -26,9 +26,10 @@ export class ImageService {
         shareReplay(1),
         take(1),
         catchError((error: Error) => {
-          if (error instanceof HttpErrorResponse)
+          if (error instanceof HttpErrorResponse) {
             console.error(`${error.status} ${error.message}`);
-          return [];
+          }
+          return throwError(() => error);
         }),
       );
   }

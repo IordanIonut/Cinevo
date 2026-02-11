@@ -2,12 +2,9 @@ package com.cinovo.backend.Schedule;
 
 import com.cinovo.backend.DB.Model.Enum.MediaType;
 import com.cinovo.backend.DB.Model.Enum.TimeWindow;
-import com.cinovo.backend.DB.Model.Person;
 import com.cinovo.backend.DB.Service.MediaService;
 import com.cinovo.backend.DB.Service.PersonService;
 import com.cinovo.backend.TMDB.Service;
-import lombok.Getter;
-import lombok.Setter;
 import lombok.extern.jbosslog.JBossLog;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Component;
@@ -54,14 +51,14 @@ public class Job
     @Scheduled(fixedRate = 2 * 60 * 60 * 1000)
     public void callTrendingAll() throws Exception
     {
-        //        this.mediaService.getMediaUsingTrending(MediaType.MOVIE, TimeWindow.DAY, "en-US");
-        //        this.mediaService.getMediaUsingTrending(MediaType.MOVIE, TimeWindow.WEEK, "en-US");
-        //
-        //        this.mediaService.getMediaUsingTrending(MediaType.TV, TimeWindow.DAY, "en-US");
-        //        this.mediaService.getMediaUsingTrending(MediaType.TV, TimeWindow.WEEK, "en-US");
+        this.mediaService.getMediaUsingTrending(MediaType.MOVIE, TimeWindow.DAY, "en-US");
+        this.mediaService.getMediaUsingTrending(MediaType.MOVIE, TimeWindow.WEEK, "en-US");
 
-        //        this.personService.getPersonUsingTrending(TimeWindow.DAY, "en-US");
-        //        this.personService.getPersonUsingTrending(TimeWindow.WEEK, "en-US");
+        this.mediaService.getMediaUsingTrending(MediaType.TV, TimeWindow.DAY, "en-US");
+        this.mediaService.getMediaUsingTrending(MediaType.TV, TimeWindow.WEEK, "en-US");
+
+        this.personService.getPersonUsingTrending(TimeWindow.DAY, "en-US");
+        this.personService.getPersonUsingTrending(TimeWindow.WEEK, "en-US");
     }
 
     @Scheduled(fixedRate = 3 * 60 * 1000)

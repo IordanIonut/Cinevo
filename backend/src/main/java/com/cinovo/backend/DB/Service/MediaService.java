@@ -41,6 +41,7 @@ public class MediaService implements TMDBLogically<Object, Object>
     private final CollectionService collectionService;
     private final CreditService creditService;
     private final CountryService countryService;
+    private final WatchProviderService watchProviderService;
     private final MediaResolver mediaResolver;
     private final JobHelper jobHelper;
     private final LockManager lockManager;
@@ -48,7 +49,7 @@ public class MediaService implements TMDBLogically<Object, Object>
     public MediaService(MediaRepository mediaRepository, com.cinovo.backend.TMDB.Service service, GenreService genreService,
             PersonService personService, KeywordService keywordService, SpokenLanguageService spokenLanguageService,
             ProductionCountryService productionCountryService, CompanyService companyService, NetworkService networkService,
-            CollectionService collectionService, CreditService creditService, CountryService countryService, MediaResolver mediaResolver,
+            CollectionService collectionService, CreditService creditService, CountryService countryService, WatchProviderService watchProviderService, MediaResolver mediaResolver,
             JobHelper jobHelper, LockManager lockManager)
     {
         this.mediaRepository = mediaRepository;
@@ -63,6 +64,7 @@ public class MediaService implements TMDBLogically<Object, Object>
         this.collectionService = collectionService;
         this.creditService = creditService;
         this.countryService = countryService;
+        this.watchProviderService = watchProviderService;
         this.mediaResolver = mediaResolver;
         this.jobHelper = jobHelper;
         this.lockManager = lockManager;
@@ -260,6 +262,7 @@ public class MediaService implements TMDBLogically<Object, Object>
             return null;
         }
         String media_cinevo_id = Shared.generateCinevoId(mediaRepository.getMediaByTmdbIdAndMediaType(id, type.name()));
+        Integer media_tmdb_id = mediaResponse.getId();
 
         MediaKeywordResponse mediaKeywordResponse = type.equals(MediaType.MOVIE) ? service.getKeywordMovie(id) : service.getTvKeyword(id);
         MediaType mediaType = mediaResponse.getMedia_type() == null ? type : MediaType.valueOf(mediaResponse.getMedia_type().toUpperCase());
@@ -284,6 +287,9 @@ public class MediaService implements TMDBLogically<Object, Object>
                 this.mediaRepository.updateOrInsertLanguage(media_cinevo_id, key);
             }
         }
+
+        this.watchProviderService.findByMediaTmdbIdAndMediaType(media_tmdb_id, type);
+
 
         if(mediaResponse.getEpisode_run_time() != null)
         {
@@ -383,6 +389,7 @@ public class MediaService implements TMDBLogically<Object, Object>
                             Shared.onStringParseDate(ses.getAir_date()), ses.getEpisode_count(), ses.getName(), ses.getOverview(),
                             ses.getPoster_path(), ses.getSeason_number(), ses.getVote_average(), media_cinevo_id));
                 }
+                this.watchProviderService.findByMediaTmdbIdAndSeasonNumber(media_tmdb_id, ses.getSeason_number(), MediaType.TV_SEASON);
 
                 TvSeasonDetailsResponse tvSeasonDetailsResponse = this.service.getTvSeasonDetails(id, ses.getSeason_number(), null, null);
                 for(TvSeasonDetailsResponse.Episode episode : tvSeasonDetailsResponse.getEpisodes())

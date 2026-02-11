@@ -34,23 +34,23 @@ public class WatchProviderService implements TMDBLogically<Object, List<WatchPro
 
     public List<WatchProvider> findByMediaTmdbIdAndMediaType(final Integer media_tmdb_id, final MediaType type) throws Exception
     {
-        Optional<List<WatchProvider>> watchProviders = this.watchProviderRepository.findByMediaTmdbId(media_tmdb_id);
-        if(watchProviders.isEmpty() || watchProviders.get().isEmpty())
-        {
-            return this.onConvertTMDB(type + Shared.REGEX + media_tmdb_id);
-        }
-        return watchProviders.get();
+        //        Optional<List<WatchProvider>> watchProviders = this.watchProviderRepository.findByMediaTmdbId(media_tmdb_id);
+        //        if(watchProviders.isEmpty() || watchProviders.get().isEmpty())
+        //        {
+        return this.onConvertTMDB(type + Shared.REGEX + media_tmdb_id);
+        //        }
+        //        return watchProviders.get();
     }
 
     public List<WatchProvider> findByMediaTmdbIdAndSeasonNumber(final Integer media_tmdb_id, final Integer season, final MediaType type)
             throws Exception
     {
-        Optional<List<WatchProvider>> watchProviders = this.watchProviderRepository.findByMediaTmdbIdAndSeasonNumber(media_tmdb_id, season);
-        if(watchProviders.isEmpty() || watchProviders.get().isEmpty())
-        {
-            return this.onConvertTMDB(type + Shared.REGEX + media_tmdb_id + Shared.REGEX + season);
-        }
-        return watchProviders.get();
+        //        Optional<List<WatchProvider>> watchProviders = this.watchProviderRepository.findByMediaTmdbIdAndSeasonNumber(media_tmdb_id, season);
+        //        if(watchProviders.isEmpty() || watchProviders.get().isEmpty())
+        //        {
+        return this.onConvertTMDB(type + Shared.REGEX + media_tmdb_id + Shared.REGEX + season);
+        //        }
+        //        return watchProviders.get();
     }
 
     @Override
@@ -143,20 +143,62 @@ public class WatchProviderService implements TMDBLogically<Object, List<WatchPro
         return watchProviders;
     }
 
-    private WatchProvider findByMediaCinevoIdOrSeasonCinevoIdAndTypeAndProviderTypeAndLocationAndProviderId(
-            final MediaWatchProvidersResponse.WatchProvider.Possibility possibility, final String location, final ProviderType provider_type,
-            final MediaType type, final Media media, final Media.Season season) throws InterruptedException
+    @Transactional
+    protected WatchProvider findByMediaCinevoIdOrSeasonCinevoIdAndTypeAndProviderTypeAndLocationAndProviderId(
+            final MediaWatchProvidersResponse.WatchProvider.Possibility possibility, final String location, final ProviderType type,
+            final MediaType media_type, final Media media, final Media.Season season)
     {
-        this.watchProviderRepository.updateOrInsert(Shared.generateCinevoId(
-                        this.watchProviderRepository.findByMediaCinevoIdOrSeasonCinevoIdAndTypeAndProviderTypeAndLocationAndProviderId(
-                                media == null ? null : media.getCinevo_id(), season == null ? null : season.getCinevo_id(), type.name(), provider_type.name(),
-                                location, possibility.getProvider_id())), type.name(), provider_type.name(), location, possibility.getLogo_path(),
-                possibility.getProvider_id(), possibility.getProvider_name(), possibility.getDisplay_priority(), Shared.idOf(media),
-                Shared.idOf(season));
+        if (possibility.getProvider_id() == null) {
+            throw new IllegalStateException("TMDB provider_id is null");
+        }
 
-        return this.watchProviderRepository.findByMediaCinevoIdOrSeasonCinevoIdAndTypeAndProviderTypeAndLocationAndProviderId(Shared.idOf(media),
-                Shared.idOf(season), type.name(), provider_type.name(), location, possibility.getProvider_id()).get();
+        // 2. Generate cinevo_id (stable for existing providers)
+        String cinevoId = Shared.generateCinevoId( this.watchProviderRepository
+            .findByTmdbId(possibility.getProvider_id()));
+
+        // 3. Perform upsert
+        this.watchProviderRepository.updateOrInsertWatchProvider(
+                cinevoId,
+                location,
+                possibility.getLogo_path(),
+                possibility.getProvider_id(),
+                possibility.getProvider_name(),
+                possibility.getDisplay_priority()
+        );
+
+        // 4. Reload provider (must exist now)
+       WatchProvider provider = this.watchProviderRepository
+                .findByTmdbId(possibility.getProvider_id())
+                .orElseThrow(() -> new IllegalStateException(
+                        "Provider not found after upsert " +
+                                cinevoId + " " + location + " " + possibility.getLogo_path() + " " +
+                                possibility.getProvider_id() + " " + possibility.getProvider_name() + " " +
+                                possibility.getDisplay_priority()
+                ));
+
+        // 5. Use the REAL cinevo_id from DB
+        String realCinevoId = provider.getCinevo_id();
+
+        // 6. Insert media/season link
+        if (Shared.idOf(media) != null) {
+            this.watchProviderRepository.updateOrInsertWatchProviderMedia(
+                    realCinevoId,
+                    Shared.idOf(media),
+                    type.name(),
+                    media_type.name()
+            );
+        } else if (Shared.idOf(season) != null) {
+            this.watchProviderRepository.updateOrInsertWatchProviderSeason(
+                    realCinevoId,
+                    Shared.idOf(season),
+                    type.name(),
+                    media_type.name()
+            );
+        }
+
+        return provider;
     }
+
 
     private Boolean conditionInsert(final String key)
     {

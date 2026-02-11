@@ -1,7 +1,7 @@
 package com.cinovo.backend.DB.Model;
 
 import com.cinovo.backend.DB.Model.Enum.MediaType;
-import com.cinovo.backend.DB.Util.BaseEntity;
+import com.cinovo.backend.DB.Model.Embedded.BaseEntity;
 import jakarta.persistence.*;
 import lombok.*;
 

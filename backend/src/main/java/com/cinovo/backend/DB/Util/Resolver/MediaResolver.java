@@ -73,7 +73,7 @@ public class MediaResolver
         this.externalService.setExternalByMediaType(mediaId, media.getCinevo_id(), type, null, null);
         this.imageService.findByTmdbIdAndMediaType(mediaId, type);
         this.videoService.findByMediaTmdbId(mediaId, type);
-        this.watchProviderService.findByMediaTmdbIdAndMediaType(mediaId, type);
+//        this.watchProviderService.findByMediaTmdbIdAndMediaType(mediaId, type);
 
         if(media.getSeasons() != null)
         {
@@ -81,7 +81,7 @@ public class MediaResolver
             {
                 Media.Season ses = mediaService.getSeasonBySeasonTmdbId(season.getTmdb_id());
                 this.externalService.setExternalByMediaType(mediaId, ses.getCinevo_id(), MediaType.TV_SEASON, ses.getSeason_number(), null);
-                this.watchProviderService.findByMediaTmdbIdAndSeasonNumber(media.getTmdb_id(), season.getSeason_number(), MediaType.TV_SEASON);
+//                this.watchProviderService.findByMediaTmdbIdAndSeasonNumber(media.getTmdb_id(), season.getSeason_number(), MediaType.TV_SEASON);
                 this.videoService.findByMediaTmdbIdAndSeasonNumber(media.getTmdb_id(), season.getSeason_number(), MediaType.TV_SEASON);
                 this.imageService.findImageBySeasonIdAndSeasonNumber(media.getTmdb_id(), season.getSeason_number(), MediaType.TV_SEASON);
 

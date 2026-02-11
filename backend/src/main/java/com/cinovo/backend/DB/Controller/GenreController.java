@@ -2,6 +2,7 @@ package com.cinovo.backend.DB.Controller;
 
 import com.cinovo.backend.DB.Model.Enum.MediaType;
 import com.cinovo.backend.DB.Model.Genre;
+import com.cinovo.backend.DB.Model.View.GenreView;
 import com.cinovo.backend.DB.Service.GenreService;
 import lombok.extern.jbosslog.JBossLog;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -26,6 +27,17 @@ public class GenreController {
             return ResponseEntity.ok(this.genreService.getGenreByMediaType(media_type));
         } catch (Exception e) {
             log.error("Error in getGenreByMediaType: {}", e.getMessage(), e);
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).build();
+        }
+    }
+
+    @GetMapping("/get/genre-view/by")
+    public ResponseEntity<List<GenreView>> getGenreViewByMediaType(@RequestParam("media_type") final MediaType media_type) {
+        try {
+            log.info("getGenreViewByMediaType() - Successful.....");
+            return ResponseEntity.ok(this.genreService.getGenreViewByMediaType(media_type));
+        } catch (Exception e) {
+            log.error("Error in getGenreViewByMediaType: {}", e.getMessage(), e);
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).build();
         }
     }

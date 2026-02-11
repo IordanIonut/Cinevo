@@ -1,5 +1,14 @@
 import { CommonModule, NgClass } from '@angular/common';
-import { Component, OnInit } from '@angular/core';
+import {
+  AfterViewInit,
+  Component,
+  ElementRef,
+  HostListener,
+  OnInit,
+  signal,
+  ViewChild,
+} from '@angular/core';
+import { DomSanitizer, SafeHtml } from '@angular/platform-browser';
 import { BehaviorSubject } from 'rxjs';
 
 @Component({
@@ -8,7 +17,7 @@ import { BehaviorSubject } from 'rxjs';
   styleUrls: ['./navbar.component.css'],
   imports: [NgClass, CommonModule],
 })
-export class NavbarComponent implements OnInit {
+export class NavbarComponent implements OnInit, AfterViewInit {
   protected readonly navbar$ = new BehaviorSubject<Navbar[]>([
     {
       name: 'Movie',
@@ -38,9 +47,23 @@ export class NavbarComponent implements OnInit {
     },
   ]);
 
-  constructor() {}
+  @ViewChild('topNavbar') topNavbar!: ElementRef<HTMLElement>;
+  protected readonly isNavbarVisible$ = signal(false);
+
+  constructor(private sanitizer: DomSanitizer) {}
 
   ngOnInit() {}
+
+  ngAfterViewInit() {}
+
+  @HostListener('window:scroll') onScroll() {
+    const y = window.scrollY || document.documentElement.scrollTop;
+    this.isNavbarVisible$.set(y > 100);
+  }
+
+  protected sanitize(html: string): SafeHtml {
+    return this.sanitizer.bypassSecurityTrustHtml(html);
+  }
 }
 
 interface Navbar {

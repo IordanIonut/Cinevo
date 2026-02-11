@@ -1,6 +1,7 @@
 package com.cinovo.backend.DB.Controller;
 
 import com.cinovo.backend.DB.Model.Keyword;
+import com.cinovo.backend.DB.Model.View.KeywordView;
 import com.cinovo.backend.DB.Service.KeywordService;
 import lombok.extern.jbosslog.JBossLog;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -46,6 +47,20 @@ public class KeywordController
         catch(Exception e)
         {
             log.error("Error in getKeywordUsingSearch: {}", e.getMessage(), e);
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).build();
+        }
+    }
+
+    @GetMapping("/get/keyword-view/{name}")
+    public ResponseEntity<List<KeywordView>> findKeywordViewByName(@PathVariable final String name){
+        try
+        {
+            log.info("findKeywordViewByName() - Successful.....");
+            return ResponseEntity.ok(this.keywordService.findKeywordViewByName(name));
+        }
+        catch(Exception e)
+        {
+            log.error("Error in findKeywordViewByName: {}", e.getMessage(), e);
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).build();
         }
     }

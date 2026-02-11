@@ -1,6 +1,7 @@
 package com.cinovo.backend.DB.Repository;
 
 import com.cinovo.backend.DB.Model.Country;
+import com.cinovo.backend.DB.Model.View.CountryView;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Modifying;
 import org.springframework.data.jpa.repository.Query;
@@ -28,17 +29,30 @@ public interface CountryRepository extends JpaRepository<Country, String>
                     + " WHERE " + Country.Certification.COUNTRY_CINEVO_ID + " = :country_id")
     Optional<Country.Certification> findCountryCertificationByCountryCinevoId(@Param("country_id") String country_id);
 
+    @Query(nativeQuery = true, value = """
+                SELECT 
+                    c.code AS code,
+                    c.name AS name,
+                    c.type AS type,
+                    c.cinevo_id AS cinevo_id
+                FROM Country c
+                WHERE c.type = :media_type
+                ORDER BY c.code ASC
+                """)
+    Optional<List<CountryView>> findCountryViewByMediaType(@Param("media_type") String media_type);
+
     @Modifying
     @Transactional
     @Query(nativeQuery = true, value = """
-            INSERT INTO country (cinevo_id, last_update, code, `type`)
-            VALUES(:cinevo_id, NOW(), :code, :type)
+            INSERT INTO country (cinevo_id, last_update, code, `name`, `type`)
+            VALUES(:cinevo_id, NOW(), :code, :name, :type)
             ON DUPLICATE KEY UPDATE
                 last_update = NOW(),
                 code = VALUES(code),
+                `name` = VALUES(`name`),
                 `type` = VALUES(`type`)
             """)
-    void updateOrInsertCountry(@Param("cinevo_id") String cinevo_id, @Param("code") String code, @Param("type") String type);
+    void updateOrInsertCountry(@Param("cinevo_id") String cinevo_id, @Param("code") String code, @Param("name") String name, @Param("type") String type);
 
     @Modifying
     @Transactional

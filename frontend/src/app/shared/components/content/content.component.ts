@@ -42,7 +42,7 @@ export class ContentComponent implements OnInit {
   }
 
   ngAfterViewInit(): void {
-    console.log(this.onFindSkeleton());
+    // console.log(this.onFindSkeleton());
   }
 
   protected onFindSkeleton(): 'media' | 'person' {

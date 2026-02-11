@@ -1,6 +1,8 @@
 package com.cinovo.backend.DB.Service;
 
+import com.cinovo.backend.DB.Model.Enum.MediaType;
 import com.cinovo.backend.DB.Model.SpokenLanguage;
+import com.cinovo.backend.DB.Model.View.SpokenLanguageView;
 import com.cinovo.backend.DB.Repository.SpokenLanguageRepository;
 import com.cinovo.backend.DB.Util.Shared;
 import com.cinovo.backend.DB.Util.TMDBLogically;
@@ -37,6 +39,16 @@ public class SpokenLanguageService implements TMDBLogically<Null, List<SpokenLan
         if(spokenLanguages.isEmpty() || spokenLanguages.get().isEmpty())
         {
             return (List<SpokenLanguage>) onConvertTMDB(null);
+        }
+        return spokenLanguages.get();
+    }
+
+    public List<SpokenLanguageView> getSpokenLanguageViewByMediaType(final MediaType media_type)
+    {
+        Optional<List<SpokenLanguageView>> spokenLanguages = this.spokenLanguageRepository.getSpokenLanguageViewByMediaType(media_type.name());
+        if(spokenLanguages.isEmpty() || spokenLanguages.get().isEmpty())
+        {
+            return new ArrayList<>();
         }
         return spokenLanguages.get();
     }

@@ -1,10 +1,13 @@
 package com.cinovo.backend.Schedule;
 
 import com.cinovo.backend.DB.Model.Enum.MediaType;
+import com.cinovo.backend.DB.Model.Person;
 import com.cinovo.backend.DB.Service.*;
+import com.cinovo.backend.TMDB.Response.Common.ChangesResponse;
 import com.cinovo.backend.TMDB.Service;
 import lombok.extern.jbosslog.JBossLog;
 import org.springframework.boot.CommandLineRunner;
+import org.springframework.scheduling.annotation.Async;
 import org.springframework.stereotype.Component;
 
 @Component
@@ -44,51 +47,49 @@ public class StartupRunner implements CommandLineRunner
         this.spokenLanguageService.findAllSpokenLanguages();
         this.productionCountryService.findAllProductionCountry();
 
-        //        this.collectChangeData(MediaType.MOVIE);
-        //        this.collectChangeData(MediaType.TV);
-        //        this.collectChangeData(MediaType.PERSON);
+        this.collectChangeData(MediaType.MOVIE);
+        this.collectChangeData(MediaType.TV);
+        this.collectChangeData(MediaType.PERSON);
     }
 
-    //TODO : uncomment
+    public void collectChangeData(final MediaType type) throws Exception
+    {
+        int page = 0;
+        ChangesResponse changesResponse = new ChangesResponse();
+        do
+        {
+            page++;
+            changesResponse = this.service.getChangeResponse(MediaType.MOVIE, null, page, null);
+            for(ChangesResponse.Change change : changesResponse.getResults())
+            {
+                this.processChangeAsync(change.getId(), type);
+            }
+        }
+                while(page <= changesResponse.getTotal_pages());
+//        while(page < 1);
+    }
 
-    //    public void collectChangeData(final MediaType type) throws Exception
-    //    {
-    //        int page = 0;
-    //        ChangesResponse changesResponse = new ChangesResponse();
-    //        do
-    //        {
-    //            page++;
-    //            changesResponse = this.service.getChangeResponse(MediaType.MOVIE, null, page, null);
-    //            for(ChangesResponse.Change change : changesResponse.getResults())
-    //            {
-    //                this.processChangeAsync(change.getId(), type);
-    //            }
-    //        }
-    //        //        while(page <= changesResponse.getTotal_pages());
-    //        while(page < 1);
-    //    }
-    //
-    //    @Async("customExecutorStartupRunner")
-    //    public void processChangeAsync(Integer id, MediaType type) throws Exception
-    //    {
-    //        try
-    //        {
-    //            if(type.equals(MediaType.PERSON))
-    //            {
-    //                Person person = this.personService.findPersonByTmdbId(id);
-    //                if(person != null)
-    //                {
-    //                    this.personService.saveOrUpdate(person);
-    //                }
-    //            }
-    //            else
-    //            {
-    //                this.mediaService.getMediaByTmdbIdAndType(id, type);
-    //            }
-    //        }
-    //        catch(Exception e)
-    //        {
-    //            log.warn("Skipping media id=" + id + " type=" + type + " due to error: " + e.getMessage());
-    //        }
-    //    }
+    @Async("customExecutorStartupRunner")
+    public void processChangeAsync(Integer id, MediaType type) throws Exception
+    {
+        try
+        {
+            if(type.equals(MediaType.PERSON))
+            {
+                Person person = this.personService.findByTmdbId(id);
+//                if(person != null)
+//                {
+//                    this.personService.saveOrUpdate(person);
+//                }
+            }
+            else
+            {
+                this.mediaService.getMediaByTmdbIdAndMediaType(id, type);
+            }
+        }
+        catch(Exception e)
+        {
+            log.warn("Skipping media id=" + id + " type=" + type + " due to error: " + e.getMessage());
+        }
+    }
 }

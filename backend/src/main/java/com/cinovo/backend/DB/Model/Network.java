@@ -1,7 +1,7 @@
 package com.cinovo.backend.DB.Model;
 
 import com.cinovo.backend.DB.Model.Enum.FileType;
-import com.cinovo.backend.DB.Util.BaseEntity;
+import com.cinovo.backend.DB.Model.Embedded.BaseEntity;
 import com.fasterxml.jackson.annotation.JsonBackReference;
 import com.fasterxml.jackson.annotation.JsonManagedReference;
 import jakarta.persistence.*;

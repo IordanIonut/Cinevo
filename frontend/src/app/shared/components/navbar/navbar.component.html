@@ -1,59 +1,114 @@
-<nav class="w-full border-b border-gray-200">
-  <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+<nav #topNavbar class="w-full border-b border-gray-200 relative z-[200]">
+  <div class="mx-auto px-4 sm:px-6 lg:px-8">
     <div class="flex items-center justify-between h-16">
       <div class="flex items-center space-x-2">
         <img src="assets/logo.png" alt="logo" class="w-16 h-16" />
         <span class="font-cinevo text-3xl tracking-wide">CINEVO</span>
       </div>
 
-      <!-- Center: Navigation Links -->
       <div class="hidden md:flex space-x-8">
-        @for (navbar of navbar$ | async ; track navbar) {
+        @for (navbar of navbar$ | async; track navbar) {
+          <div class="relative group opacity-85">
+            <a
+              [href]="navbar.link"
+              class="text-gray-700 font-medium text-lg gap-5 px-2.5 py-2.5 hover:text-black hover:bg-black hover:text-white hover:rounded-2xl"
+              >{{ navbar.name }}</a
+            >
+            <div
+              class="absolute w-[50dvw] left-1/2 -translate-x-1/2 mt-2 bg-white border border-gray-200 rounded-lg shadow-lg opacity-0 group-hover:opacity-100 pointer-events-none group-hover:pointer-events-auto transition duration-300 z-[150]"
+            >
+              <div
+                class="grid gap-2 p-4 my-4"
+                [ngClass]="navbar.image ? 'grid-cols-2' : 'grid-cols-1'"
+              >
+                <!-- Left Information-->
+                <div class="space-y-4">
+                  @for (link of navbar.links; track link) {
+                    <a
+                      [href]="link.link"
+                      class="block hover:text-black hover:bg-black hover:text-white hover:rounded-lg px-4"
+                    >
+                      <div class="text-gray-700 font-medium text-xl">
+                        {{ link.title }}
+                      </div>
+                      <div class="text-sm text-gray-500 text-lg">
+                        {{ link.describe }}
+                      </div>
+                    </a>
+                  }
+                </div>
+                <!-- Right Column -->
+                @if (navbar.image) {
+                  <div
+                    class="flex items-center justify-center bg-gray-100 rounded-lg"
+                  >
+                    <span [innerHTML]="sanitize(navbar.image)"></span>
+                  </div>
+                }
+              </div>
+            </div>
+          </div>
+        }
+      </div>
+
+      <div><p>search</p></div>
+    </div>
+  </div>
+</nav>
+<!-- -->
+<nav
+  class="w-full border-t border-gray-300 bg-green-600 fixed bottom-8 left-0 z-[150] transition-all duration-500 ease-out opacity-0 translate-y-4 pointer-events-none"
+  [class.opacity-100]="isNavbarVisible$()"
+  [class.translate-y-0]="isNavbarVisible$()"
+  [class.pointer-events-auto]="isNavbarVisible$()"
+>
+  <div
+    class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-12 flex items-center justify-around space-x-6"
+  >
+    <div class="flex space-x-8">
+      @for (navbar of navbar$ | async; track navbar) {
         <div class="relative group opacity-85">
           <a
             [href]="navbar.link"
             class="text-gray-700 font-medium text-lg gap-5 px-2.5 py-2.5 hover:text-black hover:bg-black hover:text-white hover:rounded-2xl"
-            >{{ navbar.name }}</a
           >
+            {{ navbar.name }}
+          </a>
+
           <div
-            class="absolute w-[50dvw] left-1/2 -translate-x-1/2 mt-2 bg-white border border-gray-200 rounded-lg shadow-lg opacity-0 group-hover:opacity-100 pointer-events-none group-hover:pointer-events-auto transition duration-300 z-50"
+            class="absolute w-[50dvw] left-1/2 -translate-x-1/2 bottom-full mb-2 bg-white border border-gray-200 rounded-lg shadow-lg opacity-0 group-hover:opacity-100 pointer-events-none group-hover:pointer-events-auto transition duration-300 z-[9999]"
           >
             <div
               class="grid gap-2 p-4 my-4"
               [ngClass]="navbar.image ? 'grid-cols-2' : 'grid-cols-1'"
             >
-              <!-- Left Information-->
               <div class="space-y-4">
                 @for (link of navbar.links; track link) {
-                <a
-                  [href]="link.link"
-                  class="block hover:text-black hover:bg-black hover:text-white hover:rounded-lg px-4"
-                >
-                  <div class="text-gray-700 font-medium text-xl">
-                    {{ link.title }}
-                  </div>
-                  <div class="text-sm text-gray-500 text-lg">
-                    {{ link.describe }}
-                  </div>
-                </a>
+                  <a
+                    [href]="link.link"
+                    class="block hover:text-black hover:bg-black hover:text-white hover:rounded-lg px-4"
+                  >
+                    <div class="text-gray-700 font-medium text-xl">
+                      {{ link.title }}
+                    </div>
+                    <div class="text-sm text-gray-500 text-lg">
+                      {{ link.describe }}
+                    </div>
+                  </a>
                 }
               </div>
-              <!-- Right Column -->
+
               @if (navbar.image) {
-              <div
-                class="flex items-center justify-center bg-gray-100 rounded-lg"
-              >
-                <span [innerHTML]="navbar.image"></span>
-              </div>
+                <div
+                  class="flex items-center justify-center bg-gray-100 rounded-lg"
+                >
+                  <span [innerHTML]="sanitize(navbar.image)"></span>
+                </div>
               }
             </div>
           </div>
         </div>
-        }
-      </div>
-
-      <!-- Right: ......... -->
-      <div><p>search</p></div>
+      }
     </div>
   </div>
 </nav>

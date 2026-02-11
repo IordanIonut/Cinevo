@@ -1,6 +1,17 @@
-import { HttpClient, HttpErrorResponse, HttpParams } from '@angular/common/http';
+import {
+  HttpClient,
+  HttpErrorResponse,
+  HttpParams,
+} from '@angular/common/http';
 import { Injectable } from '@angular/core';
-import { catchError, Observable, of, shareReplay, take } from 'rxjs';
+import {
+  catchError,
+  Observable,
+  of,
+  shareReplay,
+  take,
+  throwError,
+} from 'rxjs';
 import { Environment } from '../../../../environments/environment.local';
 import { PersonView } from '../../../shared/models/views/person-view';
 
@@ -13,9 +24,7 @@ export class PersonService {
 
   constructor(private _httpClient: HttpClient) {}
 
-  public getPersonUsingTrending(
-    time_window: string,
-  ): Observable<PersonView[]> {
+  public getPersonUsingTrending(time_window: string): Observable<PersonView[]> {
     const httpParams = new HttpParams().append('time_window', time_window);
     return this._httpClient
       .get<
@@ -28,7 +37,7 @@ export class PersonService {
           if (error instanceof HttpErrorResponse) {
             console.error(`${error.status} ${error.message}`);
           }
-          return of([]);
+          return throwError(() => error);
         }),
       );
   }

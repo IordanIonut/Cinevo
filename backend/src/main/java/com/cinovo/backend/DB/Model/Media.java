@@ -3,11 +3,12 @@ package com.cinovo.backend.DB.Model;
 import com.cinovo.backend.DB.Model.Enum.EpisodeType;
 import com.cinovo.backend.DB.Model.Enum.MediaStatus;
 import com.cinovo.backend.DB.Model.Enum.MediaType;
-import com.cinovo.backend.DB.Util.BaseEntity;
+import com.cinovo.backend.DB.Model.Embedded.BaseEntity;
 import com.cinovo.backend.Schedule.Job;
 import com.fasterxml.jackson.annotation.*;
 import jakarta.persistence.*;
 import lombok.*;
+import lombok.extern.jbosslog.JBossLog;
 
 import java.time.LocalDate;
 import java.util.List;
@@ -20,6 +21,7 @@ import java.util.List;
 @Getter
 @Setter
 @EqualsAndHashCode(callSuper = true, onlyExplicitlyIncluded = true)
+@JBossLog
 public class Media extends BaseEntity
 {
     @Column(name = "ADULT")
@@ -145,10 +147,9 @@ public class Media extends BaseEntity
     @JsonManagedReference
     private List<Video> videos;
 
-    @OneToMany(mappedBy = "media", fetch = FetchType.LAZY)
-    @JsonIgnoreProperties("hibernateLazyInitializer")
-    @JsonManagedReference
-    private List<WatchProvider> watch_providers;
+    @OneToMany(mappedBy = "media_id", cascade = CascadeType.ALL)
+    @JsonIgnore
+    private List<WatchProvider.WatchProviderMedia> watch_providers;
 
     @ManyToMany(mappedBy = "medias", fetch = FetchType.LAZY, cascade = CascadeType.ALL)
     @JsonIgnoreProperties("hibernateLazyInitializer")
@@ -255,10 +256,9 @@ public class Media extends BaseEntity
         @JsonManagedReference
         private List<Video> videos;
 
-        @OneToMany(mappedBy = "season", fetch = FetchType.LAZY)
-        @JsonIgnoreProperties("hibernateLazyInitializer")
-        @JsonManagedReference
-        private List<WatchProvider> watch_providers;
+        @OneToMany(mappedBy = "season_id", cascade = CascadeType.ALL)
+        @JsonIgnore
+        private List<WatchProvider.WatchProviderSeason> watch_providers;
 
         @ManyToOne(fetch = FetchType.LAZY)
         @JoinColumn(name = "MEDIA_ID", nullable = false)

@@ -1,12 +1,13 @@
+import { HttpClientModule } from '@angular/common/http';
 import { Component } from '@angular/core';
-import { MatButtonToggleModule } from '@angular/material/button-toggle';
-import { HomeComponent } from './features/home/home.component';
-import { NavbarComponent } from './shared/components/navbar/navbar.component';
-
+import { FilterComponent } from './shared/components/filter/filter.component';
 @Component({
   selector: 'app-root',
-  imports: [NavbarComponent, MatButtonToggleModule, HomeComponent],
+  standalone: true,
+  imports: [HttpClientModule, FilterComponent],
   templateUrl: './app.html',
   styleUrl: './app.scss',
 })
-export class App {}
+export class App {
+  constructor() {}
+}

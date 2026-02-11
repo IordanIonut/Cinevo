@@ -2,6 +2,7 @@ package com.cinovo.backend.DB.Controller;
 
 import com.cinovo.backend.DB.Model.Country;
 import com.cinovo.backend.DB.Model.Enum.MediaType;
+import com.cinovo.backend.DB.Model.View.CountryView;
 import com.cinovo.backend.DB.Service.CountryService;
 import lombok.extern.jbosslog.JBossLog;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -21,7 +22,7 @@ public class CountryController
     private CountryService countryService;
 
     @GetMapping("/get/by/media-type/{type}")
-    public ResponseEntity<List<Country>> findCountryByMediaType(@PathVariable("type") final MediaType type)
+    public ResponseEntity<List<Country>> findCountryByMediaType(@PathVariable final MediaType type)
     {
         try
         {
@@ -35,8 +36,23 @@ public class CountryController
         }
     }
 
+    @GetMapping("/get/country-view/by/media-type/{media_type}")
+    public ResponseEntity<List<CountryView>> findCountryViewByMediaType(@PathVariable final MediaType media_type) {
+        try
+        {
+            log.info("findCountryViewByMediaType() - Successful.....");
+            return ResponseEntity.ok(this.countryService.findCountryViewByMediaType(media_type));
+        }
+        catch(Exception e)
+        {
+            log.error("Error in findCountryViewByMediaType: {}", e.getMessage(), e);
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).build();
+        }
+    }
+
+
     @GetMapping("/get/by/media-type/{type}/code/{code}")
-    public ResponseEntity<Country> findCountryByMediaTypeAndCode(@PathVariable("type") final MediaType type, @PathVariable("code") final String code)
+    public ResponseEntity<Country> findCountryByMediaTypeAndCode(@PathVariable final MediaType type, @PathVariable final String code)
     {
         try
         {
